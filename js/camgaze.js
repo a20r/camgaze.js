@@ -1,27 +1,42 @@
 
 
-////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 //
 // This is the camgaze API. Enjoy!
 // 
-// This code is held under a Creative
-// Commons Attribution-ShareAlike 3.0 
-// Unported License
+// This code is held under a Creative Commons 
+// Attribution-ShareAlike 3.0 Unported License
 //
 // name : Alex Wallar
 // email : aw204@st-andrews.ac.uk
 //
-////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+var cam = undefined;
+window.onload = function () {
+	cam = new camgaze.Camera(
+		"mainCanvas", 
+		"invisibleCanvas",
+		640, 480, 
+		10
+	);
+	setInterval(
+		function () {
+			cam.drawFrame(cam.getFrame());
+		},
+		cam.frameWaitTime
+	);
+}
 
 // namespace
 camgaze = {}
 
-///////////////////////////////////////
+//////////////////////////////////////////////////////////////
 //
-// Object used to represent a point.
-// Used throughout the project. 
+// Object used to represent a point. Used throughout the 
+// project. 
 //
-///////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 camgaze.Point = function (x, y) {
 	this.x = x;
@@ -63,14 +78,13 @@ camgaze.Point.prototype.getVal = function (ind) {
 	}
 }
 
-///////////////////////////////////////
+//////////////////////////////////////////////////////////////
 //
-// Object used to represent a blob.
-// Holds information relative to a binary
-// blob such as the contour, the convex
-// hull, and the centroid 
+// Object used to represent a blob. Holds information 
+// relative to a binary blob such as the contour and the
+// centroid
 //
-///////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 camgaze.Blob = function (centroid, contour, contourArea) {
 	this.centroid = centroid
@@ -95,21 +109,23 @@ camgaze.Blob.prototype.getContourArea = function () {
 	return this.contourArea;
 }
 
-camgaze.Blob.getBlobs = function (BW, minSize) {
-	// Do this tomorrow!
+camgaze.Blob.getMoments = function (blob, i, j) {
+
 }
 
-///////////////////////////////////////
+camgaze.Blob.getBlobs = function (BW, minSize) {
+
+}
+
+//////////////////////////////////////////////////////////////
 //
-// Implementation of a dynamic, moving
-// average list. Elements are pushed to
-// the list, but the list remains the
-// same size by removing one element.
-// The compounded value is the mean of 
-// the list. This is used to reduce
-// jitter in data with a lot of noise
+// Implementation of a dynamic, moving average list. Elements 
+// are pushed to the list, but the list remains the same size 
+// by removing one element. The compounded value is the mean 
+// of the list. This is used to reduce jitter in data with a 
+// lot of noise
 //
-///////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 camgaze.MovingAveragePoints = function (startingValue, length) {
 	this.movAvgList = new Array(length);
@@ -215,3 +231,117 @@ camgaze.MovingAveragePoints.prototype.setLength = function (length) {
 camgaze.MovingAveragePoints.prototype.getLastCompoundedResult = function () {
 	return this.lastMean;
 }
+
+//////////////////////////////////////////////////////////////
+//
+// Class used to get the raw image from the camera. It parses
+// the camera stream into a canvas and returns the ImageData
+// associated with it
+//
+//////////////////////////////////////////////////////////////
+
+camgaze.Camera = function (canvasId, invisibleCanvasId, dimX, dimY, frameWaitTime) {
+	this.canvas = document.getElementById(canvasId);
+	this.canvas.width = dimX;
+	this.canvas.height = dimY;
+
+	this.invisibleCanvas = document.getElementById(
+		invisibleCanvasId
+	);
+	this.invisibleCanvas.width = dimX;
+	this.invisibleCanvas.height = dimY;
+	this.frameWaitTime = frameWaitTime;
+
+	this.context = this.canvas.getContext('2d');
+	this.invisibleContext = this.invisibleCanvas.getContext('2d');
+
+	this.videoInterval = undefined
+
+	var self = this;
+	if (navigator.webkitGetUserMedia) {
+		navigator.webkitGetUserMedia(
+			{
+	    		video : true
+	    	},
+	    	this.showFrame(self),
+	    	this.videoFail
+	  	)
+	}
+}
+
+// draws the unaugmented frame onto the invisible
+// canvas
+camgaze.Camera.prototype.draw = function (video) {
+	// draw the video contents into the canvas x, y, width, height
+	this.invisibleContext.drawImage(
+		video,
+		0,
+		0,
+		this.invisibleCanvas.width,
+		this.invisibleCanvas.height
+   );
+}
+
+// automatically called once from the getUserMedia
+camgaze.Camera.prototype.showFrame = function (self) {
+	return function (localMediaStream) {
+		var video = document.querySelector(
+		  'video'
+		);
+
+		video.src = window.URL.createObjectURL(
+			localMediaStream
+		);
+
+		self.videoInterval = setInterval(
+			function () {
+				self.draw(video);
+			}, 
+			self.frameWaitTime
+		);
+	}
+}
+
+camgaze.Camera.prototype.videoFail = function (e) {
+	console.log("ERROR:\t", e);
+}
+
+camgaze.Camera.prototype.pauseStreaming = function () {
+	clearInterval(this.videoInterval);
+}
+
+// draws frame onto visible canvas
+camgaze.Camera.prototype.drawFrame = function (imgData) {
+	//console.log(imgData);
+	this.context.putImageData(
+		imgData,
+		0, 0
+   );
+}
+
+camgaze.Camera.prototype.getFrame = function () {
+	return this.invisibleContext.getImageData(
+		0, 
+		0, 
+		this.invisibleCanvas.width, 
+		this.invisibleCanvas.height
+	);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
