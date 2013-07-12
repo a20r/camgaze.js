@@ -1,4 +1,18 @@
 
+
+////////////////////////////////////////
+//
+// This is the camgaze API. Enjoy!
+// 
+// This code is held under a Creative
+// Commons Attribution-ShareAlike 3.0 
+// Unported License
+//
+// name : Alex Wallar
+// email : aw204@st-andrews.ac.uk
+//
+////////////////////////////////////////
+
 // namespace
 camgaze = {}
 
@@ -30,6 +44,13 @@ camgaze.Point.prototype.sub = function (otherPoint) {
 		this.x - otherPoint.x, 
 		this.y - otherPoint.y
 	);
+}
+
+camgaze.Point.prototype.distTo = function (otherPoint) {
+	return Math.sqrt(
+		Math.pow(this.x - otherPoint.x, 2) + 
+		Math.pow(this.y - otherPoint.y, 2)
+	)
 }
 
 camgaze.Point.prototype.getVal = function (ind) {
@@ -74,6 +95,10 @@ camgaze.Blob.prototype.getContourArea = function () {
 	return this.contourArea;
 }
 
+camgaze.Blob.getBlobs = function (BW, minSize) {
+	// Do this tomorrow!
+}
+
 ///////////////////////////////////////
 //
 // Implementation of a dynamic, moving
@@ -105,14 +130,69 @@ camgaze.MovingAveragePoints.prototype.put = function (value) {
 }
 
 camgaze.MovingAveragePoints.prototype.removeOutliers = function (maList, refPoint) {
-	// finishing up for today I think.
+	var acceptableStds = 3;
+	var distList = maList.map(
+		function (point) {
+			return point.distTo(refPoint);
+		}
+	);
+
+	var meanVal = 0;
+	for (var i = 0; i < distList.length; i++) {
+		meanVal += (distList[i] / maList.length);
+	}
+
+	var variance = 0;
+	for (var i = 0; i < distList.length; i++) {
+		variance += (
+			Math.pow(distList[i] - meanVal, 2) / 
+			distList.length
+		);
+	}
+
+	var std = Math.sqrt(variance);
+
+	return maList.filter(
+		function (point, index, array) {
+			return distList[index] < (meanDist + acceptableStds * std);
+		}
+	);
+}
+
+camgaze.MovingAveragePoints.prototype.getMean = function (maList) {
+	if (maList.length == 0) {
+		maList = this.movAvgList;
+	}
+
+	var divList = maList.map(
+		function (point) {
+			return new camgaze.Point(
+				point.x / maList.length,
+				point.y / maList.length
+			)
+		}
+	)
+
+	var retVal = divList.reduce(
+		function (prevPoint, curPoint) {
+			return new camgaze.Point(
+				prevPoint.x + curPoint.x,
+				prevPoint.y + curPoint.y
+			)
+		}
+	)
+
+	return new camgaze.Point(
+		retVal.x.toFixed(0), 
+		retVal.y.toFixed(0)
+	)
 }
 
 camgaze.MovingAveragePoints.prototype.compound = function (value, refPoint) {
 	this.put(value);
-	maListCopy = this.movAvgList.slice(0);
+	var maListCopy = this.movAvgList.slice(0);
 	this.lastMean = this.getMean(
-		this.removeOutliers(maListCopy, refPoint);
+		this.removeOutliers(maListCopy, refPoint)
 	);
 	return this.lastMean;
 }
@@ -124,7 +204,7 @@ camgaze.MovingAveragePoints.prototype.setLength = function (length) {
 			this.movAvgList.length
 		);
 	} else if (length > this.movAvgList.length) {
-		lPoint = this.movAvgList[this.movAvgList.length];
+		var lPoint = this.movAvgList[this.movAvgList.length];
 		for (var i = 0; i < length - this.movAvgList.length; i++) {
 			this.movAvgList.push(lPoint);
 		}
