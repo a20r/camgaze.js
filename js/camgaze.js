@@ -13,8 +13,9 @@
 //////////////////////////////////////////////////////////////
 
 var cam = undefined;
+var contourArray;
 window.onload = function () {
-	cam = new camgaze.Camera(
+	cam = new camgaze.Camera (
 		"mainCanvas", 
 		"invisibleCanvas",
 		640, 480, 
@@ -22,7 +23,13 @@ window.onload = function () {
 	);
 	setInterval(
 		function () {
-			cam.drawFrame(cam.getFrame());
+			var image_data = cam.getFrame()
+			var gray_img = camgaze.CVUtil.toGrayscale(image_data);
+			var binary_img = camgaze.CVUtil.grayScaleInRange(gray_img, 12, 26);
+			contourArray = camgaze.CVUtil.getContours(binary_img);
+			var drawingImage = cam.convertToCanvas(image_data, binary_img);
+			cam.drawFrame(drawingImage);
+			//cam.drawFrame(image_data);
 		},
 		cam.frameWaitTime
 	);
@@ -30,6 +37,148 @@ window.onload = function () {
 
 // namespace
 camgaze = {}
+
+//////////////////////////////////////////////////////////////
+//
+// This namespace is reserved for image processing functions
+// that I could not find implemented elsewhere
+//
+//////////////////////////////////////////////////////////////
+
+camgaze.CVUtil = {};
+
+camgaze.CVUtil.getMoments = function (contour) {
+
+}
+
+"""
+# Total shit
+camgaze.CVUtil.getPixelNeighborhood = function (img, i, j) {
+	var retArray = new Array();
+	var nps = [
+		[-1, -1], [0, -1], [1, -1],
+		[-1,  0],          [1,  0],
+		[-1,  1], [0,  1], [1,  1],
+	];
+	for (var k = 0; k < nps.length; k++) {
+		pIndex = (j + nps[k][1]) * img.rows + i + nps[k][0];
+		if ((i + nps[k][0] < img.cols || i + nps[k][0] >= 0) &&
+			(j + nps[k][1] < img.rows || j + nps[k][1] >= 0)) {
+			retArray.push(pIndex);
+		}
+	}
+	return retArray;
+}
+
+// Takes a one channel, binary image.
+camgaze.CVUtil.getContours = function (BW) {
+	var labelArray = {};
+	var maxLabel = 0;
+	var contourArray = new Array();
+	var nps, nLabels;
+	for (var j = 0; j < BW.rows; j++) {
+		for (var i = 0; i < BW.cols; i++) {
+
+			// if not inside a blob, continue
+			if (BW.data[j * BW.rows + i] == 0) {
+				continue;
+			}
+
+			nps = camgaze.CVUtil.getPixelNeighborhood(
+				BW, i, j
+			);
+			nLabels = new Array();
+
+			// counts the occurence of each label
+			// of the neighbors to best fit the 
+			// new point
+			for (var k = 0; k < nps.length; k++) {
+				if (labelArray[nps[k]] != undefined) {
+					if (nLabels[labelArray[nps[k]]] == undefined) {
+						nLabels[labelArray[nps[k]]] = 0;
+					} else {
+						nLabels[labelArray[nps[k]]]++;
+					}
+				}
+			}
+
+			// adding a new label
+			if (nLabels.length == 0) {
+				labelArray[j * BW.rows + i] = maxLabel;
+				contourArray[maxLabel] = new Array();
+				contourArray[maxLabel].push([i, j]);
+				maxLabel++;
+			} else {
+
+				// gets the maximum value in the array
+				var maxCount = nLabels.reduce(
+					function (prevElem, curElem, index, array) {
+						if (curElem == undefined && prevElem == undefined) {
+							return 0;
+						} else if (prevElem == undefined) {
+							return curElem;
+						} else if (curElem == undefined) {
+							return prevElem;
+						}
+						if (curElem > prevElem) {
+							return curElem;
+						} else {
+							return prevElem;
+						}
+					}
+				);
+
+				// finds the index of the maximum value
+				var maxIndex;
+				for (var k = 0; k < nLabels.length; k++) {
+					if (nLabels[k] == maxCount) {
+						maxIndex = k;
+						break;
+					}		
+				}
+				labelArray[j * BW.rows + i] = maxIndex;
+				contourArray[maxIndex].push([i, j]);
+			}
+		}
+	}
+	return contourArray;
+}
+"""
+
+camgaze.CVUtil.toGrayscale = function (image_data) {
+	var gray_img = new jsfeat.matrix_t(
+		image_data.width, 
+		image_data.height, 
+		jsfeat.U8_t | jsfeat.C1_t
+	);
+
+	jsfeat.imgproc.grayscale(image_data.data, gray_img.data);
+	return gray_img;
+}
+
+// The image is a single channel, grayscale image
+camgaze.CVUtil.grayScaleInRange = function (grayImage, minColor, maxColor) {
+
+	binaryImage = new jsfeat.matrix_t(
+		grayImage.cols, 
+		grayImage.rows, 
+		jsfeat.U8_t | jsfeat.C1_t
+	);
+
+	binaryImage.data.set(grayImage.data)
+
+	for (var i = 0; i < binaryImage.data.length; i++) {
+		if (
+			binaryImage.data[i] >= minColor &&
+			binaryImage.data[i] <= maxColor
+		) {
+			binaryImage.data[i] = 255;
+		} else {
+			binaryImage.data[i] = 0;
+		}
+	}
+	return binaryImage;
+}
 
 //////////////////////////////////////////////////////////////
 //
@@ -107,14 +256,6 @@ camgaze.Blob.prototype.getContour = function () {
 
 camgaze.Blob.prototype.getContourArea = function () {
 	return this.contourArea;
-}
-
-camgaze.Blob.getMoments = function (blob, i, j) {
-
-}
-
-camgaze.Blob.getBlobs = function (BW, minSize) {
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -317,6 +458,27 @@ camgaze.Camera.prototype.drawFrame = function (imgData) {
 		imgData,
 		0, 0
    );
+}
+
+camgaze.Camera.prototype.copyFrame = function (srcImage) {
+    var dst = this.invisibleContext.createImageData(
+    	srcImage.width, 
+    	srcImage.height
+    );
+    dst.data.set(srcImage.data);
+    return dst;
+}
+
+camgaze.Camera.prototype.convertToCanvas = function (imageData, jsFeatData) {
+	var image_data = this.copyFrame(imageData);
+    var data_u32 = new Uint32Array(image_data.data.buffer);
+    var alpha = (0xff << 24);
+    var i = jsFeatData.cols*jsFeatData.rows, pix = 0;
+    while(--i >= 0) {
+        pix = jsFeatData.data[i];
+        data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
+    }
+    return image_data;
 }
 
 camgaze.Camera.prototype.getFrame = function () {
