@@ -13,7 +13,7 @@
 //////////////////////////////////////////////////////////////
 
 var cam = undefined;
-var contourArray;
+var gray_img;
 window.onload = function () {
 	cam = new camgaze.Camera (
 		"mainCanvas", 
@@ -24,10 +24,11 @@ window.onload = function () {
 	setInterval(
 		function () {
 			var image_data = cam.getFrame()
-			var gray_img = camgaze.CVUtil.toGrayscale(image_data);
+			gray_img = camgaze.CVUtil.toGrayscale(image_data);
 			var binary_img = camgaze.CVUtil.grayScaleInRange(gray_img, 12, 26);
-			contourArray = camgaze.CVUtil.getContours(binary_img);
-			var drawingImage = cam.convertToCanvas(image_data, binary_img);
+			jsfeat.imgproc.canny(binary_img, gray_img, 0, 255);
+			//contourArray = camgaze.CVUtil.getContours(gray_img);
+			var drawingImage = cam.convertToCanvas(image_data, gray_img);
 			cam.drawFrame(drawingImage);
 			//cam.drawFrame(image_data);
 		},
@@ -51,8 +52,6 @@ camgaze.CVUtil.getMoments = function (contour) {
 
 }
 
-"""
-# Total shit
 camgaze.CVUtil.getPixelNeighborhood = function (img, i, j) {
 	var retArray = new Array();
 	var nps = [
@@ -143,7 +142,6 @@ camgaze.CVUtil.getContours = function (BW) {
 	}
 	return contourArray;
 }
-"""
 
 camgaze.CVUtil.toGrayscale = function (image_data) {
 	var gray_img = new jsfeat.matrix_t(
