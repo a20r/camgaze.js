@@ -45,19 +45,20 @@ window.onload = function () {
 
 //////////////////////////////////////////////////////////////
 //
-// Name space containing all the components needed for the 
-// camgaze project
-//
-//////////////////////////////////////////////////////////////
-camgaze = {}
-
-//////////////////////////////////////////////////////////////
-//
-// Adds functionality for data structures used in the API
+// All the namespaces used in the project
 //
 //////////////////////////////////////////////////////////////
 
+camgaze = {};
 camgaze.structures = {};
+camgaze.CVUtil = {};
+
+//////////////////////////////////////////////////////////////
+//
+// UnionFind data structure used to store neighbor 
+// equivalence when dealing with connected components
+//
+//////////////////////////////////////////////////////////////
 
 camgaze.structures.UnionFind = function () {
 	this.leader = {};
@@ -127,12 +128,92 @@ camgaze.structures.UnionFind.prototype = {
 
 //////////////////////////////////////////////////////////////
 //
+// Object used to represent a point. Used throughout the 
+// project. 
+//
+//////////////////////////////////////////////////////////////
+
+camgaze.structures.Point = function (x, y) {
+	this.x = x;
+	this.y = y;
+}
+
+camgaze.structures.Point.prototype = {
+	toList : function () {
+		return [this.x, this.y];
+	},
+
+	add : function (otherPoint) {
+		return new camgaze.structures.Point(
+			this.x + otherPoint.x, 
+			this.y + otherPoint.y
+		);
+	},
+
+	sub : function (otherPoint) {
+		return new camgaze.structures.Point(
+			this.x - otherPoint.x, 
+			this.y - otherPoint.y
+		);
+	},
+
+	// returns the distance to another point
+	distTo : function (otherPoint) {
+		return Math.sqrt(
+			Math.pow(this.x - otherPoint.x, 2) + 
+			Math.pow(this.y - otherPoint.y, 2)
+		)
+	},
+
+	getVal : function (ind) {
+		if (ind == 0) {
+			return x;
+		} else if (ind == 1) {
+			return y;
+		} else {
+			return undefined;
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////
+//
+// Object used to represent a blob. Holds information 
+// relative to a binary blob such as the contour and the
+// centroid
+//
+//////////////////////////////////////////////////////////////
+
+camgaze.structures.Blob = function (centroid, contour, contourArea) {
+	this.centroid = centroid
+	this.convexHull = convexHull
+	this.contour = contour
+	this.convexHullArea = convexHullArea
+	this.contourArea = contourArea
+}
+
+camgaze.structures.Blob.prototype = {
+	getCentroid : function () {
+		return new camgaze.structures.Point(
+			this.centroid[0], 
+			this.centroid[1]
+		)
+	},
+
+	getContour : function () {
+		return this.contour;
+	},
+
+	getContourArea : function () {
+		return this.contourArea;
+	}
+
+//////////////////////////////////////////////////////////////
+//
 // This namespace is reserved for image processing functions
 // that I could not find implemented elsewhere
 //
 //////////////////////////////////////////////////////////////
-
-camgaze.CVUtil = {};
 
 camgaze.CVUtil.getMoments = function (contour) {
 
@@ -142,8 +223,7 @@ camgaze.CVUtil.getPixelNeighborhood = function (img, i, j) {
 	var retArray = new Array();
 	var nps = [
 		[-1, -1], [0, -1], [1, -1],
-		[-1,  0],          [1,  0],
-		[-1,  1], [0,  1], [1,  1],
+		[-1,  0]
 	];
 	for (var k = 0; k < nps.length; k++) {
 		pIndex = (j + nps[k][1]) * img.rows + i + nps[k][0];
@@ -164,6 +244,7 @@ camgaze.CVUtil.getContours = function (BW) {
 				BW, 
 				i, j
 			);
+			
 		}
 	}
 }
@@ -201,85 +282,6 @@ camgaze.CVUtil.grayScaleInRange = function (grayImage, minColor, maxColor) {
 		}
 	}
 	return binaryImage;
-}
-
-//////////////////////////////////////////////////////////////
-//
-// Object used to represent a point. Used throughout the 
-// project. 
-//
-//////////////////////////////////////////////////////////////
-
-camgaze.Point = function (x, y) {
-	this.x = x;
-	this.y = y;
-}
-
-camgaze.Point.prototype.toList = function () {
-	return [this.x, this.y];
-}
-
-camgaze.Point.prototype.add = function (otherPoint) {
-	return new camgaze.Point(
-		this.x + otherPoint.x, 
-		this.y + otherPoint.y
-	);
-}
-
-camgaze.Point.prototype.sub = function (otherPoint) {
-	return new camgaze.Point(
-		this.x - otherPoint.x, 
-		this.y - otherPoint.y
-	);
-}
-
-// returns the distance to another point
-camgaze.Point.prototype.distTo = function (otherPoint) {
-	return Math.sqrt(
-		Math.pow(this.x - otherPoint.x, 2) + 
-		Math.pow(this.y - otherPoint.y, 2)
-	)
-}
-
-camgaze.Point.prototype.getVal = function (ind) {
-	if (ind == 0) {
-		return x;
-	} else if (ind == 1) {
-		return y;
-	} else {
-		return undefined;
-	}
-}
-
-//////////////////////////////////////////////////////////////
-//
-// Object used to represent a blob. Holds information 
-// relative to a binary blob such as the contour and the
-// centroid
-//
-//////////////////////////////////////////////////////////////
-
-camgaze.Blob = function (centroid, contour, contourArea) {
-	this.centroid = centroid
-	this.convexHull = convexHull
-	this.contour = contour
-	this.convexHullArea = convexHullArea
-	this.contourArea = contourArea
-}
-
-camgaze.Blob.prototype.getCentroid = function () {
-	return new camgaze.Point(
-		this.centroid[0], 
-		this.centroid[1]
-	)
-}
-
-camgaze.Blob.prototype.getContour = function () {
-	return this.contour;
-}
-
-camgaze.Blob.prototype.getContourArea = function () {
-	return this.contourArea;
 }
 
 //////////////////////////////////////////////////////////////
@@ -347,7 +349,7 @@ camgaze.MovingAveragePoints.prototype.getMean = function (maList) {
 
 	var divList = maList.map(
 		function (point) {
-			return new camgaze.Point(
+			return new camgaze.structures.Point(
 				point.x / maList.length,
 				point.y / maList.length
 			)
@@ -356,14 +358,14 @@ camgaze.MovingAveragePoints.prototype.getMean = function (maList) {
 
 	var retVal = divList.reduce(
 		function (prevPoint, curPoint) {
-			return new camgaze.Point(
+			return new camgaze.structures.Point(
 				prevPoint.x + curPoint.x,
 				prevPoint.y + curPoint.y
 			)
 		}
 	)
 
-	return new camgaze.Point(
+	return new camgaze.structures.Point(
 		retVal.x.toFixed(0), 
 		retVal.y.toFixed(0)
 	)
