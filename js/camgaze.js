@@ -41,6 +41,25 @@ camgaze = {}
 
 //////////////////////////////////////////////////////////////
 //
+// Adds functionality for data structures used in the API
+//
+//////////////////////////////////////////////////////////////
+
+camgaze.structures = {};
+
+camgaze.structures.TreeNode = function (value, parent) {
+	this.value = value;
+	this.parent = parent;
+}
+
+camgaze.structures.DisjointSet = function () {
+	treeStruct = {};
+}
+
+camgaze.structures.DisjointSet.prototype
+
+//////////////////////////////////////////////////////////////
+//
 // This namespace is reserved for image processing functions
 // that I could not find implemented elsewhere
 //
