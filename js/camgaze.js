@@ -12,6 +12,13 @@
 //
 //////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////
+//
+// Code to test if the API is working. Not unit tests but
+// interval tests to see if new components work as expected
+//
+//////////////////////////////////////////////////////////////
+
 var cam = undefined;
 var gray_img;
 window.onload = function () {
@@ -36,7 +43,12 @@ window.onload = function () {
 	);
 }
 
-// namespace
+//////////////////////////////////////////////////////////////
+//
+// Name space containing all the components needed for the 
+// camgaze project
+//
+//////////////////////////////////////////////////////////////
 camgaze = {}
 
 //////////////////////////////////////////////////////////////
@@ -47,16 +59,71 @@ camgaze = {}
 
 camgaze.structures = {};
 
-camgaze.structures.TreeNode = function (value, parent) {
-	this.value = value;
-	this.parent = parent;
+camgaze.structures.UnionFind = function () {
+	this.leader = {};
+	this.group = {};
 }
 
-camgaze.structures.DisjointSet = function () {
-	treeStruct = {};
-}
+camgaze.structures.UnionFind.prototype = {
 
-camgaze.structures.DisjointSet.prototype
+	add : function (a, b) {
+		//"use strict";
+		if (b == undefined) {
+			if (this.leader[a] != undefined) {
+				this.leader[a] = a;
+				this.groupp[a] = [a];
+			}
+			return;
+		}
+		var leadera = this.leader[a];
+		var leaderb = this.leader[b];
+		if (leadera != undefined) {
+			if (leaderb != undefined) {
+				if (leadera == leaderb)  {
+					return;
+				}
+				var groupa = this.group[leadera];
+				var groupb = this.group[leaderb];
+				$.merge(groupa, groupb);
+				delete this.group[leaderb];
+				for (var i = 0; i < groupb.length; i++) {
+					this.leader[i] = leadera;
+				}
+			} else {
+				this.group[leadera].push(b);
+				this.leader[b] = leadera;
+			}
+		} else {
+			if (leaderb != undefined) {
+				this.group[leaderb].push(a);
+				this.leader[a] = leaderb;
+			} else {
+				this.leader[a] = this.leader[b] = a;
+				this.group[a] = [a, b];	
+			}
+		}
+	},
+
+	getLeaders : function () {
+		return this.leader;
+	},
+
+	getLeader : function (i) {
+		return this.leader[i];
+	}
+
+	getGroups : function () {
+		return this.group;
+	},
+
+	getGroupList : function () {
+		var retArray = new Array();
+		for (var k in this.group) {
+			retArray.push(this.group[k]);
+		}
+		return retArray;
+	}
+}
 
 //////////////////////////////////////////////////////////////
 //
@@ -90,76 +157,15 @@ camgaze.CVUtil.getPixelNeighborhood = function (img, i, j) {
 
 // Takes a one channel, binary image.
 camgaze.CVUtil.getContours = function (BW) {
-	var labelArray = {};
-	var maxLabel = 0;
-	var contourArray = new Array();
-	var nps, nLabels;
+	var uf = new camgaze.structures.UnionFind();
 	for (var j = 0; j < BW.rows; j++) {
 		for (var i = 0; i < BW.cols; i++) {
-
-			// if not inside a blob, continue
-			if (BW.data[j * BW.rows + i] == 0) {
-				continue;
-			}
-
-			nps = camgaze.CVUtil.getPixelNeighborhood(
-				BW, i, j
+			var nps = camgaze.CVUtil.getPixelNeighborhood(
+				BW, 
+				i, j
 			);
-			nLabels = new Array();
-
-			// counts the occurence of each label
-			// of the neighbors to best fit the 
-			// new point
-			for (var k = 0; k < nps.length; k++) {
-				if (labelArray[nps[k]] != undefined) {
-					if (nLabels[labelArray[nps[k]]] == undefined) {
-						nLabels[labelArray[nps[k]]] = 0;
-					} else {
-						nLabels[labelArray[nps[k]]]++;
-					}
-				}
-			}
-
-			// adding a new label
-			if (nLabels.length == 0) {
-				labelArray[j * BW.rows + i] = maxLabel;
-				contourArray[maxLabel] = new Array();
-				contourArray[maxLabel].push([i, j]);
-				maxLabel++;
-			} else {
-
-				// gets the maximum value in the array
-				var maxCount = nLabels.reduce(
-					function (prevElem, curElem, index, array) {
-						if (curElem == undefined && prevElem == undefined) {
-							return 0;
-						} else if (prevElem == undefined) {
-							return curElem;
-						} else if (curElem == undefined) {
-							return prevElem;
-						}
-						if (curElem > prevElem) {
-							return curElem;
-						} else {
-							return prevElem;
-						}
-					}
-				);
-
-				// finds the index of the maximum value
-				var maxIndex;
-				for (var k = 0; k < nLabels.length; k++) {
-					if (nLabels[k] == maxCount) {
-						maxIndex = k;
-						break;
-					}		
-				}
-				labelArray[j * BW.rows + i] = maxIndex;
-				contourArray[maxIndex].push([i, j]);
-			}
 		}
 	}
-	return contourArray;
 }
 
 camgaze.CVUtil.toGrayscale = function (image_data) {
@@ -227,6 +233,7 @@ camgaze.Point.prototype.sub = function (otherPoint) {
 	);
 }
 
+// returns the distance to another point
 camgaze.Point.prototype.distTo = function (otherPoint) {
 	return Math.sqrt(
 		Math.pow(this.x - otherPoint.x, 2) + 
