@@ -20,26 +20,26 @@
 //////////////////////////////////////////////////////////////
 
 var cam = undefined;
+var contourArray;
 var gray_img;
 window.onload = function () {
 	cam = new camgaze.Camera (
 		"mainCanvas", 
 		"invisibleCanvas",
 		640, 480, 
-		10
+		1
 	);
 	setInterval(
 		function () {
 			var image_data = cam.getFrame()
 			gray_img = camgaze.CVUtil.toGrayscale(image_data);
 			var binary_img = camgaze.CVUtil.grayScaleInRange(gray_img, 12, 26);
-			jsfeat.imgproc.canny(binary_img, gray_img, 0, 255);
-			//contourArray = camgaze.CVUtil.getContours(gray_img);
-			var drawingImage = cam.convertToCanvas(image_data, gray_img);
+			contourArray = camgaze.CVUtil.getConnectedComponents(binary_img);
+			var drawingImage = cam.convertToCanvas(image_data, binary_img);
 			cam.drawFrame(drawingImage);
 			//cam.drawFrame(image_data);
 		},
-		cam.frameWaitTime
+		1
 	);
 }
 
@@ -70,9 +70,10 @@ camgaze.structures.UnionFind.prototype = {
 	add : function (a, b) {
 		//"use strict";
 		if (b == undefined) {
-			if (this.leader[a] != undefined) {
+			if (this.leader[a] == undefined) {
 				this.leader[a] = a;
-				this.groupp[a] = [a];
+				this.group[a] = new Array();
+				this.group[a].push(a)
 			}
 			return;
 		}
@@ -85,17 +86,25 @@ camgaze.structures.UnionFind.prototype = {
 				}
 				var groupa = this.group[leadera];
 				var groupb = this.group[leaderb];
+				this.leader[b] = leadera;
+
 				$.merge(groupa, groupb);
 				delete this.group[leaderb];
 				for (var i = 0; i < groupb.length; i++) {
 					this.leader[i] = leadera;
 				}
 			} else {
+				//if (this.group[leadera] == undefined) {
+					//this.group[leadera] = new Array();
+				//}
 				this.group[leadera].push(b);
 				this.leader[b] = leadera;
 			}
 		} else {
 			if (leaderb != undefined) {
+				//if (this.group[leaderb] == undefined) {
+					//this.group[leaderb] = new Array();
+				//}
 				this.group[leaderb].push(a);
 				this.leader[a] = leaderb;
 			} else {
@@ -111,10 +120,14 @@ camgaze.structures.UnionFind.prototype = {
 
 	getLeader : function (i) {
 		return this.leader[i];
-	}
+	},
 
 	getGroups : function () {
 		return this.group;
+	},
+
+	getGroup : function (i) {
+		return this.group[i];
 	},
 
 	getGroupList : function () {
@@ -207,6 +220,7 @@ camgaze.structures.Blob.prototype = {
 	getContourArea : function () {
 		return this.contourArea;
 	}
+}
 
 //////////////////////////////////////////////////////////////
 //
@@ -223,30 +237,77 @@ camgaze.CVUtil.getPixelNeighborhood = function (img, i, j) {
 	var retArray = new Array();
 	var nps = [
 		[-1, -1], [0, -1], [1, -1],
-		[-1,  0]
+		[-1,  0]//, 		   [1,  0],
+		//[-1,  1], [0,  1], [1,  1]
 	];
 	for (var k = 0; k < nps.length; k++) {
-		pIndex = (j + nps[k][1]) * img.rows + i + nps[k][0];
-		if ((i + nps[k][0] < img.cols || i + nps[k][0] >= 0) &&
-			(j + nps[k][1] < img.rows || j + nps[k][1] >= 0)) {
-			retArray.push(pIndex);
+		pIndex = (j + nps[k][1]) * img.cols + i + nps[k][0];
+		if ((i + nps[k][0] < img.cols && i + nps[k][0] >= 0) &&
+			(j + nps[k][1] < img.rows && j + nps[k][1] >= 0)) {
+			if (img.data[pIndex] > 0) {
+				retArray.push(pIndex);
+			}
 		}
 	}
 	return retArray;
 }
 
 // Takes a one channel, binary image.
-camgaze.CVUtil.getContours = function (BW) {
+camgaze.CVUtil.getConnectedComponents = function (BW) {
 	var uf = new camgaze.structures.UnionFind();
+	var labelImg = new Array(BW.cols * BW.rows);
+	var maxLabel = -1;
 	for (var j = 0; j < BW.rows; j++) {
 		for (var i = 0; i < BW.cols; i++) {
+			var currentIndex = j * BW.cols + i;
+
+			// discard pixels in the background
+			if (BW.data[currentIndex] == 0) {
+				continue;
+			}
+
+			// gets the neighbouring pixels
 			var nps = camgaze.CVUtil.getPixelNeighborhood(
 				BW, 
 				i, j
 			);
-			
+
+			// gets all of the already labeled
+			// neighbours
+			var neighbors = nps.filter(
+				function (element, index, array) {
+					return labelImg[element] != undefined;
+				}
+			).map(
+				function (element) {
+					return labelImg[element];
+				}
+			);
+
+			// if none of the neighbours are labeled
+			// label the current index uniquely
+			if (neighbors.length == 0) {
+				labelImg[currentIndex] = maxLabel;
+				uf.add(maxLabel, currentIndex);
+				maxLabel--;
+			} else {
+				var minLabel = Math.max.apply(null, neighbors);
+				labelImg[currentIndex] = minLabel;
+				uf.add(uf.getLeader(minLabel), currentIndex);
+				for (var k = 0; k < neighbors.length; k++) {
+					if (
+						!(
+							uf.getLeader(neighbors[k]) != undefined &&
+							uf.getGroup(neighbors[k]) == undefined
+						)
+					) {
+						uf.add(uf.getLeader(minLabel), uf.getLeader(neighbors[k]));
+					}
+				}
+			}
 		}
 	}
+	return uf.getGroupList();
 }
 
 camgaze.CVUtil.toGrayscale = function (image_data) {
@@ -515,21 +576,3 @@ camgaze.Camera.prototype.getFrame = function () {
 		this.invisibleCanvas.height
 	);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

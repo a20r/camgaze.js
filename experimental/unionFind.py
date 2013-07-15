@@ -16,7 +16,7 @@ class DisjointSet():
                 groupa = self.group[leadera]
                 groupb = self.group[leaderb]
                 #if len(groupa) > len(groupb):
-                   #a, leadera, groupa, b, leaderb, groupb = b, leaderb, groupb, a, leadera, groupa
+                   #leadera, groupa, leaderb, groupb = leaderb, groupb, leadera, groupa
                 groupa += groupb
                 del self.group[leaderb]
                 for k in groupb:
