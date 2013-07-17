@@ -19,29 +19,120 @@
 //
 //////////////////////////////////////////////////////////////
 
+/*
 var cam = undefined;
 var contourArray;
-var gray_img;
 window.onload = function () {
-	cam = new camgaze.Camera (
-		"mainCanvas", 
-		"invisibleCanvas",
-		640, 480, 
-		1
-	);
-	setInterval(
-		function () {
-			var image_data = cam.getFrame()
-			gray_img = camgaze.CVUtil.toGrayscale(image_data);
-			var binary_img = camgaze.CVUtil.grayScaleInRange(gray_img, 12, 26);
-			contourArray = camgaze.CVUtil.getConnectedComponents(binary_img);
-			var drawingImage = cam.convertToCanvas(image_data, binary_img);
-			cam.drawFrame(drawingImage);
-			//cam.drawFrame(image_data);
-		},
-		1
-	);
+	
+	var cGaze = new camgaze.Camgaze("mainCanvas", "invisibleCanvas", 640, 480, 1);
+	var frameOp = function (image_data) {
+		var gray_img = camgaze.CVUtil.toGrayscale(image_data);
+		var binary_img = camgaze.CVUtil.grayScaleInRange(gray_img, 12, 26);
+		contourArray = camgaze.CVUtil.getConnectedComponents(binary_img);
+		var rects = camgaze.CVUtil.detectObjects(image_data, jsfeat.haar.frontalface, 1.2, 2);
+		return binary_img;
+	};
+	cGaze.setFrameOperator(frameOp);
 }
+*/
+
+$(window).load(function() {
+
+    // lets do some fun
+    var video = document.querySelector("video");
+    var canvas = document.getElementById('mainCanvas');
+    canvas.width = 640;
+    canvas.height = 480;
+    compatibility.getUserMedia({video: true}, function(stream) {
+        try {
+            video.src = compatibility.URL.createObjectURL(stream);
+        } catch (error) {
+            video.src = stream;
+        }
+        setTimeout(function() {
+                video.play();
+                demo_app();
+            
+                compatibility.requestAnimationFrame(tick);
+            }, 500);
+    }, function (error) {
+    });
+
+    var ctx,canvasWidth,canvasHeight;
+    var img_u8,work_canvas,work_ctx,ii_sum,ii_sqsum,ii_tilted,edg,ii_canny;
+    var classifier = jsfeat.haar.frontalface;
+
+    var max_work_size = 160;
+
+    function demo_app() {
+        canvasWidth  = canvas.width;
+        canvasHeight = canvas.height;
+        ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = "rgb(0,255,0)";
+        ctx.strokeStyle = "rgb(0,255,0)";
+
+        var scale = Math.min(max_work_size/video.videoWidth, max_work_size/video.videoHeight);
+        var w = (video.videoWidth*scale)|0;
+        var h = (video.videoHeight*scale)|0;
+
+        img_u8 = new jsfeat.matrix_t(w, h, jsfeat.U8_t | jsfeat.C1_t);
+        edg = new jsfeat.matrix_t(w, h, jsfeat.U8_t | jsfeat.C1_t);
+        work_canvas = document.getElementById("invisibleCanvas");
+        work_canvas.width = w;
+        work_canvas.height = h;
+        work_ctx = work_canvas.getContext('2d');
+        ii_sum = new Int32Array((w+1)*(h+1));
+        ii_sqsum = new Int32Array((w+1)*(h+1));
+        ii_tilted = new Int32Array((w+1)*(h+1));
+    }
+
+    function tick() {
+        compatibility.requestAnimationFrame(tick);
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+
+            ctx.drawImage(video, 0, 0, canvasWidth, canvasHeight);
+
+            work_ctx.drawImage(video, 0, 0, work_canvas.width, work_canvas.height);
+            var imageData = work_ctx.getImageData(0, 0, work_canvas.width, work_canvas.height);
+            
+            jsfeat.imgproc.grayscale(imageData.data, img_u8.data);
+
+            jsfeat.imgproc.equalize_histogram(img_u8, img_u8);
+            //jsfeat.imgproc.gaussian_blur(img_u8, img_u8, 3);
+
+            jsfeat.imgproc.compute_integral_image(img_u8, ii_sum, ii_sqsum, classifier.tilted ? ii_tilted : null);
+
+            jsfeat.haar.edges_density = 0.13;
+            var rects = jsfeat.haar.detect_multi_scale(ii_sum, ii_sqsum, ii_tilted, null, img_u8.cols, img_u8.rows, classifier, 1.2, 2);
+            rects = jsfeat.haar.group_rectangles(rects, 1);
+
+
+            // draw only most confident one
+            draw_faces(ctx, rects, canvasWidth/img_u8.cols, 1);
+        }
+    }
+
+    function draw_faces(ctx, rects, sc, max) {
+        var on = rects.length;
+        if(on && max) {
+            jsfeat.math.qsort(rects, 0, on-1, function(a,b){return (b.confidence<a.confidence);})
+        }
+        var n = max || on;
+        n = Math.min(n, on);
+        var r;
+        for(var i = 0; i < n; ++i) {
+            r = rects[i];
+            ctx.strokeRect((r.x*sc)|0,(r.y*sc)|0,(r.width*sc)|0,(r.height*sc)|0);
+        }
+    }
+
+    $(window).unload(function() {
+        video.pause();
+        video.src=null;
+    });
+});
+        
 
 //////////////////////////////////////////////////////////////
 //
@@ -54,6 +145,42 @@ camgaze.structures = {};
 camgaze.CVUtil = {};
 
 //////////////////////////////////////////////////////////////
+//
+// Global API for camgaze
+//
+//////////////////////////////////////////////////////////////
+
+camgaze.Camgaze = function (mCanvasId, iCanvasId, xSize, ySize) {
+	this.canvas = document.getElementById(mCanvasId);
+	this.invisibleCanvas = document.getElementById(iCanvasId);
+	this.xSize = xSize;
+	this.ySize = ySize;
+	this.cam = new camgaze.Camera (
+		mCanvasId, 
+		iCanvasId,
+		xSize, ySize
+	);
+}
+
+// this is a very important function. 
+camgaze.Camgaze.prototype.setFrameOperator = function (callback) {
+	var self = this;
+	var frameOp = function () {
+		compatibility.requestAnimationFrame(frameOp);
+		if (self.cam.videoReady()) {
+			var frame = self.cam.getFrame();
+			var img = callback(frame);
+			var canvasImg = self.cam.convertToCanvas(frame, img);
+			self.cam.drawFrame(canvasImg);
+		}
+	};
+
+	compatibility.requestAnimationFrame(frameOp);
+}
+
+//////////////////////////////////////////////////////////////
+//
+// UnionFind
 //
 // UnionFind data structure used to store neighbor 
 // equivalence when dealing with connected components
@@ -84,8 +211,8 @@ camgaze.structures.UnionFind.prototype = {
 				if (leadera == leaderb)  {
 					return;
 				}
-				var groupa = this.group[leadera];
-				var groupb = this.group[leaderb];
+				var groupa = this.group[this.leader[leadera]];
+				var groupb = this.group[this.leader[leaderb]];
 				this.leader[b] = leadera;
 
 				$.merge(groupa, groupb);
@@ -97,7 +224,11 @@ camgaze.structures.UnionFind.prototype = {
 				//if (this.group[leadera] == undefined) {
 					//this.group[leadera] = new Array();
 				//}
-				this.group[leadera].push(b);
+				if (this.group[leadera] == undefined) {
+					this.group[this.leader[leadera]].push(b);
+				} else {
+					this.group[leadera].push(b);
+				}
 				this.leader[b] = leadera;
 			}
 		} else {
@@ -109,7 +240,7 @@ camgaze.structures.UnionFind.prototype = {
 				this.leader[a] = leaderb;
 			} else {
 				this.leader[a] = this.leader[b] = a;
-				this.group[a] = [a, b];	
+				this.group[a] = [b];	
 			}
 		}
 	},
@@ -140,6 +271,8 @@ camgaze.structures.UnionFind.prototype = {
 }
 
 //////////////////////////////////////////////////////////////
+//
+// Point
 //
 // Object used to represent a point. Used throughout the 
 // project. 
@@ -191,6 +324,8 @@ camgaze.structures.Point.prototype = {
 
 //////////////////////////////////////////////////////////////
 //
+// Blob
+//
 // Object used to represent a blob. Holds information 
 // relative to a binary blob such as the contour and the
 // centroid
@@ -199,18 +334,13 @@ camgaze.structures.Point.prototype = {
 
 camgaze.structures.Blob = function (centroid, contour, contourArea) {
 	this.centroid = centroid
-	this.convexHull = convexHull
 	this.contour = contour
-	this.convexHullArea = convexHullArea
 	this.contourArea = contourArea
 }
 
 camgaze.structures.Blob.prototype = {
 	getCentroid : function () {
-		return new camgaze.structures.Point(
-			this.centroid[0], 
-			this.centroid[1]
-		)
+		return this.centroid;
 	},
 
 	getContour : function () {
@@ -224,13 +354,71 @@ camgaze.structures.Blob.prototype = {
 
 //////////////////////////////////////////////////////////////
 //
+// CVUtil
+//
 // This namespace is reserved for image processing functions
 // that I could not find implemented elsewhere
 //
 //////////////////////////////////////////////////////////////
 
-camgaze.CVUtil.getMoments = function (contour) {
+camgaze.CVUtil.detectObjects = function (img, classifier, scaleFactor, minScale) {
 
+	jsfeat.haar.edges_density = 0.13;
+	var grayImage = camgaze.CVUtil.toGrayscale(img);
+
+	var w = img.cols + 1;
+	var h = img.rows + 1;
+	var iiSum = new Int32Array(w * h);
+	var iiSqsum = new Int32Array(w * h);
+	var iiTilted = new Int32Array(w * h);
+
+	jsfeat.imgproc.equalize_histogram(grayImage, grayImage);
+	jsfeat.imgproc.compute_integral_image(
+		grayImage,
+		iiSum,
+		iiSqsum,
+		classifier.tilted ? iiTitled : null
+	);
+	
+	var rects = jsfeat.haar.detect_multi_scale(
+		iiSum, 
+		iiSqsum, 
+		iiTilted, 
+		null, // for useCanny
+		grayImage.cols,
+		grayImage.rows,
+		classifier,
+		scaleFactor,
+		minScale
+	);
+	return jsfeat.haar.group_rectangles(rects, 1);
+	
+}
+
+camgaze.CVUtil.getMoments = function (contourArray, sizeX, sizeThresh) {
+	var blobArray = new Array();
+	for (var i = 0; i < contourArray.length; i++) {
+		var m00 = contourArray[i].length; // area
+		if (m00 > sizeThresh) {
+			var m10 = 0;
+			var m01 = 0;
+			for (var j = 0; j < m00; j++) {
+				m10 += (contourArray[i][j] % sizeX);
+				m01 += Math.floor(contourArray[i][j] / sizeX);
+			}
+			blobArray.push(
+				new camgaze.structures.Blob(
+					new camgaze.structures.Point(
+						(m10 / m00).toFixed(0),
+						(m01 / m00).toFixed(0)
+					),
+					contourArray[i],
+					m00
+				)
+			);
+		}
+	}
+	return blobArray;
 }
 
 camgaze.CVUtil.getPixelNeighborhood = function (img, i, j) {
@@ -255,7 +443,7 @@ camgaze.CVUtil.getPixelNeighborhood = function (img, i, j) {
 // Takes a one channel, binary image.
 camgaze.CVUtil.getConnectedComponents = function (BW) {
 	var uf = new camgaze.structures.UnionFind();
-	var labelImg = new Array(BW.cols * BW.rows);
+	var labelImg = jsfeat.cache.get_buffer(BW.cols * BW.rows); //new Array(BW.cols * BW.rows);
 	var maxLabel = -1;
 	for (var j = 0; j < BW.rows; j++) {
 		for (var i = 0; i < BW.cols; i++) {
@@ -276,24 +464,30 @@ camgaze.CVUtil.getConnectedComponents = function (BW) {
 			// neighbours
 			var neighbors = nps.filter(
 				function (element, index, array) {
-					return labelImg[element] != undefined;
+					return labelImg.data[element] != undefined;
 				}
 			).map(
 				function (element) {
-					return labelImg[element];
+					return labelImg.data[element];
 				}
 			);
 
 			// if none of the neighbours are labeled
 			// label the current index uniquely
 			if (neighbors.length == 0) {
-				labelImg[currentIndex] = maxLabel;
-				uf.add(maxLabel, currentIndex);
+				labelImg.data[currentIndex] = maxLabel;
+				uf.add(
+					maxLabel, 
+					currentIndex
+				);
 				maxLabel--;
 			} else {
 				var minLabel = Math.max.apply(null, neighbors);
-				labelImg[currentIndex] = minLabel;
-				uf.add(uf.getLeader(minLabel), currentIndex);
+				labelImg.data[currentIndex] = minLabel;
+				uf.add(
+					uf.getLeader(minLabel), 
+					currentIndex
+				);
 				for (var k = 0; k < neighbors.length; k++) {
 					if (
 						!(
@@ -307,7 +501,12 @@ camgaze.CVUtil.getConnectedComponents = function (BW) {
 			}
 		}
 	}
-	return uf.getGroupList();
+	jsfeat.cache.put_buffer(labelImg);
+	return camgaze.CVUtil.getMoments(
+		uf.getGroupList(),
+		BW.cols,
+		30
+	);
 }
 
 camgaze.CVUtil.toGrayscale = function (image_data) {
@@ -346,6 +545,8 @@ camgaze.CVUtil.grayScaleInRange = function (grayImage, minColor, maxColor) {
 }
 
 //////////////////////////////////////////////////////////////
+//
+// MovingAveragePoints
 //
 // Implementation of a dynamic, moving average list. Elements 
 // are pushed to the list, but the list remains the same size 
@@ -461,6 +662,8 @@ camgaze.MovingAveragePoints.prototype.getLastCompoundedResult = function () {
 }
 
 //////////////////////////////////////////////////////////////
+// 
+// Camera
 //
 // Class used to get the raw image from the camera. It parses
 // the camera stream into a canvas and returns the ImageData
@@ -468,7 +671,7 @@ camgaze.MovingAveragePoints.prototype.getLastCompoundedResult = function () {
 //
 //////////////////////////////////////////////////////////////
 
-camgaze.Camera = function (canvasId, invisibleCanvasId, dimX, dimY, frameWaitTime) {
+camgaze.Camera = function (canvasId, invisibleCanvasId, dimX, dimY) {
 	this.canvas = document.getElementById(canvasId);
 	this.canvas.width = dimX;
 	this.canvas.height = dimY;
@@ -478,10 +681,13 @@ camgaze.Camera = function (canvasId, invisibleCanvasId, dimX, dimY, frameWaitTim
 	);
 	this.invisibleCanvas.width = dimX;
 	this.invisibleCanvas.height = dimY;
-	this.frameWaitTime = frameWaitTime;
 
 	this.context = this.canvas.getContext('2d');
 	this.invisibleContext = this.invisibleCanvas.getContext('2d');
+
+	this.video = document.querySelector(
+	  'video'
+	);
 
 	this.videoInterval = undefined
 
@@ -495,6 +701,10 @@ camgaze.Camera = function (canvasId, invisibleCanvasId, dimX, dimY, frameWaitTim
 	    	this.videoFail
 	  	)
 	}
+}
+
+camgaze.Camera.prototype.videoReady = function () {
+	return this.video.readyState == this.video.HAVE_ENOUGH_DATA;
 }
 
 // draws the unaugmented frame onto the invisible
@@ -513,25 +723,14 @@ camgaze.Camera.prototype.draw = function (video) {
 // automatically called once from the getUserMedia
 camgaze.Camera.prototype.showFrame = function (self) {
 	return function (localMediaStream) {
-		var video = document.querySelector(
-		  'video'
-		);
-
-		video.src = window.URL.createObjectURL(
+		self.video.src = window.URL.createObjectURL(
 			localMediaStream
-		);
-
-		self.videoInterval = setInterval(
-			function () {
-				self.draw(video);
-			}, 
-			self.frameWaitTime
 		);
 	}
 }
 
 camgaze.Camera.prototype.videoFail = function (e) {
-	console.log("ERROR:\t", e);
+	console.log("VIDEO ERROR:\t", e);
 }
 
 camgaze.Camera.prototype.pauseStreaming = function () {
@@ -569,6 +768,13 @@ camgaze.Camera.prototype.convertToCanvas = function (imageData, jsFeatData) {
 }
 
 camgaze.Camera.prototype.getFrame = function () {
+	this.invisibleContext.drawImage(
+		this.video,
+		0,
+		0,
+		this.invisibleCanvas.width,
+		this.invisibleCanvas.height
+	);
 	return this.invisibleContext.getImageData(
 		0, 
 		0, 
@@ -576,3 +782,4 @@ camgaze.Camera.prototype.getFrame = function () {
 		this.invisibleCanvas.height
 	);
 }
+
