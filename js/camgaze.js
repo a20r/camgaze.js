@@ -13,7 +13,7 @@
 //
 //////////////////////////////////////////////////////////////     
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * /
 
 //////////////////////////////////////////////////////////////
 //
@@ -50,7 +50,18 @@ camgaze.Camgaze = function (mCanvasId, iCanvasId, xSize, ySize) {
 	happens. The structure of the callback function
 	needs to be as follows. 
 
-	function callback (image_data : ImageData, video : video)
+	function callback (
+		image_data : ImageData {
+			width,
+			height,
+			data ==> [r, g, b, a, ....]
+		}, 
+		video : video {
+			src,
+			videoHeight,
+			videoWidth
+		}
+	) --> returns : ImageData ==> image to be displayed
 
 	The return value of the callback function should be the 
 	ImageData that the user wants to be displayed on the canvas
@@ -617,6 +628,29 @@ camgaze.MovingAveragePoints.prototype.getLastCompoundedResult = function () {
 
 //////////////////////////////////////////////////////////////
 // 
+// TrackingData
+//
+// A class that holds the global tracking statistics such as
+// the list of eyes and the image associated with it.
+//
+//////////////////////////////////////////////////////////////
+
+// IMPLEMENT...
+
+//////////////////////////////////////////////////////////////
+// 
+// EyeData
+//
+// Class used to hold data about the eye such as the pupil, 
+// the bounding Haar rectangle, the unique id, and the max
+// and minimum thresholding colors
+//
+//////////////////////////////////////////////////////////////
+
+// IMPLEMENT...
+
+//////////////////////////////////////////////////////////////
+// 
 // Camera
 //
 // Class used to get the raw image from the camera. It parses
@@ -643,11 +677,9 @@ camgaze.Camera = function (canvasId, invisibleCanvasId, dimX, dimY) {
 	  'video'
 	);
 
-	this.videoInterval = undefined
-
 	var self = this;
-	if (navigator.webkitGetUserMedia) {
-		navigator.webkitGetUserMedia(
+	if (compatibility.getUserMedia) {
+		compatibility.getUserMedia(
 			{
 	    		video : true
 	    	},
@@ -688,7 +720,11 @@ camgaze.Camera.prototype.videoFail = function (e) {
 }
 
 camgaze.Camera.prototype.pauseStreaming = function () {
-	clearInterval(this.videoInterval);
+	this.video.pause();
+}
+
+camgaze.Camera.prototype.playStreaming = function () {
+	this.video.play();
 }
 
 // draws frame onto visible canvas
