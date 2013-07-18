@@ -9,130 +9,11 @@
 //
 // name : Alex Wallar
 // email : aw204@st-andrews.ac.uk
+// github : http://github.com/wallarelvo
 //
-//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////     
 
-//////////////////////////////////////////////////////////////
-//
-// Code to test if the API is working. Not unit tests but
-// interval tests to see if new components work as expected
-//
-//////////////////////////////////////////////////////////////
-
-/*
-var cam = undefined;
-var contourArray;
-window.onload = function () {
-	
-	var cGaze = new camgaze.Camgaze("mainCanvas", "invisibleCanvas", 640, 480, 1);
-	var frameOp = function (image_data) {
-		var gray_img = camgaze.CVUtil.toGrayscale(image_data);
-		var binary_img = camgaze.CVUtil.grayScaleInRange(gray_img, 12, 26);
-		contourArray = camgaze.CVUtil.getConnectedComponents(binary_img);
-		var rects = camgaze.CVUtil.detectObjects(image_data, jsfeat.haar.frontalface, 1.2, 2);
-		return binary_img;
-	};
-	cGaze.setFrameOperator(frameOp);
-}
-*/
-
-$(window).load(function() {
-
-    // lets do some fun
-    var video = document.querySelector("video");
-    var canvas = document.getElementById('mainCanvas');
-    canvas.width = 640;
-    canvas.height = 480;
-    compatibility.getUserMedia({video: true}, function(stream) {
-        try {
-            video.src = compatibility.URL.createObjectURL(stream);
-        } catch (error) {
-            video.src = stream;
-        }
-        setTimeout(function() {
-                video.play();
-                demo_app();
-            
-                compatibility.requestAnimationFrame(tick);
-            }, 500);
-    }, function (error) {
-    });
-
-    var ctx,canvasWidth,canvasHeight;
-    var img_u8,work_canvas,work_ctx,ii_sum,ii_sqsum,ii_tilted,edg,ii_canny;
-    var classifier = jsfeat.haar.frontalface;
-
-    var max_work_size = 160;
-
-    function demo_app() {
-        canvasWidth  = canvas.width;
-        canvasHeight = canvas.height;
-        ctx = canvas.getContext('2d');
-
-        ctx.fillStyle = "rgb(0,255,0)";
-        ctx.strokeStyle = "rgb(0,255,0)";
-
-        var scale = Math.min(max_work_size/video.videoWidth, max_work_size/video.videoHeight);
-        var w = (video.videoWidth*scale)|0;
-        var h = (video.videoHeight*scale)|0;
-
-        img_u8 = new jsfeat.matrix_t(w, h, jsfeat.U8_t | jsfeat.C1_t);
-        edg = new jsfeat.matrix_t(w, h, jsfeat.U8_t | jsfeat.C1_t);
-        work_canvas = document.getElementById("invisibleCanvas");
-        work_canvas.width = w;
-        work_canvas.height = h;
-        work_ctx = work_canvas.getContext('2d');
-        ii_sum = new Int32Array((w+1)*(h+1));
-        ii_sqsum = new Int32Array((w+1)*(h+1));
-        ii_tilted = new Int32Array((w+1)*(h+1));
-    }
-
-    function tick() {
-        compatibility.requestAnimationFrame(tick);
-        if (video.readyState === video.HAVE_ENOUGH_DATA) {
-
-            ctx.drawImage(video, 0, 0, canvasWidth, canvasHeight);
-
-            work_ctx.drawImage(video, 0, 0, work_canvas.width, work_canvas.height);
-            var imageData = work_ctx.getImageData(0, 0, work_canvas.width, work_canvas.height);
-            
-            jsfeat.imgproc.grayscale(imageData.data, img_u8.data);
-
-            jsfeat.imgproc.equalize_histogram(img_u8, img_u8);
-            //jsfeat.imgproc.gaussian_blur(img_u8, img_u8, 3);
-
-            jsfeat.imgproc.compute_integral_image(img_u8, ii_sum, ii_sqsum, classifier.tilted ? ii_tilted : null);
-
-            jsfeat.haar.edges_density = 0.13;
-            var rects = jsfeat.haar.detect_multi_scale(ii_sum, ii_sqsum, ii_tilted, null, img_u8.cols, img_u8.rows, classifier, 1.2, 2);
-            rects = jsfeat.haar.group_rectangles(rects, 1);
-
-
-            // draw only most confident one
-            draw_faces(ctx, rects, canvasWidth/img_u8.cols, 1);
-        }
-    }
-
-    function draw_faces(ctx, rects, sc, max) {
-        var on = rects.length;
-        if(on && max) {
-            jsfeat.math.qsort(rects, 0, on-1, function(a,b){return (b.confidence<a.confidence);})
-        }
-        var n = max || on;
-        n = Math.min(n, on);
-        var r;
-        for(var i = 0; i < n; ++i) {
-            r = rects[i];
-            ctx.strokeRect((r.x*sc)|0,(r.y*sc)|0,(r.width*sc)|0,(r.height*sc)|0);
-        }
-    }
-
-    $(window).unload(function() {
-        video.pause();
-        video.src=null;
-    });
-});
-        
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 //////////////////////////////////////////////////////////////
 //
@@ -160,16 +41,27 @@ camgaze.Camgaze = function (mCanvasId, iCanvasId, xSize, ySize) {
 		iCanvasId,
 		xSize, ySize
 	);
+	this.video = document.querySelector("video");
 }
 
-// this is a very important function. 
+/*
+	Constructs the main loop of the program. The user
+	sets the callback function where all of the processing
+	happens. The structure of the callback function
+	needs to be as follows. 
+
+	function callback (image_data : ImageData, video : video)
+
+	The return value of the callback function should be the 
+	ImageData that the user wants to be displayed on the canvas
+*/
 camgaze.Camgaze.prototype.setFrameOperator = function (callback) {
 	var self = this;
 	var frameOp = function () {
 		compatibility.requestAnimationFrame(frameOp);
 		if (self.cam.videoReady()) {
 			var frame = self.cam.getFrame();
-			var img = callback(frame);
+			var img = callback(frame, self.video);
 			var canvasImg = self.cam.convertToCanvas(frame, img);
 			self.cam.drawFrame(canvasImg);
 		}
@@ -354,46 +246,90 @@ camgaze.structures.Blob.prototype = {
 
 //////////////////////////////////////////////////////////////
 //
+// HaarDetector
+//
+// This is a class for detecting Haar like objects using
+// a trained Haar classifier written in Javascript.
+//
+//////////////////////////////////////////////////////////////
+
+camgaze.CVUtil.HaarDetector = function (classifier, imageWidth, imageHeight) {
+	
+	this.classifier = classifier;
+
+	var max_work_size = 160;
+	var scale = Math.min(
+		max_work_size / imageWidth, 
+		max_work_size / imageHeight
+	);
+	w = (imageWidth * scale) | 0;
+	h = (imageHeight * scale) | 0;
+
+	// this canvas is needed for the resizing of the image
+	// i.e. the HTML5 developers got lazy
+	var work_canvas = document.createElement("canvas");
+	work_canvas.width = w;
+	work_canvas.height = h;
+	this.ctx = work_canvas.getContext("2d");
+
+
+	this.img_u8 = new jsfeat.matrix_t(w, h, jsfeat.U8_t | jsfeat.C1_t);
+	this.ii_sum = new Int32Array((w + 1) * (h + 1));
+	this.ii_sqsum = new Int32Array((w + 1) * (h + 1));
+	this.ii_tilted = new Int32Array((w + 1) * (h + 1));
+	this.w = w;
+	this.h = h;
+}
+
+// detects objects based on the classifier
+camgaze.CVUtil.HaarDetector.prototype = {
+	detectObjects : function (video, scaleFactor, minScale) {
+		this.ctx.drawImage(video, 0, 0, this.w, this.h);
+		var imageData = this.ctx.getImageData(0, 0, this.w, this.h);
+
+		jsfeat.imgproc.grayscale(imageData.data, this.img_u8.data);
+		jsfeat.imgproc.equalize_histogram(this.img_u8, this.img_u8);
+		//jsfeat.imgproc.gaussian_blur(img_u8, img_u8, 3);
+
+		// gets the integral image
+		jsfeat.imgproc.compute_integral_image(
+			this.img_u8, 
+			this.ii_sum, 
+			this.ii_sqsum, 
+			this.classifier.tilted ? ii_tilted : null
+		);
+
+		jsfeat.haar.edges_density = 0.13;
+
+		// finally detects the objects
+		rects = jsfeat.haar.detect_multi_scale(
+			this.ii_sum, 
+			this.ii_sqsum, 
+			this.ii_tilted, 
+			null, 
+			this.img_u8.cols, 
+			this.img_u8.rows, 
+			this.classifier, 
+			scaleFactor, 
+			minScale
+		);
+		rects = jsfeat.haar.group_rectangles(rects, 1);
+		return rects;
+	},
+
+	scaleRectangles : function (rects, sc) {
+		
+	}
+}
+
+//////////////////////////////////////////////////////////////
+//
 // CVUtil
 //
 // This namespace is reserved for image processing functions
 // that I could not find implemented elsewhere
 //
 //////////////////////////////////////////////////////////////
-
-camgaze.CVUtil.detectObjects = function (img, classifier, scaleFactor, minScale) {
-
-	jsfeat.haar.edges_density = 0.13;
-	var grayImage = camgaze.CVUtil.toGrayscale(img);
-
-	var w = img.cols + 1;
-	var h = img.rows + 1;
-	var iiSum = new Int32Array(w * h);
-	var iiSqsum = new Int32Array(w * h);
-	var iiTilted = new Int32Array(w * h);
-
-	jsfeat.imgproc.equalize_histogram(grayImage, grayImage);
-	jsfeat.imgproc.compute_integral_image(
-		grayImage,
-		iiSum,
-		iiSqsum,
-		classifier.tilted ? iiTitled : null
-	);
-	
-	var rects = jsfeat.haar.detect_multi_scale(
-		iiSum, 
-		iiSqsum, 
-		iiTilted, 
-		null, // for useCanny
-		grayImage.cols,
-		grayImage.rows,
-		classifier,
-		scaleFactor,
-		minScale
-	);
-	return jsfeat.haar.group_rectangles(rects, 1);
-	
-}
 
 camgaze.CVUtil.getMoments = function (contourArray, sizeX, sizeThresh) {
 	var blobArray = new Array();
@@ -443,7 +379,7 @@ camgaze.CVUtil.getPixelNeighborhood = function (img, i, j) {
 // Takes a one channel, binary image.
 camgaze.CVUtil.getConnectedComponents = function (BW) {
 	var uf = new camgaze.structures.UnionFind();
-	var labelImg = jsfeat.cache.get_buffer(BW.cols * BW.rows); //new Array(BW.cols * BW.rows);
+	var labelImg = jsfeat.cache.get_buffer(BW.cols * BW.rows);
 	var maxLabel = -1;
 	for (var j = 0; j < BW.rows; j++) {
 		for (var i = 0; i < BW.cols; i++) {
