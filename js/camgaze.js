@@ -257,6 +257,77 @@ camgaze.structures.Blob.prototype = {
 
 //////////////////////////////////////////////////////////////
 //
+// Set
+//
+// A simple set structure that only has unique objects. This
+// means that the structure does not contain duplicates. 
+// Duplicates are weeded out by passing a function into the 
+// constructor that returns the unique hash of the object.
+//
+// hashFunc structuring:
+// function hashFunc(obj : Object) --> String
+//
+//////////////////////////////////////////////////////////////
+
+camgaze.structures.Set = function (hashFunc, arrayToConvert) {
+	if (arrayToConvert != undefined) {
+		var set = new Object();
+		arrayToConvert.forEach(
+			function (val) {
+				if (!(hashFunc(val) in set)) {
+					set[hashFunc(val)] = val;
+				}
+			}
+		);
+		this.set = set;
+		this.hashFunc = hashFunc;
+	} else {
+		this.set = new Object();
+		this.hashFunc = hashFunc;
+	}
+}
+
+camgaze.structures.Set.prototype = {
+
+	// puts a value into the set, if
+	// the value is already there, it 
+	// does not update the value.
+	put : function (val) {
+		if (!(this.hashFunc(val) in this.set)) {
+			this.set[this.hashFunc(val)] = val;
+		}
+		return this;
+	},
+
+	// updates the value inside the set. 
+	// If the value is not in the set,
+	// it puts it into the set.
+	update : function (val) {
+		this.set[this.hashFunc(val)] = val;
+	},
+
+	// gets a value from the set
+	get : function (hashVal) {
+		return this.set[hashVal];
+	},
+
+	// gets the set difference. For the 
+	// return set, the hash function used
+	// is the the one from the set you are
+	// calling difference from
+	difference : function (otherSet) {
+		var retSet = new camgaze.structures.Set(this.hashFunc);
+		for (var key in this.set) {
+			if (!(key in otherSet.set)) {
+				retSet.update(this.set[key]);
+			}
+		}
+		return retSet;
+	}
+}
+
+//////////////////////////////////////////////////////////////
+//
 // Rectangle
 //
 // Simple implementation of a rectangle structure which has 
@@ -654,7 +725,44 @@ camgaze.MovingAveragePoints.prototype.getLastCompoundedResult = function () {
 //
 //////////////////////////////////////////////////////////////
 
-// IMPLEMENT...
+camgaze.TrackingData = function () {
+	this.image = undefined;
+	this.eyeList = new Array();
+	this.idMap = new Object();
+}
+
+camgaze.TrackingData.prototype = {
+
+	assignIds : function (prevEyes) {
+		// implement this shit bro
+	}
+
+	pushEye : function (eye) {
+		this.eyeList.push(eye);
+		return this;
+	},
+
+	setImage : function (image) {
+		this.image = image;
+		return this;
+	},
+
+	getImage : function () {
+		return this.image;
+	},
+
+	getEye : function (index) {
+		return this.eyeList[index];
+	},
+
+	getEyeList : function () {
+		return this.eyeList;
+	},
+
+	getLength : function () {
+		return this.eyeList.length;
+	}
+}
 
 //////////////////////////////////////////////////////////////
 // 
@@ -671,12 +779,8 @@ camgaze.EyeData = function (xScaledSize, yScaledSize) {
 	this.yScaledSize = yScaledSize;
 	this.haarRectangle = undefined;
 	this.pupil = undefined;
-	this.centroidImage = undefined;
-	this.colorImage = undefined;
 	this.image = undefined;
 	this.uId = undefined;
-	this.trackingImage = undefined;
-	this.faceRect = undefined;
 	this.maxColor = undefined;
 	this.minColor = undefined;
 }
@@ -699,6 +803,7 @@ camgaze.EyeData.prototype = {
 		return this;
 	},
 
+	// rect is a Rectangle object
 	setHaarRectangle : function (rect) {
 		this.rect = rect
 		return this;
@@ -767,7 +872,7 @@ camgaze.EyeData.prototype = {
 		var cVecs = this.getCornerVectors();
 		var resVec = new camgaze.structures.Point(0, 0);
 		for (var k in cVecs) {
-			resVecs = resVecs.add(cVecs.k);
+			resVecs = resVecs.add(cVecs[k]);
 		}
 		return resVec;
 	},
