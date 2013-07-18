@@ -17,7 +17,7 @@ window.onload = function () {
 	var frameOp = function (image_data, video) {
 		var gray_img = camgaze.CVUtil.toGrayscale(image_data);
 		var binary_img = camgaze.CVUtil.grayScaleInRange(gray_img, 12, 26);
-		contourArray = camgaze.CVUtil.getConnectedComponents(binary_img);
+		contourArray = camgaze.CVUtil.getConnectedComponents(binary_img, 200);
 		//rects = haar.detectObjects(video, 1.8, 2);
 		return binary_img;
 	};

@@ -257,6 +257,23 @@ camgaze.structures.Blob.prototype = {
 
 //////////////////////////////////////////////////////////////
 //
+// Rectangle
+//
+// Simple implementation of a rectangle structure which has 
+// data about top left x and y value as well as the width and
+// height.
+//
+//////////////////////////////////////////////////////////////
+
+camgaze.structures.Rectangle = function (x, y, w, h) {
+	this.x = x;
+	this.y = y;
+	this.w = w;
+	this.h = h;
+}
+
+//////////////////////////////////////////////////////////////
+//
 // HaarDetector
 //
 // This is a class for detecting Haar like objects using
@@ -336,6 +353,7 @@ camgaze.CVUtil.HaarDetector.prototype = {
 		);
 	},
 
+	// scales the rectangles back up 
 	scaleRectangles : function (rects, sc) {
 		var rectArray = new Array(rects.length);
 		for (var i = 0; i < rects.length; i++) {
@@ -360,6 +378,7 @@ camgaze.CVUtil.HaarDetector.prototype = {
 //
 //////////////////////////////////////////////////////////////
 
+// aquires the image moments
 camgaze.CVUtil.getMoments = function (contourArray, sizeX, sizeThresh) {
 	var blobArray = new Array();
 	for (var i = 0; i < contourArray.length; i++) {
@@ -406,7 +425,7 @@ camgaze.CVUtil.getPixelNeighborhood = function (img, i, j) {
 }
 
 // Takes a one channel, binary image.
-camgaze.CVUtil.getConnectedComponents = function (BW) {
+camgaze.CVUtil.getConnectedComponents = function (BW, sizeThreshold) {
 	var uf = new camgaze.structures.UnionFind();
 	var labelImg = jsfeat.cache.get_buffer(BW.cols * BW.rows);
 	var maxLabel = -1;
@@ -470,7 +489,7 @@ camgaze.CVUtil.getConnectedComponents = function (BW) {
 	return camgaze.CVUtil.getMoments(
 		uf.getGroupList(),
 		BW.cols,
-		30
+		sizeThreshold
 	);
 }
 
@@ -647,7 +666,142 @@ camgaze.MovingAveragePoints.prototype.getLastCompoundedResult = function () {
 //
 //////////////////////////////////////////////////////////////
 
-// IMPLEMENT...
+camgaze.EyeData = function (xScaledSize, yScaledSize) {
+	this.xScaledSize = xScaledSize;
+	this.yScaledSize = yScaledSize;
+	this.haarRectangle = undefined;
+	this.pupil = undefined;
+	this.centroidImage = undefined;
+	this.colorImage = undefined;
+	this.image = undefined;
+	this.uId = undefined;
+	this.trackingImage = undefined;
+	this.faceRect = undefined;
+	this.maxColor = undefined;
+	this.minColor = undefined;
+}
+
+camgaze.EyeData.prototype = {
+	setId : function (id) {
+		this.uId = id;
+		return this;
+	},
+
+	// pupil is a blob object
+	setPupil : function (nPupil) {
+		this.pupil = nPupil;
+		return this;
+	},
+
+	// image is an ImageData
+	setImage : function (image) {
+		this.image = image;
+		return this;
+	},
+
+	setHaarRectangle : function (rect) {
+		this.rect = rect
+		return this;
+	},
+
+	setMaxMinColor : function (maxColor, minColor) {
+		this.maxColor = maxColor;
+		this.minColor = minColor;
+		return this;
+	},
+
+	getCornerDistances : function () {
+		var pb = this.pupil;
+		return {
+			topLeft : pb.getCentroid().distTo(
+				{
+					x : this.haarRectangle.x,
+					y : this.haarRectangle.y
+				}
+			),
+			topRight : pb.getCentroid().distTo(
+				{
+					x : this.haarRectangle.x + this.haarRectangle.w,
+					y : this.haarRectangle.y
+				}
+			),
+			bottomLeft : pb.getCentroid().distTo(
+				{
+					x : this.haarRectangle.x,
+					y : this.haarRectangle.y + this.haarRectangle.h
+				}
+			),
+			bottomRight : pb.getCentroid().distTo(
+				{
+					x : this.haarRectangle.x + this.haarRectangle.w,
+					y : this.haarRectangle.y + this.haarRectangle.h
+				}
+			)
+		}
+	},
+
+	getCornerVectors : function () {
+		var pb = this.pupil;
+		var centroid = pb.getCentroid();
+		return {
+			topLeft : new camgaze.structures.Point(
+				centroid.x,
+				centroid.y
+			),
+			topRight : new camgaze.structures.Point(
+				centroid.x - this.xScaledSize,
+				centroid.y
+			),
+			bottomLeft : new camgaze.structures.Point(
+				centroid.x,
+				centroid.y - this.yScaledSize
+			),
+			bottomRight : new camgaze.structures.Point(
+				centroid.x - this.xScaledSize,
+				centroid.y - this.yScaledSize
+			)
+		}
+	}, 
+
+	getResultantVector : function () {
+		var cVecs = this.getCornerVectors();
+		var resVec = new camgaze.structures.Point(0, 0);
+		for (var k in cVecs) {
+			resVecs = resVecs.add(cVecs.k);
+		}
+		return resVec;
+	},
+
+	getMaxMinColors : function () {
+		return new camgaze.structures.Point(
+			this.maxColor, 
+			this.minColor
+		);
+	},
+
+	getHaarCentroid : function () {
+		return new camgaze.structures.Point(
+			this.haarRectangle.x + this.haarRectangle.w / 2,
+			this.haarRectangle.y + this.haarRectangle.h / 2
+		);
+	},
+
+	getId : function () {
+		return this.uId;
+	},
+
+	getHaarRectangle : function () {
+		return this.haarRectangle;
+	},
+
+	getPupil : function () {
+		return this.pupil;
+	},
+
+	getImage : function () {
+		return this.image;
+	}
+}
 
 //////////////////////////////////////////////////////////////
 // 
