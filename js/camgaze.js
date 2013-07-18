@@ -262,6 +262,10 @@ camgaze.CVUtil.HaarDetector = function (classifier, imageWidth, imageHeight) {
 		max_work_size / imageWidth, 
 		max_work_size / imageHeight
 	);
+
+	this.imageWidth = imageWidth;
+	this.imageHeight = imageHeight;
+
 	w = (imageWidth * scale) | 0;
 	h = (imageHeight * scale) | 0;
 
@@ -284,6 +288,7 @@ camgaze.CVUtil.HaarDetector = function (classifier, imageWidth, imageHeight) {
 // detects objects based on the classifier
 camgaze.CVUtil.HaarDetector.prototype = {
 	detectObjects : function (video, scaleFactor, minScale) {
+		"use strict";
 		this.ctx.drawImage(video, 0, 0, this.w, this.h);
 		var imageData = this.ctx.getImageData(0, 0, this.w, this.h);
 
@@ -314,11 +319,24 @@ camgaze.CVUtil.HaarDetector.prototype = {
 			minScale
 		);
 		rects = jsfeat.haar.group_rectangles(rects, 1);
-		return rects;
+		return this.scaleRectangles(
+			rects, 
+			this.imageWidth / this.img_u8.cols
+		);
 	},
 
 	scaleRectangles : function (rects, sc) {
-		
+		var rectArray = new Array(rects.length);
+		for (var i = 0; i < rects.length; i++) {
+			rectArray[i] = {
+				x: sc * rects[i].x,
+				y: sc * rects[i].y,
+				width: sc * rects[i].width,
+				height: sc * rects[i].height,
+				confidence : rects[i].confidence
+			};
+		}
+		return rectArray;
 	}
 }
 
