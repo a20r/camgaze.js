@@ -13,12 +13,12 @@ var rects;
 window.onload = function () {
 	
 	var cGaze = new camgaze.Camgaze("mainCanvas", "invisibleCanvas", 320, 240);
-	//var haar = new camgaze.CVUtil.HaarDetector(jsfeat.haar.frontalface, 640, 480);
+	var haar = new camgaze.CVUtil.HaarDetector(jsfeat.haar.frontalface, 320, 240);
 	var frameOp = function (image_data, video) {
 		var gray_img = camgaze.CVUtil.toGrayscale(image_data);
 		var binary_img = camgaze.CVUtil.grayScaleInRange(gray_img, 12, 26);
 		contourArray = camgaze.CVUtil.getConnectedComponents(binary_img, 200);
-		//rects = haar.detectObjects(video, 1.8, 2);
+		rects = haar.detectObjects(video, 1.8, 2);
 		return binary_img;
 	};
 	cGaze.setFrameOperator(frameOp);
