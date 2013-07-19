@@ -11,6 +11,12 @@
 // email : aw204@st-andrews.ac.uk
 // github : http://github.com/wallarelvo
 //
+// Please note:
+// -> The words Array and List are used interchangeably
+// -> Even though this API is geared towards eye tracking, 
+//    there are a lot of tools for computer vision that
+//    can also be used for other purposes.
+//
 //////////////////////////////////////////////////////////////     
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * /
@@ -26,6 +32,8 @@ camgaze.structures = {};
 camgaze.CVUtil = {};
 
 //////////////////////////////////////////////////////////////
+//
+// Camgaze 
 //
 // Global API for camgaze
 //
@@ -323,6 +331,14 @@ camgaze.structures.Set.prototype = {
 			}
 		}
 		return retSet;
+	},
+
+	toList : function () {
+		var retList = new Array();
+		for (var key in this.set) {
+			retList.push(this.set[key]);
+		}
+		return retList;
 	}
 }
 
@@ -754,8 +770,108 @@ camgaze.TrackingData.prototype = {
 				return new camgaze.structures.Set();
 			}
 		} else {
-			// implement this shit bro!
+			/*
+				List of lists containing an enumeration 
+				of the distance from a previously detected 
+				eye to a current eye.
+
+				distList --> [
+					[
+						[0, distance from 0th previous eye to the 0th eye], 
+						[1, distance from 1st previous eye to the 0th eye],
+						...
+					], 
+					...
+				] 
+			*/
+			var distList = this.eyeList.map(
+				function (eye) {
+					return prevEyes.map(
+						function (pEye, index) {
+							return [
+								index,
+								eye.getHaarCentroid().distTo(
+									pEye.getHaarCentroid()
+								)
+							];
+						}
+					);
+				}
+			);
+
+			/*
+				Gets the index smallest distance 
+				from each of the previous eyes
+				to a current eye
+			*/
+			var minDistList = distList.map(
+				function (ds) {
+					return ds.reduce(
+						function (a, b) {
+							if (a[1] < b[1]) {
+								return a;
+							} else {
+								return b;
+							}
+						}
+					).map(
+						function (val) {
+							return val[0];
+						}
+					);
+				}
+			);
+
+			/*
+				usedPreviousEyes is filled with
+				indexes eyes that have been
+				matched up with a previous eye
+				this ensures one eye does not get
+				mapped to multiple previous eyes
+			*/
+			var usedPreviousEyes = new Array();
+			var self = this;
+
+			minDistList.forEach(
+				function (j, i) {
+					if (self.eyeList[i].getId() == undefined &&
+						!(j in usedPreviousEyes)) {
+						self.eyeList[i].setId(prevEyes[j].getId());
+						self.idMap[prevEyes[j].getId()] = self.eyeList[i];
+						usedPreviousEyes.push(j);
+					}
+				}
+			);
+
+			for (var i = 0; i < minDistList.length; i++) {
+				if (this.eyeList[i].getId() == undefined) {
+					eyeId = this.getGUID();
+					this.eyeList[i].setId(eyeId);
+					this.idMap[eyeId] = this.eyeList[i];
+				}
+			}
+
+			var prevEyesSet = new camgaze.structures.Set(
+				this.eyeHashFunc, 
+				prevEyes
+			);
+
+			var usedEyeSet = new camgaze.structures.Set(
+				this.eyeHashFunc
+			);
+
+			usedPreviousEyes.forEach(
+				function (usedIndex) {
+					usedEyeSet.put(prevEyes[usedIndex]);
+				}
+			);
+
+			return prevEyesSet.difference(usedEyeSet);
 		}
+	},
+
+	eyeHashFunc : function (eye) {
+		return eye.getId(); 
 	},
 
 	pushEye : function (eye) {

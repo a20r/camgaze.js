@@ -12,8 +12,8 @@ var contourArray;
 var rects;
 window.onload = function () {
 	
-	var cGaze = new camgaze.Camgaze("mainCanvas", "invisibleCanvas", 640, 480);
-	var haar = new camgaze.CVUtil.HaarDetector(jsfeat.haar.frontalface, 640, 480);
+	var cGaze = new camgaze.Camgaze("mainCanvas", "invisibleCanvas", 320, 240);
+	//var haar = new camgaze.CVUtil.HaarDetector(jsfeat.haar.frontalface, 640, 480);
 	var frameOp = function (image_data, video) {
 		var gray_img = camgaze.CVUtil.toGrayscale(image_data);
 		var binary_img = camgaze.CVUtil.grayScaleInRange(gray_img, 12, 26);
