@@ -733,9 +733,30 @@ camgaze.TrackingData = function () {
 
 camgaze.TrackingData.prototype = {
 
+	/*
+		Assigns unique identifiers to the eyes 
+		so you can track them from frame to frame.
+		Used for calibration and filtering Returns 
+		the eyes that are no longer in the frame. 
+		Takes a list of eyes from the last frame 
+		and the lost eyes.
+	*/
 	assignIds : function (prevEyes) {
-		// implement this shit bro
-	}
+		if (this.eyeList.length == 0) {
+			return new camgaze.structures.Set();
+		}
+
+		if (prevEyes.length == 0) {
+			for (var i = 0; i < this.eyeList.length; i++) {
+				var eyeId = this.getGUID();
+				this.idMap[eyeId] = this.eyeList[i];
+				this.eyeList[i].setId(eyeId);
+				return new camgaze.structures.Set();
+			}
+		} else {
+			// implement this shit bro!
+		}
+	},
 
 	pushEye : function (eye) {
 		this.eyeList.push(eye);
@@ -761,6 +782,21 @@ camgaze.TrackingData.prototype = {
 
 	getLength : function () {
 		return this.eyeList.length;
+	},
+
+	_s4 : function () {
+		return Math.floor(
+			(1 + Math.random()) * 0x10000
+		).toString(16).substring(1);
+	},
+
+	getGUID : function () {
+		return (
+			this._s4() + this._s4() + '-' + 
+			this._s4() + '-' + this._s4() + '-' + 
+			this._s4() + '-' + this._s4() + 
+			this._s4() + this._s4()
+	    );
 	}
 }
 
