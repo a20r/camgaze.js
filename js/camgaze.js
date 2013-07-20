@@ -328,7 +328,7 @@ camgaze.structures.Set.prototype = {
 	// does not update the value.
 	put : function (val) {
 		if (!(this.hashFunc(val) in this.set)) {
-			this.set[this.hashFunc(val)] = val;
+			this.set[camgaze.util.eyeHashFunc(val)] = val;
 		}
 		return this;
 	},
@@ -337,11 +337,16 @@ camgaze.structures.Set.prototype = {
 	// If the value is not in the set,
 	// it puts it into the set.
 	update : function (val) {
-		this.set[this.hashFunc(val)] = val;
+		this.set[camgaze.util.eyeHashFunc(val)] = val;
 	},
 
 	updateWithList : function (valList) {
-		valList.forEach(this.update);
+		var self = this;
+		valList.forEach(
+			function (val) {
+				self.set[camgaze.util.eyeHashFunc(val)] = val;
+			}
+		);
 	},
 
 	// gets a value from the set
@@ -846,11 +851,11 @@ camgaze.TrackingData.prototype = {
 								return b;
 							}
 						}
-					).map(
-						function (val) {
-							return val[0];
-						}
-					);
+					)
+				}
+			).map(
+				function (val) {
+					return val[0];
 				}
 			);
 
