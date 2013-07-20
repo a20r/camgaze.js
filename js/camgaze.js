@@ -28,6 +28,7 @@
 //////////////////////////////////////////////////////////////
 
 camgaze = {};
+camgaze.util = {};
 camgaze.structures = {};
 camgaze.CVUtil = {};
 
@@ -87,6 +88,31 @@ camgaze.Camgaze.prototype.setFrameOperator = function (callback) {
 	};
 
 	compatibility.requestAnimationFrame(frameOp);
+}
+
+//////////////////////////////////////////////////////////////
+//
+// util
+//
+// Utility functions used by most classes. Functions that 
+// have nowhere else to go...
+// 
+// Also, here is where I extend other prototypes.
+//
+//////////////////////////////////////////////////////////////
+
+camgaze.util.eyeHashFunc = function (eye) {
+	return eye.getId();
+}
+
+Array.prototype.mean = function () {
+	var sum = this.reduce(
+		function (prev, cur) {
+			return prev + cur;
+		}
+	);
+
+	return sum / this.length;
 }
 
 //////////////////////////////////////////////////////////////
@@ -759,7 +785,7 @@ camgaze.TrackingData.prototype = {
 	*/
 	assignIds : function (prevEyes) {
 		if (this.eyeList.length == 0) {
-			return new camgaze.structures.Set();
+			return new camgaze.structures.Set(camgaze.util.eyeHashFunc);
 		}
 
 		if (prevEyes.length == 0) {
@@ -767,7 +793,7 @@ camgaze.TrackingData.prototype = {
 				var eyeId = this.getGUID();
 				this.idMap[eyeId] = this.eyeList[i];
 				this.eyeList[i].setId(eyeId);
-				return new camgaze.structures.Set();
+				return new camgaze.structures.Set(camgaze.util.eyeHashFunc);
 			}
 		} else {
 			/*
@@ -852,12 +878,12 @@ camgaze.TrackingData.prototype = {
 			}
 
 			var prevEyesSet = new camgaze.structures.Set(
-				this.eyeHashFunc, 
+				camgaze.util.eyeHashFunc, 
 				prevEyes
 			);
 
 			var usedEyeSet = new camgaze.structures.Set(
-				this.eyeHashFunc
+				camgaze.util.eyeHashFunc
 			);
 
 			usedPreviousEyes.forEach(
@@ -868,10 +894,6 @@ camgaze.TrackingData.prototype = {
 
 			return prevEyesSet.difference(usedEyeSet);
 		}
-	},
-
-	eyeHashFunc : function (eye) {
-		return eye.getId(); 
 	},
 
 	pushEye : function (eye) {
@@ -978,20 +1000,20 @@ camgaze.EyeData.prototype = {
 			),
 			topRight : pb.getCentroid().distTo(
 				{
-					x : this.haarRectangle.x + this.haarRectangle.w,
+					x : this.haarRectangle.x + this.haarRectangle.width,
 					y : this.haarRectangle.y
 				}
 			),
 			bottomLeft : pb.getCentroid().distTo(
 				{
 					x : this.haarRectangle.x,
-					y : this.haarRectangle.y + this.haarRectangle.h
+					y : this.haarRectangle.y + this.haarRectangle.height
 				}
 			),
 			bottomRight : pb.getCentroid().distTo(
 				{
-					x : this.haarRectangle.x + this.haarRectangle.w,
-					y : this.haarRectangle.y + this.haarRectangle.h
+					x : this.haarRectangle.x + this.haarRectangle.width,
+					y : this.haarRectangle.y + this.haarRectangle.height
 				}
 			)
 		}
@@ -1038,8 +1060,8 @@ camgaze.EyeData.prototype = {
 
 	getHaarCentroid : function () {
 		return new camgaze.structures.Point(
-			this.haarRectangle.x + this.haarRectangle.w / 2,
-			this.haarRectangle.y + this.haarRectangle.h / 2
+			this.haarRectangle.x + this.haarRectangle.width / 2,
+			this.haarRectangle.y + this.haarRectangle.height / 2
 		);
 	},
 
@@ -1062,6 +1084,223 @@ camgaze.EyeData.prototype = {
 
 //////////////////////////////////////////////////////////////
 // 
+// EyeTracker
+//
+// This class is used for eye tracking and gaze prediction.
+// It works by finding the eye using HaarDetector with an
+// eye cascade, then thresholding the grayscale image such
+// that the probability that a pupil has been found is 
+// maximized. Then the algorithm uses the corners of the
+// bounding Haar rectangles to get the resultant gaze
+// vector without calibration.
+//
+//////////////////////////////////////////////////////////////
+
+/*
+	xSize and ySize are the sizes of the image
+	that is expected by EyeTracker. It is used
+	mainly for memory efficiency and the reuse
+	of variables in the HaarDetector
+*/
+camgaze.EyeTracker = function (xSize, ySize) {
+
+	this.xSize = xSize;
+	this.ySize = ySize;
+
+	this.haarDetector = new camgaze.CVUtil.HaarDetector(
+		jsfeat.haar.eye,
+		this.xSize,
+		this.ySize
+	);
+
+	// need to figure out this value
+	// probably way to big right now
+	this.averageContourSize = 20000;
+
+	this.MAX_COLOR = 35;
+	this.MIN_COLOR = 0;
+
+	this.previousEyes = new Array();
+	this.lostEyes = new camgaze.structures.Set(
+		camgaze.eyeHashFunc
+	);
+}
+
+camgaze.EyeTracker.prototype = {
+
+	// gets the angle between two points
+	getAngle : function (P1, P2) {
+		var deltaY = Math.abs(P2[1] - P1[1]);
+		var deltaX = Math.abs(P2[0] - P1[0]);
+		var angleInDegrees = Math.atan(
+			deltaY / deltaX
+		) * 180 / Math.PI;
+
+		return angleInDegrees;
+	},
+
+	/*
+		Takes a list not a blob! Point is the
+		blob centroid that is presumed to be the 
+		pupil. This function helps check how 
+		in the center the pupil is. This can 
+		help weed out incorrectly classified
+		pupils.
+
+		boundingRect is the Haar bounding rectangle
+		that is found when the eye is detected
+	*/
+	getAverageAngleDeviation : function (point, boundingRect) {
+
+		var cornerList = [
+			[
+				boundingRect.x, 
+				boundingRect.y
+			],
+			[
+				boundingRect.x + boundingRect.width,
+				boundingRect.y 
+			],
+			[
+				boundingRect.x,
+				boundingRect.y + boundingRect.height 
+			],
+			[
+				boundingRect.x + boundingRect.width,
+				boundingRect.y + boundingRect.height
+			]
+		];
+
+		var deviationList = cornerList.map(
+			function (corner) {
+				return Math.abs(
+					45 - this.getAngle(point.toList(), corner);
+				);
+			}
+		);
+		return deviationList.mean();
+	},
+
+	// possible pupil is a Blob
+	weightPupil : function (possiblePupil) {
+		var angleDev = Math.abs(
+			this.getAverageAngleDeviation(
+				possiblePupil.getCentroid()
+			)
+		);
+
+		var sizeDev = Math.abs(
+			possiblePupil.getContourArea() - 
+			this.averageContourSize
+		);
+
+		var sizePercentError = 100 * sizeDev / this.averageContourSize;
+		var anglePercentError = 100 * angleDev / 45;
+		var averagePercentError = (
+			sizePercentError + anglePercentError
+		) / 2;
+
+		return averagePercentError;
+	},
+
+	/*
+		Returns the best waited pupil in a sub ROI
+		image. The ROI of the img is the bounding 
+		rectangle given by the HaarDetector.
+	*/
+	getPupil : function (img) {
+		var possiblePupils = new Array();
+		var step = 5;
+
+		/*
+			Thresholds the image with different
+			minimum and maximum color values 
+			within a range defined in the 
+			constructor. Saves the possible pupils
+			in an array. Then the array is reduced
+			by getting the minimum weight from
+			the weightPupil function.
+		*/
+		for (var minColor = this.MIN_COLOR; 
+			minColor < this.MAX_COLOR - step; 
+			minColor += step) {
+			for (var maxColor = this.minColor + step; 
+				maxColor < this.MAX_COLOR; 
+				maxColor += step) {
+				var pPupils = this.getUnfilteredPupils(
+					img, 
+					maxColor,
+					minColor
+				);
+				if (pPupils != undefined) {
+					possiblePupils.push(
+						pPupils.map(
+							function (pPupil) {
+								return {
+									pupil : pPupil,
+									maxColor : maxColor,
+									minColor : minColor
+								};
+							}
+						)
+					);
+				} // if
+			} // inner for
+		} // outer for
+
+		if (possiblePupils.length == 0) {
+			return undefined;
+		}
+
+		var self = this;
+		return possiblePupils.reduce(
+			function (p1, p2) {
+				if (self.weightPupil(p1.pupil) < 
+					self.weightPupil(p2.pupil)) {
+					return p1;
+				} else {
+					return p2;
+				}
+			}
+		);
+	},
+
+	getUnfilteredPupils : function (img, maxColor, minColor) {
+		var img = camgaze.CVUtil.toGrayscale(img);
+		var pupilBW = camgaze.CVUtil.grayScaleInRange(
+			img,
+			minColor,
+			maxColor
+		);
+
+		var pupilBList = camgaze.CVUtil.getConnectedComponents(
+			pupilBW,
+			1
+		);
+
+		if (pupilBList.length == 0) {
+			return undefined;
+		}
+
+		return pupilBList;
+	},
+
+	getRectSizes : function (rects) {
+		return rects.map(
+			function (rect) {
+				return rect.width * rect.height;
+			}
+		);
+	},
+
+	filterRectSize : function (rects) {
+		
+	}
+
+} // end of the EyeTracker prototype object
+
+//////////////////////////////////////////////////////////////
+// 
 // Camera
 //
 // Class used to get the raw image from the camera. It parses
@@ -1070,6 +1309,10 @@ camgaze.EyeData.prototype = {
 //
 //////////////////////////////////////////////////////////////
 
+/*
+	dimX and dimY are the dimensions of the frames
+	you would like to be returned from the camera.	
+*/
 camgaze.Camera = function (canvasId, invisibleCanvasId, dimX, dimY) {
 	this.canvas = document.getElementById(canvasId);
 	this.canvas.width = dimX;
