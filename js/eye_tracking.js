@@ -14,9 +14,9 @@ window.onload = function () {
 	var eyeTracker = new camgaze.EyeTracker(640, 480);
 	var frameOp = function (image_data, video) {
 		trackingData = eyeTracker.track(image_data, video);
-		//if (trackingData.eyeList.length > 0) {
-		//	console.log(trackingData);
-		//}
+		if (trackingData.eyeList.length > 0) {
+			console.log(trackingData);
+		}
 		return image_data;
 	};
 	cGaze.setFrameOperator(frameOp);
