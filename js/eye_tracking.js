@@ -7,19 +7,17 @@
 //
 //////////////////////////////////////////////////////////////
 
-var cam = undefined;
-var contourArray;
-var rects;
+var trackingData;
 window.onload = function () {
 	
-	var cGaze = new camgaze.Camgaze("mainCanvas", "invisibleCanvas", 320, 240);
-	var haar = new camgaze.CVUtil.HaarDetector(jsfeat.haar.frontalface, 320, 240);
+	var cGaze = new camgaze.Camgaze("mainCanvas", "invisibleCanvas", 640, 480);
+	var eyeTracker = new camgaze.EyeTracker(640, 480);
 	var frameOp = function (image_data, video) {
-		var gray_img = camgaze.CVUtil.toGrayscale(image_data);
-		var binary_img = camgaze.CVUtil.grayScaleInRange(gray_img, 12, 26);
-		contourArray = camgaze.CVUtil.getConnectedComponents(binary_img, 200);
-		rects = haar.detectObjects(video, 1.8, 2);
-		return binary_img;
+		trackingData = eyeTracker.track(image_data, video);
+		if (trackingData.eyeList.length > 0) {
+			console.log(trackingData);
+		}
+		return image_data;
 	};
 	cGaze.setFrameOperator(frameOp);
 } 

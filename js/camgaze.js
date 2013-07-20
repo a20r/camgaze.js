@@ -340,6 +340,10 @@ camgaze.structures.Set.prototype = {
 		this.set[this.hashFunc(val)] = val;
 	},
 
+	updateWithList : function (valList) {
+		valList.forEach(this.update);
+	},
+
 	// gets a value from the set
 	get : function (hashVal) {
 		return this.set[hashVal];
@@ -430,7 +434,6 @@ camgaze.CVUtil.HaarDetector = function (classifier, imageWidth, imageHeight) {
 // detects objects based on the classifier
 camgaze.CVUtil.HaarDetector.prototype = {
 	detectObjects : function (video, scaleFactor, minScale) {
-		"use strict";
 		this.ctx.drawImage(video, 0, 0, this.w, this.h);
 		var imageData = this.ctx.getImageData(0, 0, this.w, this.h);
 
@@ -449,7 +452,7 @@ camgaze.CVUtil.HaarDetector.prototype = {
 		jsfeat.haar.edges_density = 0.13;
 
 		// finally detects the objects
-		rects = jsfeat.haar.detect_multi_scale(
+		var rects = jsfeat.haar.detect_multi_scale(
 			this.ii_sum, 
 			this.ii_sqsum, 
 			this.ii_tilted, 
@@ -783,6 +786,8 @@ camgaze.TrackingData.prototype = {
 		the eyes that are no longer in the frame. 
 		Takes a list of eyes from the last frame 
 		and the lost eyes.
+
+		prevEyes is an array
 	*/
 	assignIds : function (prevEyes) {
 		if (this.eyeList.length == 0) {
@@ -982,55 +987,25 @@ camgaze.EyeData.prototype = {
 		return this;
 	},
 
-	getCornerDistances : function () {
-		var pb = this.pupil;
-		return {
-			topLeft : pb.getCentroid().distTo(
-				{
-					x : this.eyeRect.x,
-					y : this.eyeRect.y
-				}
-			),
-			topRight : pb.getCentroid().distTo(
-				{
-					x : this.eyeRect.x + this.eyeRect.width,
-					y : this.eyeRect.y
-				}
-			),
-			bottomLeft : pb.getCentroid().distTo(
-				{
-					x : this.eyeRect.x,
-					y : this.eyeRect.y + this.eyeRect.height
-				}
-			),
-			bottomRight : pb.getCentroid().distTo(
-				{
-					x : this.eyeRect.x + this.eyeRect.width,
-					y : this.eyeRect.y + this.eyeRect.height
-				}
-			)
-		}
-	},
-
 	getCornerVectors : function () {
 		var pb = this.pupil;
 		var centroid = pb.getCentroid();
 		return {
 			topLeft : new camgaze.structures.Point(
-				centroid.x - this.eyeRect.x,
-				centroid.y - this.eyeRect.y
+				centroid.x,
+				centroid.y
 			),
 			topRight : new camgaze.structures.Point(
-				centroid.x - this.eyeRect.x - this.eyeRect.width,
-				centroid.y - this.eyeRect.y
+				centroid.x - this.eyeRect.width,
+				centroid.y
 			),
 			bottomLeft : new camgaze.structures.Point(
-				centroid.x - this.eyeRect.x,
-				centroid.y - this.eyeRect.y - this.eyeRect.height
+				centroid.x,
+				centroid.y - this.eyeRect.height
 			),
 			bottomRight : new camgaze.structures.Point(
-				centroid.x - this.eyeRect.x - this.eyeRect.width,
-				centroid.y - this.eyeRect.y - this.eyeRect.height
+				centroid.x - this.eyeRect.width,
+				centroid.y - this.eyeRect.height
 			)
 		}
 	}, 
@@ -1108,7 +1083,7 @@ camgaze.EyeTracker = function (xSize, ySize) {
 
 	// need to figure out this value
 	// probably way to big right now
-	this.averageContourSize = 20000;
+	this.averageContourSize = 200;
 
 	this.MAX_COLOR = 35;
 	this.MIN_COLOR = 0;
@@ -1120,7 +1095,7 @@ camgaze.EyeTracker = function (xSize, ySize) {
 
 	this.resizeCanvas = document.createElement("canvas");
 	this.resizeCanvas.style = "display:none;";
-	this.resizeCtx = resizeCanvas.getContext("2d");
+	this.resizeCtx = this.resizeCanvas.getContext("2d");
 }
 
 camgaze.EyeTracker.prototype = {
@@ -1144,34 +1119,35 @@ camgaze.EyeTracker.prototype = {
 		help weed out incorrectly classified
 		pupils.
 
-		boundingRect is the Haar bounding rectangle
-		that is found when the eye is detected
+		width and height are needed so the corners
+		can be deduced. The point is referenced from
+		the scope of the inner image, so the width
+		and height are needed to get the angle 
+		deviations
 	*/
-	getAverageAngleDeviation : function (point, boundingRect) {
+	getAverageAngleDeviation : function (point, width, height) {
 
 		var cornerList = [
 			[
-				boundingRect.x, 
-				boundingRect.y
+				0, 0
 			],
 			[
-				boundingRect.x + boundingRect.width,
-				boundingRect.y 
+				width, 0
 			],
 			[
-				boundingRect.x,
-				boundingRect.y + boundingRect.height 
+				0, height
 			],
 			[
-				boundingRect.x + boundingRect.width,
-				boundingRect.y + boundingRect.height
+				width,
+				height
 			]
 		];
 
+		var self = this;
 		var deviationList = cornerList.map(
 			function (corner) {
 				return Math.abs(
-					45 - this.getAngle(point.toList(), corner)
+					45 - self.getAngle(point.toList(), corner)
 				);
 			}
 		);
@@ -1179,10 +1155,11 @@ camgaze.EyeTracker.prototype = {
 	},
 
 	// possible pupil is a Blob
-	weightPupil : function (possiblePupil) {
+	weightPupil : function (possiblePupil, width, height) {
 		var angleDev = Math.abs(
 			this.getAverageAngleDeviation(
-				possiblePupil.getCentroid()
+				possiblePupil.getCentroid(),
+				width, height
 			)
 		);
 
@@ -1221,7 +1198,7 @@ camgaze.EyeTracker.prototype = {
 		for (var minColor = this.MIN_COLOR; 
 			minColor < this.MAX_COLOR - step; 
 			minColor += step) {
-			for (var maxColor = this.minColor + step; 
+			for (var maxColor = minColor + step; 
 				maxColor < this.MAX_COLOR; 
 				maxColor += step) {
 				var pPupils = this.getUnfilteredPupils(
@@ -1230,7 +1207,7 @@ camgaze.EyeTracker.prototype = {
 					minColor
 				);
 				if (pPupils != undefined) {
-					possiblePupils.push(
+					possiblePupils = possiblePupils.concat(
 						pPupils.map(
 							function (pPupil) {
 								return {
@@ -1252,8 +1229,8 @@ camgaze.EyeTracker.prototype = {
 		var self = this;
 		return possiblePupils.reduce(
 			function (p1, p2) {
-				if (self.weightPupil(p1.pupil) < 
-					self.weightPupil(p2.pupil)) {
+				if (self.weightPupil(p1.pupil, img.width, img.height) < 
+					self.weightPupil(p2.pupil, img.width, img.height)) {
 					return p1;
 				} else {
 					return p2;
@@ -1263,13 +1240,13 @@ camgaze.EyeTracker.prototype = {
 	},
 
 	getUnfilteredPupils : function (img, maxColor, minColor) {
-		var img = camgaze.CVUtil.toGrayscale(img);
+		var imgGray = camgaze.CVUtil.toGrayscale(img);
 		var pupilBW = camgaze.CVUtil.grayScaleInRange(
-			img,
+			imgGray,
 			minColor,
 			maxColor
 		);
-
+		//console.log(pupilBW);
 		var pupilBList = camgaze.CVUtil.getConnectedComponents(
 			pupilBW,
 			1
@@ -1328,8 +1305,8 @@ camgaze.EyeTracker.prototype = {
 
 		var unfilteredEyeRects = this.haarDetector.detectObjects(
 			video,
-			1.8, // scale factor
-			2 	 // min scale
+			1.1, // scale factor
+			1 	 // min scale
 		);
 
 		var eyeRects = this.filterRectSize(
@@ -1347,32 +1324,42 @@ camgaze.EyeTracker.prototype = {
 			video.videoHeight
 		);
 
+		var self = this;
 		eyeRects.forEach(
 			function (rect) {
 				var eyeData = new camgaze.EyeData(rect);
 
 				// needs to use another canvas because
 				// stupid html5....
-				var eyeImg = this.resizeCtx.getImageData(
+				var eyeImg = self.resizeCtx.getImageData(
 					rect.x,
 					rect.y,
 					rect.width,
 					rect.height
 				);
 				eyeData.setImage(eyeImg);
-
-				var pupilObj = this.getPupil(eyeImg);
+				var pupilObj = self.getPupil(eyeImg);
 				if (pupilObj != undefined) {
 					var pupil = pupilObj.pupil;
 					var maxColor = pupilObj.maxColor;
 					var minColor = pupilObj.minColor;
 					eyeData.setPupil(pupil);
 					eyeData.setMaxMinColor(maxColor, minColor);
-
-					var resVec = eyeData.getResultantVector();
+					trackingData.pushEye(eyeData);
 				}
 			}
 		);
+
+		this.lostEyes.updateWithList(
+			trackingData.assignIds(
+				this.previousEyes
+			).toList()
+		);
+		this.previousEyes = trackingData.getEyeList().concat(
+			this.lostEyes.toList()
+		);
+
+		return trackingData;
 	}
 
 } // end of the EyeTracker prototype object
