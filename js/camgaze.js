@@ -1174,7 +1174,7 @@ camgaze.EyeTracker.prototype = {
 		var deviationList = cornerList.map(
 			function (corner) {
 				return Math.abs(
-					45 - this.getAngle(point.toList(), corner);
+					45 - this.getAngle(point.toList(), corner)
 				);
 			}
 		);
@@ -1294,7 +1294,39 @@ camgaze.EyeTracker.prototype = {
 	},
 
 	filterRectSize : function (rects) {
-		
+		if (rects.length == 0) {
+			return new Array();
+		}
+
+		var W, H;
+		var minRectSize = Math.min.apply(
+			null,
+			this.getRectSizes(rects)
+		);
+
+		for (var i = 0; i < rects.length; i++) {
+			if (rects[i].width * 
+				rects[i].height == minRectSize) {
+				W = rects[i].width;
+				H = rects[i].height;
+				break;
+			}
+		}
+
+		return rects.map(
+			function (rect) {
+				return {
+					x : rect.x + (rect.width / 2) - (W / 2),
+					y : rect.y + (rect.height / 2) - (H / 2),
+					width : W,
+					height : H
+				};
+			}
+		);
+	},
+
+	track : function (imageData, video) {
+		// implement this shit bro!
 	}
 
 } // end of the EyeTracker prototype object
