@@ -413,6 +413,7 @@ camgaze.CVUtil.HaarDetector = function (classifier, imageWidth, imageHeight) {
 	// this canvas is needed for the resizing of the image
 	// i.e. the HTML5 developers got lazy
 	var work_canvas = document.createElement("canvas");
+	work_canvas.style = "display:none;"
 	work_canvas.width = w;
 	work_canvas.height = h;
 	this.ctx = work_canvas.getContext("2d");
@@ -948,10 +949,8 @@ camgaze.TrackingData.prototype = {
 //
 //////////////////////////////////////////////////////////////
 
-camgaze.EyeData = function (xScaledSize, yScaledSize) {
-	this.xScaledSize = xScaledSize;
-	this.yScaledSize = yScaledSize;
-	this.haarRectangle = undefined;
+camgaze.EyeData = function (eyeRect) {
+	this.eyeRect = eyeRect;
 	this.pupil = undefined;
 	this.image = undefined;
 	this.uId = undefined;
@@ -977,12 +976,6 @@ camgaze.EyeData.prototype = {
 		return this;
 	},
 
-	// rect is a Rectangle object
-	setHaarRectangle : function (rect) {
-		this.rect = rect
-		return this;
-	},
-
 	setMaxMinColor : function (maxColor, minColor) {
 		this.maxColor = maxColor;
 		this.minColor = minColor;
@@ -994,26 +987,26 @@ camgaze.EyeData.prototype = {
 		return {
 			topLeft : pb.getCentroid().distTo(
 				{
-					x : this.haarRectangle.x,
-					y : this.haarRectangle.y
+					x : this.eyeRect.x,
+					y : this.eyeRect.y
 				}
 			),
 			topRight : pb.getCentroid().distTo(
 				{
-					x : this.haarRectangle.x + this.haarRectangle.width,
-					y : this.haarRectangle.y
+					x : this.eyeRect.x + this.eyeRect.width,
+					y : this.eyeRect.y
 				}
 			),
 			bottomLeft : pb.getCentroid().distTo(
 				{
-					x : this.haarRectangle.x,
-					y : this.haarRectangle.y + this.haarRectangle.height
+					x : this.eyeRect.x,
+					y : this.eyeRect.y + this.eyeRect.height
 				}
 			),
 			bottomRight : pb.getCentroid().distTo(
 				{
-					x : this.haarRectangle.x + this.haarRectangle.width,
-					y : this.haarRectangle.y + this.haarRectangle.height
+					x : this.eyeRect.x + this.eyeRect.width,
+					y : this.eyeRect.y + this.eyeRect.height
 				}
 			)
 		}
@@ -1024,20 +1017,20 @@ camgaze.EyeData.prototype = {
 		var centroid = pb.getCentroid();
 		return {
 			topLeft : new camgaze.structures.Point(
-				centroid.x,
-				centroid.y
+				centroid.x - this.eyeRect.x,
+				centroid.y - this.eyeRect.y
 			),
 			topRight : new camgaze.structures.Point(
-				centroid.x - this.xScaledSize,
-				centroid.y
+				centroid.x - this.eyeRect.x - this.eyeRect.width,
+				centroid.y - this.eyeRect.y
 			),
 			bottomLeft : new camgaze.structures.Point(
-				centroid.x,
-				centroid.y - this.yScaledSize
+				centroid.x - this.eyeRect.x,
+				centroid.y - this.eyeRect.y - this.eyeRect.height
 			),
 			bottomRight : new camgaze.structures.Point(
-				centroid.x - this.xScaledSize,
-				centroid.y - this.yScaledSize
+				centroid.x - this.eyeRect.x - this.eyeRect.width,
+				centroid.y - this.eyeRect.y - this.eyeRect.height
 			)
 		}
 	}, 
@@ -1060,8 +1053,8 @@ camgaze.EyeData.prototype = {
 
 	getHaarCentroid : function () {
 		return new camgaze.structures.Point(
-			this.haarRectangle.x + this.haarRectangle.width / 2,
-			this.haarRectangle.y + this.haarRectangle.height / 2
+			this.eyeRect.x + this.eyeRect.width / 2,
+			this.eyeRect.y + this.eyeRect.height / 2
 		);
 	},
 
@@ -1070,7 +1063,7 @@ camgaze.EyeData.prototype = {
 	},
 
 	getHaarRectangle : function () {
-		return this.haarRectangle;
+		return this.eyeRect;
 	},
 
 	getPupil : function () {
@@ -1124,6 +1117,10 @@ camgaze.EyeTracker = function (xSize, ySize) {
 	this.lostEyes = new camgaze.structures.Set(
 		camgaze.eyeHashFunc
 	);
+
+	this.resizeCanvas = document.createElement("canvas");
+	this.resizeCanvas.style = "display:none;";
+	this.resizeCtx = resizeCanvas.getContext("2d");
 }
 
 camgaze.EyeTracker.prototype = {
@@ -1326,7 +1323,56 @@ camgaze.EyeTracker.prototype = {
 	},
 
 	track : function (imageData, video) {
-		// implement this shit bro!
+		var trackingData = new camgaze.TrackingData();
+		trackingData.setImage(imageData);
+
+		var unfilteredEyeRects = this.haarDetector.detectObjects(
+			video,
+			1.8, // scale factor
+			2 	 // min scale
+		);
+
+		var eyeRects = this.filterRectSize(
+			unfilteredEyeRects
+		);
+
+		// gets the video frame
+		this.resizeCanvas.width = video.videoWidth;
+		this.resizeCanvas.height = video.videoHeight;
+		this.resizeCtx.drawImage(
+			video, 
+			0, 
+			0, 
+			video.videoWidth, 
+			video.videoHeight
+		);
+
+		eyeRects.forEach(
+			function (rect) {
+				var eyeData = new camgaze.EyeData(rect);
+
+				// needs to use another canvas because
+				// stupid html5....
+				var eyeImg = this.resizeCtx.getImageData(
+					rect.x,
+					rect.y,
+					rect.width,
+					rect.height
+				);
+				eyeData.setImage(eyeImg);
+
+				var pupilObj = this.getPupil(eyeImg);
+				if (pupilObj != undefined) {
+					var pupil = pupilObj.pupil;
+					var maxColor = pupilObj.maxColor;
+					var minColor = pupilObj.minColor;
+					eyeData.setPupil(pupil);
+					eyeData.setMaxMinColor(maxColor, minColor);
+
+					var resVec = eyeData.getResultantVector();
+				}
+			}
+		);
 	}
 
 } // end of the EyeTracker prototype object
