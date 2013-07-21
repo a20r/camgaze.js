@@ -26,7 +26,7 @@ window.onload = function () {
 					image_data = drawer.drawCircle(
 						image_data,
 						eye.getScaledCentroid(),
-						5, // radius
+						2, // radius
 						-1, // line width (filled)
 						"red"
 					);
@@ -46,7 +46,7 @@ window.onload = function () {
 						image_data,
 						eye.getScaledCentroid(),
 						eye.getResultantVector(),
-						5, // line width
+						2, // line width
 						"lightblue"
 					);
 					*/

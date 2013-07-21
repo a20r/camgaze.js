@@ -514,7 +514,11 @@ camgaze.CVUtil.HaarDetector = function (classifier, imageWidth, imageHeight) {
 	
 	this.classifier = classifier;
 
-	var max_work_size = 160;
+	// This number is a result of 
+	// unicorn magic. Play with it 
+	// if you please.
+	var max_work_size = 400;
+
 	var scale = Math.min(
 		max_work_size / imageWidth, 
 		max_work_size / imageHeight
@@ -1330,7 +1334,7 @@ camgaze.EyeTracker.prototype = {
 		var unfilteredEyeRects = this.haarDetector.detectObjects(
 			video,
 			2.5, // scale factor
-			1 	 // min scale
+			2 	 // min scale
 		);
 
 		var eyeRects = this.filterRectSize(
