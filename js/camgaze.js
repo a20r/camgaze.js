@@ -517,7 +517,7 @@ camgaze.CVUtil.HaarDetector = function (classifier, imageWidth, imageHeight) {
 	// This number is a result of 
 	// unicorn magic. Play with it 
 	// if you please.
-	var max_work_size = 400;
+	var max_work_size = 310;
 
 	var scale = Math.min(
 		max_work_size / imageWidth, 
@@ -1024,9 +1024,7 @@ camgaze.EyeData.prototype = {
 
 	/*
 		Returns the resultant vector from all of the
-		corners to the centroid point. Please note
-		that the returned result is with reference
-		to the entire image.
+		corners to the centroid point.
 	*/
 	getResultantVector : function () {
 		var cVecs = this.getCornerVectors();
@@ -1035,7 +1033,7 @@ camgaze.EyeData.prototype = {
 			//console.log(resVec);
 			resVec = resVec.add(cVecs[k]);
 		}
-		return resVec.add(this.eyeRect);
+		return resVec;
 	},
 
 	getMaxMinColors : function () {
@@ -1295,7 +1293,11 @@ camgaze.EyeTracker.prototype = {
 		);
 	},
 
-	filterRectSize : function (rects) {
+	/*
+		Equalizes the rectangle sizes and gets rid 
+		of rectangles that are too close together.
+	*/
+	filterRects : function (rects, distanceThresh) {
 		if (rects.length == 0) {
 			return new Array();
 		}
@@ -1315,16 +1317,45 @@ camgaze.EyeTracker.prototype = {
 			}
 		}
 
-		return rects.map(
+		var equalizedRects =  rects.map(
 			function (rect) {
 				return {
 					x : rect.x + (rect.width / 2) - (W / 2),
 					y : rect.y + (rect.height / 2) - (H / 2),
 					width : W,
-					height : H
+					height : H,
+					confidence : rect.confidence
 				};
 			}
 		);
+
+		jsfeat.math.qsort(
+			rects, 
+			0, rects.length - 1,
+			function (a, b) {
+				return b.confidence < a.confidence;
+			}
+		);
+
+		var retRects = new Array();
+		rects.forEach(
+			function (rect) {
+				var rectNotTooClose = retRects.every(
+					function (rRect) {
+						var p = new camgaze.structures.Point(
+							rRect.x, rRect.y
+						);
+						return p.distTo(rect) > distanceThresh;
+					}
+				);
+
+				if (rectNotTooClose) {
+					retRects.push(rect);
+				}
+			}
+		);
+
+		return retRects;
 	},
 
 	track : function (imageData, video) {
@@ -1333,12 +1364,13 @@ camgaze.EyeTracker.prototype = {
 
 		var unfilteredEyeRects = this.haarDetector.detectObjects(
 			video,
-			2.5, // scale factor
-			2 	 // min scale
+			1.6, // scale factor
+			1	 // min scale
 		);
 
-		var eyeRects = this.filterRectSize(
-			unfilteredEyeRects
+		var eyeRects = this.filterRects(
+			unfilteredEyeRects,
+			20
 		);
 
 		// gets the video frame
@@ -1355,25 +1387,27 @@ camgaze.EyeTracker.prototype = {
 		var self = this;
 		eyeRects.forEach(
 			function (rect) {
-				var eyeData = new camgaze.EyeData(rect);
+				if (Math.abs(rect.confidence) > 0.05) {
+					var eyeData = new camgaze.EyeData(rect);
 
-				// needs to use another canvas because
-				// stupid html5....
-				var eyeImg = self.resizeCtx.getImageData(
-					rect.x,
-					rect.y,
-					rect.width,
-					rect.height
-				);
-				eyeData.setImage(eyeImg);
-				var pupilObj = self.getPupil(eyeImg);
-				if (pupilObj != undefined) {
-					var pupil = pupilObj.pupil;
-					var maxColor = pupilObj.maxColor;
-					var minColor = pupilObj.minColor;
-					eyeData.setPupil(pupil);
-					eyeData.setMaxMinColor(maxColor, minColor);
-					trackingData.pushEye(eyeData);
+					// needs to use another canvas because
+					// stupid html5....
+					var eyeImg = self.resizeCtx.getImageData(
+						rect.x,
+						rect.y,
+						rect.width,
+						rect.height
+					);
+					eyeData.setImage(eyeImg);
+					var pupilObj = self.getPupil(eyeImg);
+					if (pupilObj != undefined) {
+						var pupil = pupilObj.pupil;
+						var maxColor = pupilObj.maxColor;
+						var minColor = pupilObj.minColor;
+						eyeData.setPupil(pupil);
+						eyeData.setMaxMinColor(maxColor, minColor);
+						trackingData.pushEye(eyeData);
+					}
 				}
 			}
 		);

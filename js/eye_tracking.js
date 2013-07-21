@@ -41,15 +41,17 @@ window.onload = function () {
 						"lightgreen"
 					);
 					*/
-					/*
+					///*
 					image_data = drawer.drawLine(
 						image_data,
 						eye.getScaledCentroid(),
-						eye.getResultantVector(),
+						eye.getScaledCentroid().add(
+							eye.getResultantVector()
+						),
 						2, // line width
 						"lightblue"
 					);
-					*/
+					//*/
 				}
 			);
 		}
