@@ -40,14 +40,12 @@ camgaze.CVUtil = {};
 //
 //////////////////////////////////////////////////////////////
 
-camgaze.Camgaze = function (mCanvasId, iCanvasId, xSize, ySize) {
+camgaze.Camgaze = function (mCanvasId, xSize, ySize) {
 	this.canvas = document.getElementById(mCanvasId);
-	this.invisibleCanvas = document.getElementById(iCanvasId);
 	this.xSize = xSize;
 	this.ySize = ySize;
 	this.cam = new camgaze.Camera (
 		mCanvasId, 
-		iCanvasId,
 		xSize, ySize
 	);
 	this.video = document.querySelector("video");
@@ -82,8 +80,10 @@ camgaze.Camgaze.prototype.setFrameOperator = function (callback) {
 		if (self.cam.videoReady()) {
 			var frame = self.cam.getFrame();
 			var img = callback(frame, self.video);
-			var canvasImg = self.cam.convertToCanvas(frame, img);
-			self.cam.drawFrame(canvasImg);
+			if (img.cols != undefined) {
+				var img = self.cam.convertToCanvas(frame, img);
+			}
+			self.cam.drawFrame(img);
 		}
 	};
 
@@ -223,28 +223,35 @@ camgaze.structures.Point = function (x, y) {
 
 camgaze.structures.Point.prototype = {
 	toList : function () {
-		return [this.x, this.y];
+		return [parseInt(this.x), parseInt(this.y)];
 	},
 
 	add : function (otherPoint) {
 		return new camgaze.structures.Point(
-			this.x + otherPoint.x, 
-			this.y + otherPoint.y
+			parseInt(this.x) + parseInt(otherPoint.x), 
+			parseInt(this.y) + parseInt(otherPoint.y)
 		);
 	},
 
 	sub : function (otherPoint) {
 		return new camgaze.structures.Point(
-			this.x - otherPoint.x, 
-			this.y - otherPoint.y
+			parseInt(this.x) - parseInt(otherPoint.x), 
+			parseInt(this.y) - parseInt(otherPoint.y)
+		);
+	},
+
+	div : function (number) {
+		return new camgaze.structures.Point(
+			parseInt(this.x) / number,
+			parseInt(this.y) / number
 		);
 	},
 
 	// returns the distance to another point
 	distTo : function (otherPoint) {
 		return Math.sqrt(
-			Math.pow(this.x - otherPoint.x, 2) + 
-			Math.pow(this.y - otherPoint.y, 2)
+			Math.pow(parseInt(this.x) - parseFloat(otherPoint.x), 2) + 
+			Math.pow(parseInt(this.y) - parseFloat(otherPoint.y), 2)
 		)
 	},
 
@@ -379,19 +386,119 @@ camgaze.structures.Set.prototype = {
 
 //////////////////////////////////////////////////////////////
 //
-// Rectangle
+// structures.MovingAveragePoints
 //
-// Simple implementation of a rectangle structure which has 
-// data about top left x and y value as well as the width and
-// height.
+// Implementation of a dynamic, moving average list. Elements 
+// are pushed to the list, but the list remains the same size 
+// by removing one element. The compounded value is the mean 
+// of the list. This is used to reduce jitter in data with a 
+// lot of noise
 //
 //////////////////////////////////////////////////////////////
 
-camgaze.structures.Rectangle = function (x, y, w, h) {
-	this.x = x;
-	this.y = y;
-	this.w = w;
-	this.h = h;
+camgaze.structures.MovingAveragePoints = function (startingValue, length) {
+	this.movAvgList = new Array(length);
+	this.lastMean = undefined;
+	for (var i = 0; i < length; i++) {
+		this.movAvgList[i] = startingValue;
+	}
+}
+
+camgaze.structures.MovingAveragePoints.prototype.getLength = function () {
+	return this.movAvgList.length;
+}
+
+camgaze.structures.MovingAveragePoints.prototype.put = function (value) {
+	this.movAvgList.shift(1);
+	this.movAvgList.push(value);
+	return this;
+}
+
+camgaze.structures.MovingAveragePoints.prototype.removeOutliers = function (maList, refPoint) {
+	var acceptableStds = 3;
+	var distList = maList.map(
+		function (point) {
+			return point.distTo(refPoint);
+		}
+	);
+
+	var meanVal = 0;
+	for (var i = 0; i < distList.length; i++) {
+		meanVal += (distList[i] / maList.length);
+	}
+
+	var variance = 0;
+	for (var i = 0; i < distList.length; i++) {
+		variance += (
+			Math.pow(distList[i] - meanVal, 2) / 
+			distList.length
+		);
+	}
+
+	var std = Math.sqrt(variance);
+
+	return maList.filter(
+		function (point, index, array) {
+			return distList[index] < (meanDist + acceptableStds * std);
+		}
+	);
+}
+
+camgaze.structures.MovingAveragePoints.prototype.getMean = function (maList) {
+	if (maList.length == 0) {
+		maList = this.movAvgList;
+	}
+
+	var divList = maList.map(
+		function (point) {
+			return new camgaze.structures.Point(
+				point.x / maList.length,
+				point.y / maList.length
+			)
+		}
+	)
+
+	var retVal = divList.reduce(
+		function (prevPoint, curPoint) {
+			return new camgaze.structures.Point(
+				prevPoint.x + curPoint.x,
+				prevPoint.y + curPoint.y
+			)
+		}
+	)
+
+	return new camgaze.structures.Point(
+		retVal.x.toFixed(0), 
+		retVal.y.toFixed(0)
+	)
+}
+
+camgaze.structures.MovingAveragePoints.prototype.compound = function (value, refPoint) {
+	this.put(value);
+	var maListCopy = this.movAvgList.slice(0);
+	this.lastMean = this.getMean(
+		this.removeOutliers(maListCopy, refPoint)
+	);
+	return this.lastMean;
+}
+
+camgaze.structures.MovingAveragePoints.prototype.setLength = function (length) {
+	if (length < this.movAvgList.length) {
+		this.movAvgList = this.movAvgList.slice(
+			this.movAvgList.length - nlength, 
+			this.movAvgList.length
+		);
+	} else if (length > this.movAvgList.length) {
+		var lPoint = this.movAvgList[this.movAvgList.length];
+		for (var i = 0; i < length - this.movAvgList.length; i++) {
+			this.movAvgList.push(lPoint);
+		}
+	}
+	return this;
+}
+
+camgaze.structures.MovingAveragePoints.prototype.getLastCompoundedResult = function () {
+	return this.lastMean;
 }
 
 //////////////////////////////////////////////////////////////
@@ -651,123 +758,6 @@ camgaze.CVUtil.grayScaleInRange = function (grayImage, minColor, maxColor) {
 }
 
 //////////////////////////////////////////////////////////////
-//
-// MovingAveragePoints
-//
-// Implementation of a dynamic, moving average list. Elements 
-// are pushed to the list, but the list remains the same size 
-// by removing one element. The compounded value is the mean 
-// of the list. This is used to reduce jitter in data with a 
-// lot of noise
-//
-//////////////////////////////////////////////////////////////
-
-camgaze.MovingAveragePoints = function (startingValue, length) {
-	this.movAvgList = new Array(length);
-	this.lastMean = undefined;
-	for (var i = 0; i < length; i++) {
-		this.movAvgList[i] = startingValue;
-	}
-}
-
-camgaze.MovingAveragePoints.prototype.getLength = function () {
-	return this.movAvgList.length;
-}
-
-camgaze.MovingAveragePoints.prototype.put = function (value) {
-	this.movAvgList.shift(1);
-	this.movAvgList.push(value);
-	return this;
-}
-
-camgaze.MovingAveragePoints.prototype.removeOutliers = function (maList, refPoint) {
-	var acceptableStds = 3;
-	var distList = maList.map(
-		function (point) {
-			return point.distTo(refPoint);
-		}
-	);
-
-	var meanVal = 0;
-	for (var i = 0; i < distList.length; i++) {
-		meanVal += (distList[i] / maList.length);
-	}
-
-	var variance = 0;
-	for (var i = 0; i < distList.length; i++) {
-		variance += (
-			Math.pow(distList[i] - meanVal, 2) / 
-			distList.length
-		);
-	}
-
-	var std = Math.sqrt(variance);
-
-	return maList.filter(
-		function (point, index, array) {
-			return distList[index] < (meanDist + acceptableStds * std);
-		}
-	);
-}
-
-camgaze.MovingAveragePoints.prototype.getMean = function (maList) {
-	if (maList.length == 0) {
-		maList = this.movAvgList;
-	}
-
-	var divList = maList.map(
-		function (point) {
-			return new camgaze.structures.Point(
-				point.x / maList.length,
-				point.y / maList.length
-			)
-		}
-	)
-
-	var retVal = divList.reduce(
-		function (prevPoint, curPoint) {
-			return new camgaze.structures.Point(
-				prevPoint.x + curPoint.x,
-				prevPoint.y + curPoint.y
-			)
-		}
-	)
-
-	return new camgaze.structures.Point(
-		retVal.x.toFixed(0), 
-		retVal.y.toFixed(0)
-	)
-}
-
-camgaze.MovingAveragePoints.prototype.compound = function (value, refPoint) {
-	this.put(value);
-	var maListCopy = this.movAvgList.slice(0);
-	this.lastMean = this.getMean(
-		this.removeOutliers(maListCopy, refPoint)
-	);
-	return this.lastMean;
-}
-
-camgaze.MovingAveragePoints.prototype.setLength = function (length) {
-	if (length < this.movAvgList.length) {
-		this.movAvgList = this.movAvgList.slice(
-			this.movAvgList.length - nlength, 
-			this.movAvgList.length
-		);
-	} else if (length > this.movAvgList.length) {
-		var lPoint = this.movAvgList[this.movAvgList.length];
-		for (var i = 0; i < length - this.movAvgList.length; i++) {
-			this.movAvgList.push(lPoint);
-		}
-	}
-	return this;
-}
-
-camgaze.MovingAveragePoints.prototype.getLastCompoundedResult = function () {
-	return this.lastMean;
-}
-
-//////////////////////////////////////////////////////////////
 // 
 // TrackingData
 //
@@ -933,6 +923,14 @@ camgaze.TrackingData.prototype = {
 		return this.eyeList.length;
 	},
 
+	map : function (mapFunc) {
+		return this.eyeList.map(mapFunc);
+	},
+
+	forEach : function (forEachFunc) {
+		this.eyeList.forEach(forEachFunc);
+	},
+
 	_s4 : function () {
 		return Math.floor(
 			(1 + Math.random()) * 0x10000
@@ -992,6 +990,11 @@ camgaze.EyeData.prototype = {
 		return this;
 	},
 
+	/*
+		Returns the vectors from the corners of 
+		the image with reference to the sub 
+		eye image.
+	*/
 	getCornerVectors : function () {
 		var pb = this.pupil;
 		var centroid = pb.getCentroid();
@@ -1015,13 +1018,20 @@ camgaze.EyeData.prototype = {
 		}
 	}, 
 
+	/*
+		Returns the resultant vector from all of the
+		corners to the centroid point. Please note
+		that the returned result is with reference
+		to the entire image.
+	*/
 	getResultantVector : function () {
 		var cVecs = this.getCornerVectors();
 		var resVec = new camgaze.structures.Point(0, 0);
 		for (var k in cVecs) {
-			resVecs = resVecs.add(cVecs[k]);
+			//console.log(resVec);
+			resVec = resVec.add(cVecs[k]);
 		}
-		return resVec;
+		return resVec.add(this.eyeRect);
 	},
 
 	getMaxMinColors : function () {
@@ -1035,6 +1045,15 @@ camgaze.EyeData.prototype = {
 		return new camgaze.structures.Point(
 			this.eyeRect.x + this.eyeRect.width / 2,
 			this.eyeRect.y + this.eyeRect.height / 2
+		);
+	},
+
+	getScaledCentroid : function () {
+		// kind of cheating here because
+		// eyeRect is not a point, but it 
+		// has an x and y.
+		return this.pupil.getCentroid().add(
+			this.eyeRect
 		);
 	},
 
@@ -1310,7 +1329,7 @@ camgaze.EyeTracker.prototype = {
 
 		var unfilteredEyeRects = this.haarDetector.detectObjects(
 			video,
-			1.1, // scale factor
+			2.5, // scale factor
 			1 	 // min scale
 		);
 
@@ -1371,6 +1390,134 @@ camgaze.EyeTracker.prototype = {
 
 //////////////////////////////////////////////////////////////
 // 
+// Drawer
+//
+// Class used to draw onto images in a canvas. Needs to be
+// initialized as an object for memory efficiency. Because 
+// the HTML5 developers did not provide any tools for drawing
+// on images without using a canvas, a new canvas needs to be
+// created with the Drawer to allow drawing on an image.
+//
+// At the moment it only works with ImageData type and not
+// jsfeat matrices
+//
+//////////////////////////////////////////////////////////////
+
+camgaze.Drawer = function () {
+	this.drawingCanvas = document.createElement("canvas");
+	this.drawingCanvas.style = "display:none;";
+	this.context = this.drawingCanvas.getContext("2d");
+}
+
+// line color is hexstring or a well known
+// color string
+camgaze.Drawer.prototype = {
+	drawLine : function (img, startingPoint, endingPoint, lineWidth, lineColor) {
+		this.drawingCanvas.width = img.width;
+		this.drawingCanvas.height = img.height;
+		this.context.putImageData(
+			img,
+			0, 0
+		);
+
+		this.context.beginPath();
+		this.context.moveTo(
+			startingPoint.x, 
+			startingPoint.y
+		);
+		this.context.lineTo(
+			endingPoint.x, 
+			endingPoint.y
+		);
+
+		// sets line properties
+		this.context.lineWidth = lineWidth;
+		this.context.strokeStyle = lineColor;
+		this.context.lineCap = "round";
+		this.context.stroke();
+
+		return this.context.getImageData(
+			0, 0,
+			img.width, 
+			img.height
+		);
+	},
+
+	drawCircle : function (img, centerPoint, radius, lineWidth, color) {
+		this.drawingCanvas.width = img.width;
+		this.drawingCanvas.height = img.height;
+		this.context.putImageData(
+			img,
+			0, 0
+		);
+
+		var startAngle = 0;
+		var endAngle = 2 * Math.PI;
+		var counterClockwise = false;
+
+		this.context.beginPath();
+		this.context.arc(
+			centerPoint.x, 
+			centerPoint.y, 
+			radius, 
+			startAngle, 
+			endAngle, 
+			counterClockwise
+		);
+
+		if (lineWidth > 0) {
+			this.context.lineWidth = lineWidth;
+			this.context.strokeStyle = color;
+		} else {
+			this.context.lineWidth = 0;
+			this.context.fillStyle = color;
+			this.context.fill();
+		}
+		this.context.stroke();
+
+		return this.context.getImageData(
+			0, 0,
+			img.width, 
+			img.height
+		);
+	},
+
+	drawRectangle : function (img, topLeftPoint, width, height, lineWidth, color) {
+		this.drawingCanvas.width = img.width;
+		this.drawingCanvas.height = img.height;
+		this.context.putImageData(
+			img,
+			0, 0
+		);
+
+		this.context.beginPath();
+		this.context.rect(
+			topLeftPoint.x, 
+			topLeftPoint.y, 
+			width, 
+			height
+		);
+
+		if (lineWidth > 0) {
+			this.context.lineWidth = lineWidth;
+			this.context.strokeStyle = color;
+		} else {
+			this.context.lineWidth = 0;
+			this.context.fillStyle = color;
+			this.context.fill();
+		}
+		this.context.stroke();
+
+		return this.context.getImageData(
+			0, 0,
+			img.width, 
+			img.height
+		);
+	}
+}
+
+//////////////////////////////////////////////////////////////
+// 
 // Camera
 //
 // Class used to get the raw image from the camera. It parses
@@ -1383,14 +1530,13 @@ camgaze.EyeTracker.prototype = {
 	dimX and dimY are the dimensions of the frames
 	you would like to be returned from the camera.	
 */
-camgaze.Camera = function (canvasId, invisibleCanvasId, dimX, dimY) {
+camgaze.Camera = function (canvasId, dimX, dimY) {
 	this.canvas = document.getElementById(canvasId);
 	this.canvas.width = dimX;
 	this.canvas.height = dimY;
 
-	this.invisibleCanvas = document.getElementById(
-		invisibleCanvasId
-	);
+	this.invisibleCanvas = document.createElement("canvas");
+	this.invisibleCanvas.style = "display:none;";
 	this.invisibleCanvas.width = dimX;
 	this.invisibleCanvas.height = dimY;
 
@@ -1473,7 +1619,7 @@ camgaze.Camera.prototype.convertToCanvas = function (imageData, jsFeatData) {
 	var image_data = this.copyFrame(imageData);
     var data_u32 = new Uint32Array(image_data.data.buffer);
     var alpha = (0xff << 24);
-    var i = jsFeatData.cols*jsFeatData.rows, pix = 0;
+    var i = jsFeatData.cols * jsFeatData.rows, pix = 0;
     while(--i >= 0) {
         pix = jsFeatData.data[i];
         data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
@@ -1481,6 +1627,7 @@ camgaze.Camera.prototype.convertToCanvas = function (imageData, jsFeatData) {
     return image_data;
 }
 
+// returns image data
 camgaze.Camera.prototype.getFrame = function () {
 	this.invisibleContext.drawImage(
 		this.video,
