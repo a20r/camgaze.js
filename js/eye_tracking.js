@@ -21,12 +21,11 @@ window.onload = function () {
 		if (trackingData.eyeList.length > 0) {
 			trackingData.getEyeList().forEach(
 				function (eye) {
-					//console.log(eye.getScaledCentroid());
 
 					image_data = drawer.drawCircle(
 						image_data,
 						eye.getScaledCentroid(),
-						2, // radius
+						4, // radius
 						-1, // line width (filled)
 						"red"
 					);
