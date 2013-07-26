@@ -222,8 +222,24 @@ camgaze.structures.Point = function (x, y) {
 }
 
 camgaze.structures.Point.prototype = {
+
+	getX : function () {
+		return parseInt(this.x);
+	},
+
+	getY : function () {
+		return parseInt(this.y);
+	},
+
 	toList : function () {
 		return [parseInt(this.x), parseInt(this.y)];
+	},
+
+	mult : function (number) {
+		return new camgaze.structures.Point(
+			parseInt(this.x) * number,
+			parseInt(this.y) * number
+		);
 	},
 
 	add : function (otherPoint) {
@@ -415,7 +431,7 @@ camgaze.structures.MovingAveragePoints.prototype.put = function (value) {
 }
 
 camgaze.structures.MovingAveragePoints.prototype.removeOutliers = function (maList, refPoint) {
-	var acceptableStds = 3;
+	var acceptableStds = 2;
 	var distList = maList.map(
 		function (point) {
 			return point.distTo(refPoint);
@@ -439,7 +455,7 @@ camgaze.structures.MovingAveragePoints.prototype.removeOutliers = function (maLi
 
 	return maList.filter(
 		function (point, index, array) {
-			return distList[index] < (meanDist + acceptableStds * std);
+			return distList[index] < (meanVal + acceptableStds * std);
 		}
 	);
 }
@@ -517,7 +533,7 @@ camgaze.CVUtil.HaarDetector = function (classifier, imageWidth, imageHeight) {
 	// This number is a result of 
 	// unicorn magic. Play with it 
 	// if you please.
-	var max_work_size = 310;
+	var max_work_size = 220;
 
 	var scale = Math.min(
 		max_work_size / imageWidth, 
@@ -821,8 +837,8 @@ camgaze.TrackingData.prototype = {
 						function (pEye, index) {
 							return [
 								index,
-								eye.getHaarCentroid().distTo(
-									pEye.getHaarCentroid()
+								eye.getScaledCentroid().distTo(
+									pEye.getScaledCentroid()
 								)
 							];
 						}
@@ -988,7 +1004,7 @@ camgaze.EyeData.prototype = {
 		return this;
 	},
 
-	setMaxMinColor : function (maxColor, minColor) {
+	setMaxMinColor : function (minColor, maxColor) {
 		this.maxColor = maxColor;
 		this.minColor = minColor;
 		return this;
@@ -1027,6 +1043,7 @@ camgaze.EyeData.prototype = {
 		corners to the centroid point.
 	*/
 	getResultantVector : function () {
+		/*
 		var cVecs = this.getCornerVectors();
 		var resVec = new camgaze.structures.Point(0, 0);
 		for (var k in cVecs) {
@@ -1034,19 +1051,22 @@ camgaze.EyeData.prototype = {
 			resVec = resVec.add(cVecs[k]);
 		}
 		return resVec;
+		*/
+		var hc = this.getHaarCentroid();
+		return this.pupil.getCentroid().sub(hc).mult(4);
 	},
 
-	getMaxMinColors : function () {
+	getMinMaxColors : function () {
 		return new camgaze.structures.Point(
-			this.maxColor, 
-			this.minColor
+			this.minColor, 
+			this.maxColor
 		);
 	},
 
 	getHaarCentroid : function () {
 		return new camgaze.structures.Point(
-			this.eyeRect.x + this.eyeRect.width / 2,
-			this.eyeRect.y + this.eyeRect.height / 2
+			this.eyeRect.width / 2,
+			this.eyeRect.height / 2
 		);
 	},
 
@@ -1330,7 +1350,7 @@ camgaze.EyeTracker.prototype = {
 		);
 
 		jsfeat.math.qsort(
-			rects, 
+			equalizedRects, 
 			0, rects.length - 1,
 			function (a, b) {
 				return b.confidence < a.confidence;
@@ -1338,7 +1358,7 @@ camgaze.EyeTracker.prototype = {
 		);
 
 		var retRects = new Array();
-		rects.forEach(
+		equalizedRects.forEach(
 			function (rect) {
 				var rectNotTooClose = retRects.every(
 					function (rRect) {
@@ -1364,13 +1384,13 @@ camgaze.EyeTracker.prototype = {
 
 		var unfilteredEyeRects = this.haarDetector.detectObjects(
 			video,
-			1.6, // scale factor
+			1.3, // scale factor
 			1	 // min scale
 		);
 
 		var eyeRects = this.filterRects(
 			unfilteredEyeRects,
-			20
+			40 // distance threshold
 		);
 
 		// gets the video frame
@@ -1387,7 +1407,7 @@ camgaze.EyeTracker.prototype = {
 		var self = this;
 		eyeRects.forEach(
 			function (rect) {
-				if (Math.abs(rect.confidence) > 0.05) {
+				if (Math.abs(rect.confidence) > 0.1) {
 					var eyeData = new camgaze.EyeData(rect);
 
 					// needs to use another canvas because
@@ -1436,9 +1456,126 @@ camgaze.EyeTracker.prototype = {
 //////////////////////////////////////////////////////////////
 
 camgaze.EyeFilter = function () {
-	this.movAvgLength = 5;
+	this.movAvgLength = 20;
 	this.movAvgDict = {};
+	this.MovingAveragePoints = camgaze.structures.MovingAveragePoints;
+	this.origin = new camgaze.structures.Point(0, 0);
 }
+
+camgaze.EyeFilter.prototype = {
+
+	/*
+		Returns a dictionary of the current
+		moving averages. The structure still
+		retains the moving average lists from
+		pupils that are present. 
+
+		The structure that is returned is:
+
+		{
+			id : {
+				centroid : MovingAveragePoints(
+					length --> this.movAvgLength
+				), // scaled centroids
+
+				resultantVector : MovingAveragePoints(
+					length --> this.movAvgLength
+				),
+
+				color : MovingAveragePoints(
+					length --> this.movAvgLength
+					x --> min color,
+					y --> max color
+				),
+
+			}
+		}
+	*/
+	updateFilterData : function (td) {
+		var self = this;
+		var currentDict = {};
+		td.getEyeList().forEach(
+			function (eye) {
+				if (!(eye.getId() in self.movAvgDict)) {
+					self.movAvgDict[eye.getId()] = {
+						eyeData : eye,
+
+						centroidMA : 
+							new self.MovingAveragePoints(
+								eye.getScaledCentroid(),
+								self.movAvgLength
+							),
+
+						resultantVectorMA :
+							new self.MovingAveragePoints(
+								eye.getResultantVector(),
+								self.movAvgLength
+							),
+
+						colorMA : 
+							new self.MovingAveragePoints(
+								eye.getMinMaxColors(),
+								self.movAvgLength
+							)
+					}
+				}
+				self.updateExistingValue(eye);
+				currentDict[eye.getId()] = self.movAvgDict[eye.getId()];
+			} // inner func
+		); // for each
+		return currentDict;
+	},
+
+	updateExistingValue : function (eye) {
+		this.movAvgDict[eye.getId()].centroidMA.compound(
+			eye.getScaledCentroid(),
+			this.origin
+		);
+
+		this.movAvgDict[eye.getId()].resultantVectorMA.compound(
+			eye.getResultantVector(),
+			this.origin
+		);
+
+		this.movAvgDict[eye.getId()].colorMA.compound(
+			eye.getMinMaxColors(),
+			this.origin
+		);
+
+		this.movAvgDict[
+			eye.getId()
+		].eyeData = eye;
+	},
+
+	getFilteredGaze : function (td) {
+		var fDict = this.updateFilterData(td);
+		return Object.keys(fDict).map(
+			function (key) {
+				return {
+					centroid : {
+						filtered : 
+							fDict[key].centroidMA.getLastCompoundedResult(),
+						unfiltered :
+							fDict[key].eyeData.getScaledCentroid()
+					},
+
+					eyeData : fDict[key].eyeData,
+
+					gazeVector : 
+						fDict[key].resultantVectorMA.getLastCompoundedResult(),
+
+					color : {
+							min : 
+								fDict[key].colorMA.getLastCompoundedResult().getX(),
+							max : 
+								fDict[key].colorMA.getLastCompoundedResult().getY()
+					}
+				}
+			}
+		);
+	}
+
+} // end of EyeFilter prototype
 
 //////////////////////////////////////////////////////////////
 // 
