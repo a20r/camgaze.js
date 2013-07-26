@@ -16,6 +16,7 @@ window.onload = function () {
 	var cGaze = new camgaze.Camgaze("mainCanvas", 640, 480);
 	var eyeTracker = new camgaze.EyeTracker(640, 480);
 	var drawer = new camgaze.Drawer();
+	
 	var frameOp = function (image_data, video) {
 		trackingData = eyeTracker.track(image_data, video);
 		if (trackingData.eyeList.length > 0) {

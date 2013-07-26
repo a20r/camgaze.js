@@ -1428,6 +1428,20 @@ camgaze.EyeTracker.prototype = {
 
 //////////////////////////////////////////////////////////////
 // 
+// EyeFilter
+//
+// Class used to filter and normalize the gaze prediction
+// to get rid of jitter.
+//
+//////////////////////////////////////////////////////////////
+
+camgaze.EyeFilter = function () {
+	this.movAvgLength = 5;
+	this.movAvgDict = {};
+}
+
+//////////////////////////////////////////////////////////////
+// 
 // Drawer
 //
 // Class used to draw onto images in a canvas. Needs to be
