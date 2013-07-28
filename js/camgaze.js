@@ -1969,94 +1969,96 @@ camgaze.Camera = function (dimX, dimY, canvasId) {
 	}
 }
 
-camgaze.Camera.prototype.videoReady = function () {
-	return this.video.readyState == this.video.HAVE_ENOUGH_DATA;
-}
+camgaze.Camera.prototype = {
+	videoReady : function () {
+		return this.video.readyState == this.video.HAVE_ENOUGH_DATA;
+	},
 
-// draws the unaugmented frame onto the invisible
-// canvas
-camgaze.Camera.prototype.draw = function (video) {
-	// draw the video contents into the canvas x, y, width, height
-	this.invisibleContext.drawImage(
-		video,
-		0,
-		0,
-		this.invisibleCanvas.width,
-		this.invisibleCanvas.height
-   );
-}
-
-// automatically called once from the getUserMedia
-camgaze.Camera.prototype.showFrame = function (self) {
-	return function (localMediaStream) {
-		self.video.src = window.URL.createObjectURL(
-			localMediaStream
-		);
-	}
-}
-
-camgaze.Camera.prototype.videoFail = function (e) {
-	console.log("VIDEO ERROR:\t", e);
-}
-
-camgaze.Camera.prototype.pauseStreaming = function () {
-	this.video.pause();
-}
-
-camgaze.Camera.prototype.playStreaming = function () {
-	this.video.play();
-}
-
-// draws frame onto visible canvas
-camgaze.Camera.prototype.drawFrame = function (imgData) {
-	//console.log(imgData);
-	if (this.context != undefined) {
-		this.context.putImageData(
-			imgData,
-			0, 0
+	// draws the unaugmented frame onto the invisible
+	// canvas
+	draw : function (video) {
+		// draw the video contents into the canvas x, y, width, height
+		this.invisibleContext.drawImage(
+			video,
+			0,
+			0,
+			this.invisibleCanvas.width,
+			this.invisibleCanvas.height
 	   );
-	} else {
-		console.log(
-			"ERROR:\tCamera settings are only allowing aquisition"
+	},
+
+	// automatically called once from the getUserMedia
+	showFrame : function (self) {
+		return function (localMediaStream) {
+			self.video.src = window.URL.createObjectURL(
+				localMediaStream
+			);
+		}
+	},
+
+	videoFail : function (e) {
+		console.log("VIDEO ERROR:\t", e);
+	},
+
+	pauseStreaming : function () {
+		this.video.pause();
+	},
+
+	playStreaming : function () {
+		this.video.play();
+	},
+
+	// draws frame onto visible canvas
+	drawFrame : function (imgData) {
+		//console.log(imgData);
+		if (this.context != undefined) {
+			this.context.putImageData(
+				imgData,
+				0, 0
+		   );
+		} else {
+			console.log(
+				"ERROR:\tCamera settings are only allowing aquisition"
+			);
+		}
+	},
+
+	copyFrame : function (srcImage) {
+	    var dst = this.invisibleContext.createImageData(
+	    	srcImage.width, 
+	    	srcImage.height
+	    );
+	    dst.data.set(srcImage.data);
+	    return dst;
+	},
+
+	convertToCanvas : function (imageData, jsFeatData) {
+		var image_data = this.copyFrame(imageData);
+	    var data_u32 = new Uint32Array(image_data.data.buffer);
+	    var alpha = (0xff << 24);
+	    var i = jsFeatData.cols * jsFeatData.rows, pix = 0;
+	    while(--i >= 0) {
+	        pix = jsFeatData.data[i];
+	        data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
+	    }
+	    return image_data;
+	},
+
+	// returns image data
+	getFrame : function () {
+		this.invisibleContext.drawImage(
+			this.video,
+			0,
+			0,
+			this.invisibleCanvas.width,
+			this.invisibleCanvas.height
+		);
+		return this.invisibleContext.getImageData(
+			0, 
+			0, 
+			this.invisibleCanvas.width, 
+			this.invisibleCanvas.height
 		);
 	}
-}
-
-camgaze.Camera.prototype.copyFrame = function (srcImage) {
-    var dst = this.invisibleContext.createImageData(
-    	srcImage.width, 
-    	srcImage.height
-    );
-    dst.data.set(srcImage.data);
-    return dst;
-}
-
-camgaze.Camera.prototype.convertToCanvas = function (imageData, jsFeatData) {
-	var image_data = this.copyFrame(imageData);
-    var data_u32 = new Uint32Array(image_data.data.buffer);
-    var alpha = (0xff << 24);
-    var i = jsFeatData.cols * jsFeatData.rows, pix = 0;
-    while(--i >= 0) {
-        pix = jsFeatData.data[i];
-        data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
-    }
-    return image_data;
-}
-
-// returns image data
-camgaze.Camera.prototype.getFrame = function () {
-	this.invisibleContext.drawImage(
-		this.video,
-		0,
-		0,
-		this.invisibleCanvas.width,
-		this.invisibleCanvas.height
-	);
-	return this.invisibleContext.getImageData(
-		0, 
-		0, 
-		this.invisibleCanvas.width, 
-		this.invisibleCanvas.height
-	);
 }
 
