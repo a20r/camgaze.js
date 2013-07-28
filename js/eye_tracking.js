@@ -12,22 +12,22 @@
 
 window.onload = function () {
 	
-	var cGaze = new camgaze.Camgaze("mainCanvas", 640, 480);
+	var cGaze = new camgaze.Camgaze(640, 480, "mainCanvas", true);
 	var eyeTracker = new camgaze.EyeTracker(640, 480);
 	var eyeFilter = new camgaze.EyeFilter();
-	var drawer = new camgaze.Drawer();
+	//var drawer = new camgaze.drawing.ImageDrawer();
 	
-	var frameOp = function (image_data, video) {
+	var frameOp = function (image_data, video, drawer) {
 		var trackingData = eyeTracker.track(image_data, video);
 		var gazeList = eyeFilter.getFilteredGaze(trackingData);
 		if (trackingData.eyeList.length > 0) {
 			gazeList.forEach(
 				function (eye) {
 
-					image_data = drawer.drawCircle(
-						image_data,
+					drawer.drawCircle(
+						//image_data,
 						eye.centroid.unfiltered,
-						4, // radius
+						4,  // radius
 						-1, // line width (filled)
 						"red"
 					);
@@ -39,19 +39,19 @@ window.onload = function () {
 					// 	2,
 					// 	"green"
 					// );
-					image_data = drawer.drawLine(
-						image_data,
-						eye.centroid.unfiltered,
-						eye.centroid.unfiltered.add(
-							eye.gazeVector
-						),
-						2, // line width
-						"lightblue"
-					);
+					// image_data = drawer.drawLine(
+					// 	image_data,
+					// 	eye.centroid.unfiltered,
+					// 	eye.centroid.unfiltered.add(
+					// 		eye.gazeVector
+					// 	),
+					// 	2, // line width
+					// 	"lightblue"
+					// );
 				}
 			);
 		}
-		return image_data
+		//return image_data
 	};
 	cGaze.setFrameOperator(frameOp);
 } 

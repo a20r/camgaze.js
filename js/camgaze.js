@@ -30,6 +30,7 @@
 camgaze = {};
 camgaze.util = {};
 camgaze.structures = {};
+camgaze.drawing = {};
 camgaze.CVUtil = {};
 
 //////////////////////////////////////////////////////////////
@@ -40,13 +41,19 @@ camgaze.CVUtil = {};
 //
 //////////////////////////////////////////////////////////////
 
-camgaze.Camgaze = function (mCanvasId, xSize, ySize) {
-	this.canvas = document.getElementById(mCanvasId);
+camgaze.Camgaze = function (xSize, ySize, mCanvasId, onlyCanvas) {
+	if (onlyCanvas == undefined) {
+		onlyCanvas = false;
+	}
+
+	this.mCanvasId = mCanvasId;
+	this.onlyCanvas = onlyCanvas;
 	this.xSize = xSize;
 	this.ySize = ySize;
-	this.cam = new camgaze.Camera (
-		mCanvasId, 
-		xSize, ySize
+	this.cam = new camgaze.Camera( 
+		onlyCanvas ? 640 : xSize, 
+		onlyCanvas ? 480 : ySize,
+		onlyCanvas ? undefined : mCanvasId 
 	);
 	this.video = document.querySelector("video");
 }
@@ -75,15 +82,31 @@ camgaze.Camgaze = function (mCanvasId, xSize, ySize) {
 */
 camgaze.Camgaze.prototype.setFrameOperator = function (callback) {
 	var self = this;
+	if (this.onlyCanvas == true) {
+		var canvasDrawer = new camgaze.drawing.CanvasDrawer(
+			this.mCanvasId, 
+			this.xSize, 
+			this.ySize
+		);
+	}
 	var frameOp = function () {
 		compatibility.requestAnimationFrame(frameOp);
 		if (self.cam.videoReady()) {
 			var frame = self.cam.getFrame();
-			var img = callback(frame, self.video);
-			if (img.cols != undefined) {
-				var img = self.cam.convertToCanvas(frame, img);
+			if (self.onlyCanvas) {
+				var img = callback(
+					frame, 
+					self.video, 
+					canvasDrawer
+				);
+				canvasDrawer.drawAll();
+			} else {
+				var img = callback(frame, self.video);
+				if (img.cols != undefined) {
+					var img = self.cam.convertToCanvas(frame, img);
+				}
+				self.cam.drawFrame(img);
 			}
-			self.cam.drawFrame(img);
 		}
 	};
 
@@ -420,101 +443,103 @@ camgaze.structures.MovingAveragePoints = function (startingValue, length) {
 	}
 }
 
-camgaze.structures.MovingAveragePoints.prototype.getLength = function () {
-	return this.movAvgList.length;
-}
+camgaze.structures.MovingAveragePoints.prototype = {
+	getLength : function () {
+		return this.movAvgList.length;
+	},
 
-camgaze.structures.MovingAveragePoints.prototype.put = function (value) {
-	this.movAvgList.shift(1);
-	this.movAvgList.push(value);
-	return this;
-}
+	put : function (value) {
+		this.movAvgList.shift(1);
+		this.movAvgList.push(value);
+		return this;
+	},
 
-camgaze.structures.MovingAveragePoints.prototype.removeOutliers = function (maList, refPoint) {
-	var acceptableStds = 2;
-	var distList = maList.map(
-		function (point) {
-			return point.distTo(refPoint);
-		}
-	);
-
-	var meanVal = 0;
-	for (var i = 0; i < distList.length; i++) {
-		meanVal += (distList[i] / maList.length);
-	}
-
-	var variance = 0;
-	for (var i = 0; i < distList.length; i++) {
-		variance += (
-			Math.pow(distList[i] - meanVal, 2) / 
-			distList.length
+	removeOutliers : function (maList, refPoint) {
+		var acceptableStds = 2;
+		var distList = maList.map(
+			function (point) {
+				return point.distTo(refPoint);
+			}
 		);
-	}
 
-	var std = Math.sqrt(variance);
-
-	return maList.filter(
-		function (point, index, array) {
-			return distList[index] < (meanVal + acceptableStds * std);
+		var meanVal = 0;
+		for (var i = 0; i < distList.length; i++) {
+			meanVal += (distList[i] / maList.length);
 		}
-	);
-}
 
-camgaze.structures.MovingAveragePoints.prototype.getMean = function (maList) {
-	if (maList.length == 0) {
-		maList = this.movAvgList;
-	}
-
-	var divList = maList.map(
-		function (point) {
-			return new camgaze.structures.Point(
-				point.x / maList.length,
-				point.y / maList.length
-			)
+		var variance = 0;
+		for (var i = 0; i < distList.length; i++) {
+			variance += (
+				Math.pow(distList[i] - meanVal, 2) / 
+				distList.length
+			);
 		}
-	)
 
-	var retVal = divList.reduce(
-		function (prevPoint, curPoint) {
-			return new camgaze.structures.Point(
-				prevPoint.x + curPoint.x,
-				prevPoint.y + curPoint.y
-			)
-		}
-	)
+		var std = Math.sqrt(variance);
 
-	return new camgaze.structures.Point(
-		retVal.x.toFixed(0), 
-		retVal.y.toFixed(0)
-	)
-}
-
-camgaze.structures.MovingAveragePoints.prototype.compound = function (value, refPoint) {
-	this.put(value);
-	var maListCopy = this.movAvgList.slice(0);
-	this.lastMean = this.getMean(
-		this.removeOutliers(maListCopy, refPoint)
-	);
-	return this.lastMean;
-}
-
-camgaze.structures.MovingAveragePoints.prototype.setLength = function (length) {
-	if (length < this.movAvgList.length) {
-		this.movAvgList = this.movAvgList.slice(
-			this.movAvgList.length - nlength, 
-			this.movAvgList.length
+		return maList.filter(
+			function (point, index, array) {
+				return distList[index] < (meanVal + acceptableStds * std);
+			}
 		);
-	} else if (length > this.movAvgList.length) {
-		var lPoint = this.movAvgList[this.movAvgList.length];
-		for (var i = 0; i < length - this.movAvgList.length; i++) {
-			this.movAvgList.push(lPoint);
-		}
-	}
-	return this;
-}
+	},
 
-camgaze.structures.MovingAveragePoints.prototype.getLastCompoundedResult = function () {
-	return this.lastMean;
+	getMean : function (maList) {
+		if (maList.length == 0) {
+			maList = this.movAvgList;
+		}
+
+		var divList = maList.map(
+			function (point) {
+				return new camgaze.structures.Point(
+					point.x / maList.length,
+					point.y / maList.length
+				)
+			}
+		)
+
+		var retVal = divList.reduce(
+			function (prevPoint, curPoint) {
+				return new camgaze.structures.Point(
+					prevPoint.x + curPoint.x,
+					prevPoint.y + curPoint.y
+				)
+			}
+		)
+
+		return new camgaze.structures.Point(
+			retVal.x.toFixed(0), 
+			retVal.y.toFixed(0)
+		)
+	},
+
+	compound : function (value, refPoint) {
+		this.put(value);
+		var maListCopy = this.movAvgList.slice(0);
+		this.lastMean = this.getMean(
+			this.removeOutliers(maListCopy, refPoint)
+		);
+		return this.lastMean;
+	},
+
+	setLength : function (length) {
+		if (length < this.movAvgList.length) {
+			this.movAvgList = this.movAvgList.slice(
+				this.movAvgList.length - nlength, 
+				this.movAvgList.length
+			);
+		} else if (length > this.movAvgList.length) {
+			var lPoint = this.movAvgList[this.movAvgList.length];
+			for (var i = 0; i < length - this.movAvgList.length; i++) {
+				this.movAvgList.push(lPoint);
+			}
+		}
+		return this;
+	},
+
+	getLastCompoundedResult : function () {
+		return this.lastMean;
+	}
 }
 
 //////////////////////////////////////////////////////////////
@@ -533,7 +558,7 @@ camgaze.CVUtil.HaarDetector = function (classifier, imageWidth, imageHeight) {
 	// This number is a result of 
 	// unicorn magic. Play with it 
 	// if you please.
-	var max_work_size = 220;
+	var max_work_size = 180;
 
 	var scale = Math.min(
 		max_work_size / imageWidth, 
@@ -1004,7 +1029,7 @@ camgaze.EyeData.prototype = {
 		return this;
 	},
 
-	setMaxMinColor : function (minColor, maxColor) {
+	setMinMaxColor : function (minColor, maxColor) {
 		this.maxColor = maxColor;
 		this.minColor = minColor;
 		return this;
@@ -1249,8 +1274,8 @@ camgaze.EyeTracker.prototype = {
 				maxColor += step) {
 				var pPupils = this.getUnfilteredPupils(
 					img, 
-					maxColor,
-					minColor
+					minColor,
+					maxColor
 				);
 				if (pPupils != undefined) {
 					possiblePupils = possiblePupils.concat(
@@ -1285,7 +1310,7 @@ camgaze.EyeTracker.prototype = {
 		);
 	},
 
-	getUnfilteredPupils : function (img, maxColor, minColor) {
+	getUnfilteredPupils : function (img, minColor, maxColor) {
 		var imgGray = camgaze.CVUtil.toGrayscale(img);
 		var pupilBW = camgaze.CVUtil.grayScaleInRange(
 			imgGray,
@@ -1384,8 +1409,8 @@ camgaze.EyeTracker.prototype = {
 
 		var unfilteredEyeRects = this.haarDetector.detectObjects(
 			video,
-			1.9, // scale factor
-			1	 // min scale
+			2.4, // scale factor
+			1 // min scale
 		);
 
 		var eyeRects = this.filterRects(
@@ -1407,7 +1432,7 @@ camgaze.EyeTracker.prototype = {
 		var self = this;
 		eyeRects.forEach(
 			function (rect) {
-				if (Math.abs(rect.confidence) > 0.1) {
+				if (Math.abs(rect.confidence) > 0.07) {
 					var eyeData = new camgaze.EyeData(rect);
 
 					// needs to use another canvas because
@@ -1425,7 +1450,7 @@ camgaze.EyeTracker.prototype = {
 						var maxColor = pupilObj.maxColor;
 						var minColor = pupilObj.minColor;
 						eyeData.setPupil(pupil);
-						eyeData.setMaxMinColor(maxColor, minColor);
+						eyeData.setMinMaxColor(minColor, maxColor);
 						trackingData.pushEye(eyeData);
 					}
 				}
@@ -1502,7 +1527,7 @@ camgaze.EyeFilter.prototype = {
 
 						centroidMA : 
 							new self.MovingAveragePoints(
-								eye.getScaledCentroid(),
+								eye.getPupil().getCentroid(),
 								self.movAvgLength
 							),
 
@@ -1570,7 +1595,7 @@ camgaze.EyeFilter.prototype = {
 							max : 
 								fDict[key].colorMA.getLastCompoundedResult().getY()
 					}
-				}
+				};
 			}
 		);
 	}
@@ -1579,7 +1604,201 @@ camgaze.EyeFilter.prototype = {
 
 //////////////////////////////////////////////////////////////
 // 
-// Drawer
+// CanvasDrawer
+//
+// Useful class used to draw on a canvas. It is used when
+// a developer does not want to show the image onto the 
+// canvas in the frame operator. An instance of this object
+// gets passed to the frame operator, and shapes can be drawn
+// to this object. The function decorator will then call the
+// drawAll method and the shapes will be drawn then forgotten
+//
+//////////////////////////////////////////////////////////////
+
+camgaze.drawing.CanvasDrawer = function (canvasId, xSize, ySize) {
+	this.drawingCanvas = document.getElementById(canvasId);
+	this.drawingCanvas.width = xSize;
+	this.drawingCanvas.height = ySize;
+
+	this.context = this.drawingCanvas.getContext("2d");
+
+	this.xSize = xSize;
+	this.ySize = ySize;
+	this.drawingObjects = {
+		circles : new Array(),
+		rectangles : new Array(),
+		lines : new Array()
+	};
+}
+
+camgaze.drawing.CanvasDrawer.prototype = {
+	drawLine : function (sPoint, ePoint, lWidth, lColor) {
+		this.drawingObjects.lines.push(
+			{
+				startingPoint : sPoint,
+				endingPoint : ePoint,
+				lineWidth : lWidth,
+				lineColor : lColor
+			}
+		);
+		return this;
+	},
+
+	drawCircle : function (cPoint, r, lWidth, clr) {
+		this.drawingObjects.circles.push(
+			{
+				centerPoint : cPoint,
+				radius : r,
+				lineWidth : lWidth,
+				color : clr
+			}
+		);
+		return this;
+	},
+
+	drawRectangle : function (tlPoint, w, h, lWidth, clr) {
+		this.drawingObjects.rectangles.push(
+			 {
+			 	topLeftPoint : tlPoint,
+			 	width : w,
+			 	height : h,
+			 	lineWidth : lWidth,
+			 	color : clr
+			 }
+		);
+		return this;
+	},
+
+	clearAll : function () {
+		this.drawingObjects = {
+			circles : new Array(),
+			rectangles : new Array(),
+			lines : new Array()
+		};
+		return this;
+	},
+
+	clearCircles : function () {
+		this.drawingObjects.circles = new Array();
+		return this;
+	},
+
+	clearRectangles : function () {
+		this.drawingObjects.rectangles = new Array();
+		return this;
+	},
+
+	clearLines : function () {
+		this.drawingObjects.lines = new Array();
+		return this;
+	},
+
+	drawAll : function (clearBool) {
+		this.strokeCircles(false);
+		this.strokeRectangles(false);
+		this.strokeLines(false);
+
+		if (clearBool == undefined || clearBool) {
+			this.clearAll();
+		}
+	},
+
+	strokeCircles : function (clearBool) {
+		var self = this;
+		this.drawingObjects.circles.forEach(
+			function (circle) {
+				self.context.beginPath();
+				self.context.arc(
+					circle.centerPoint.x, 
+					circle.centerPoint.y, 
+					circle.radius, 
+					0, 2 * Math.PI, 
+					false
+				);
+
+				if (circle.lineWidth > 0) {
+					self.context.lineWidth = circle.lineWidth;
+					self.context.strokeStyle = circle.color;
+				} else {
+					self.context.lineWidth = 0;
+					self.context.fillStyle = circle.color;
+					self.context.fill();
+				}
+				self.context.stroke();
+			}
+		);
+
+		if (clearBool == undefined || clearBool) {
+			this.clearCircles();
+		}
+
+		return this;
+	},
+
+	strokeRectangles : function (clearBool) {
+		var self = this;
+		this.drawingObjects.rectangles.forEach(
+			function (rect) {
+				self.context.beginPath();
+				self.context.rect(
+					rect.topLeftPoint.x, 
+					rect.topLeftPoint.y, 
+					rect.width, 
+					rect.height
+				);
+
+				if (circle.lineWidth > 0) {
+					self.context.lineWidth = rect.lineWidth;
+					self.context.strokeStyle = rect.color;
+				} else {
+					self.context.lineWidth = 0;
+					self.context.fillStyle = rect.color;
+					self.context.fill();
+				}
+				self.context.stroke();
+			}
+		);
+
+		if (clearBool == undefined || clearBool) {
+			this.drawingObjects.rectangles = new Array();
+		}
+
+		return this;
+	},
+
+	strokeLines : function (clearBool) {
+		var self = this;
+		this.drawingObjects.lines.forEach(
+			function (line) {
+				self.context.beginPath();
+				self.context.moveTo(
+					line.startingPoint.x, 
+					line.startingPoint.y
+				);
+				self.context.lineTo(
+					line.endingPoint.x, 
+					line.endingPoint.y
+				);
+
+				// sets line properties
+				self.context.lineWidth = line.lineWidth;
+				self.context.strokeStyle = line.lineColor;
+				self.context.lineCap = "round";
+				self.context.stroke();
+			}
+		);
+
+		if (clearBool == undefined || clearBool) {
+			this.drawingObjects.lines = new Array();
+		}
+
+		return this;
+	}
+}
+
+//////////////////////////////////////////////////////////////
+// 
+// ImageDrawer
 //
 // Class used to draw onto images in a canvas. Needs to be
 // initialized as an object for memory efficiency. Because 
@@ -1592,7 +1811,7 @@ camgaze.EyeFilter.prototype = {
 //
 //////////////////////////////////////////////////////////////
 
-camgaze.Drawer = function () {
+camgaze.drawing.ImageDrawer = function () {
 	this.drawingCanvas = document.createElement("canvas");
 	this.drawingCanvas.style = "display:none;";
 	this.context = this.drawingCanvas.getContext("2d");
@@ -1600,7 +1819,7 @@ camgaze.Drawer = function () {
 
 // line color is hexstring or a well known
 // color string
-camgaze.Drawer.prototype = {
+camgaze.drawing.ImageDrawer.prototype = {
 	drawLine : function (img, startingPoint, endingPoint, lineWidth, lineColor) {
 		this.drawingCanvas.width = img.width;
 		this.drawingCanvas.height = img.height;
@@ -1719,17 +1938,19 @@ camgaze.Drawer.prototype = {
 	dimX and dimY are the dimensions of the frames
 	you would like to be returned from the camera.	
 */
-camgaze.Camera = function (canvasId, dimX, dimY) {
-	this.canvas = document.getElementById(canvasId);
-	this.canvas.width = dimX;
-	this.canvas.height = dimY;
+camgaze.Camera = function (dimX, dimY, canvasId) {
+	if (canvasId != undefined) {
+		this.canvas = document.getElementById(canvasId);
+		this.canvas.width = dimX;
+		this.canvas.height = dimY;
+		this.context = this.canvas.getContext('2d');
+	}
 
 	this.invisibleCanvas = document.createElement("canvas");
 	this.invisibleCanvas.style = "display:none;";
 	this.invisibleCanvas.width = dimX;
 	this.invisibleCanvas.height = dimY;
 
-	this.context = this.canvas.getContext('2d');
 	this.invisibleContext = this.invisibleCanvas.getContext('2d');
 
 	this.video = document.querySelector(
@@ -1789,10 +2010,16 @@ camgaze.Camera.prototype.playStreaming = function () {
 // draws frame onto visible canvas
 camgaze.Camera.prototype.drawFrame = function (imgData) {
 	//console.log(imgData);
-	this.context.putImageData(
-		imgData,
-		0, 0
-   );
+	if (this.context != undefined) {
+		this.context.putImageData(
+			imgData,
+			0, 0
+	   );
+	} else {
+		console.log(
+			"ERROR:\tCamera settings are only allowing aquisition"
+		);
+	}
 }
 
 camgaze.Camera.prototype.copyFrame = function (srcImage) {
