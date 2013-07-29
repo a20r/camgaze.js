@@ -19,15 +19,23 @@ window.onload = function () {
 	
 	var frameOp = function (image_data, video, drawer) {
 		trackingData = eyeTracker.track(image_data, video);
+		//console.log(trackingData);
 		var gazeList = eyeFilter.getFilteredGaze(trackingData);
 		if (trackingData.eyeList.length > 0) {
+			drawer.clearAll();
 			gazeList.forEach(
 				function (eye) {
 					// draws the face circle
 					drawer.drawCircle(
 						{
-							x : eye.eyeData.getFace().x + eye.eyeData.getFace().width / 2,
-							y : eye.eyeData.getFace().y + eye.eyeData.getFace().height / 2
+							x : (
+								eye.eyeData.getFace().x + 
+								eye.eyeData.getFace().width / 2
+							),
+							y : (
+								eye.eyeData.getFace().y + 
+								eye.eyeData.getFace().height / 2
+							)
 						},
 						eye.eyeData.getFace().width / 2,
 						2,
@@ -67,14 +75,6 @@ window.onload = function () {
 						},
 						eye.eyeData.getHaarRectangle().width / 2.2,  // radius
 						2, // line width (filled)
-						"red"
-					);
-
-					// draws the pupil
-					drawer.drawCircle(
-						eye.centroid.unfiltered,
-						4,  // radius
-						-1, // line width (filled)
 						"red"
 					);
 
@@ -198,6 +198,20 @@ window.onload = function () {
 						"red"
 					);
 
+					drawer.drawLine(
+						eye.centroid.filtered,
+						eye.centroid.filtered.add(eye.gazeVector),
+						2,
+						"green"
+					);
+
+					// draws the pupil
+					drawer.drawCircle(
+						eye.centroid.filtered,
+						4,  // radius
+						-1, // line width (filled)
+						"red"
+					);
 				}
 			);
 		}

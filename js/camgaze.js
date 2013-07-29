@@ -100,7 +100,7 @@ camgaze.Camgaze.prototype.setFrameOperator = function (callback) {
 					self.video, 
 					canvasDrawer
 				);
-				canvasDrawer.drawAll();
+				canvasDrawer.drawAll(false);
 			} else {
 				var img = callback(frame, self.video);
 				if (img.cols != undefined) {
@@ -122,9 +122,15 @@ camgaze.Camgaze.prototype.setFrameOperator = function (callback) {
 //
 //////////////////////////////////////////////////////////////
 
+// relative position on face
 camgaze.constants.LEFT = 1;
 camgaze.constants.RIGHT = 2;
 camgaze.constants.NOT_IN_FACE = 0;
+
+// eye proportions with regard to the face
+camgaze.constants.RIGHT_PROP_WIDTH = 0.21;
+camgaze.constants.LEFT_PROP_WIDTH = 0.54;
+camgaze.constants.PROP_HEIGHT = 0.37;
 
 //////////////////////////////////////////////////////////////
 //
@@ -1043,6 +1049,7 @@ camgaze.EyeData = function (eyeRect) {
 	this.maxColor = undefined;
 	this.minColor = undefined;
 	this.face = undefined;
+	this.eyeCenter = undefined;
 }
 
 camgaze.EyeData.prototype = {
@@ -1076,32 +1083,77 @@ camgaze.EyeData.prototype = {
 	},
 
 	inProportionRange : function (xProp, yProp) {
-		return (
-			this.eyeRect.x >= this.getFace().x + (
+
+		var cPoint = new camgaze.structures.Point(
+			this.getFace().x + (
 				this.getFace().width * xProp
-			) &&
-			this.eyeRect.x <= this.getFace().x + (
-				this.getFace().width * xProp +
-				this.eyeRect.width
-			) && 
-			this.eyeRect.y >= this.getFace().y + (
+			) + this.eyeRect.width / 2,
+
+			this.getFace().y + (
 				this.getFace().height * yProp
-			) &&
-			this.eyeRect.y <= this.getFace().y + (
-				this.getFace().height * yProp +
-				this.eyeRect.height
 			)
+		);
+		return (
+			cPoint.distTo(this.getScaledCentroid()) < 
+			this.eyeRect.width / 2
 		);
 	},
 
+	/*
+		Determines the which eye (left or right) is the
+		one depicted in this structure. Also sets the 
+		eye center which is later used to determine the
+		gaze. These properties are derived by the 
+		statistical proportions of the face and therefore
+		can become inaccurate. More testing is needed
+	*/
 	determineSide : function () {
-		if (this.inProportionRange(0.21, 0.37)) {
+		if (
+			this.inProportionRange(
+				camgaze.constants.RIGHT_PROP_WIDTH,
+				camgaze.constants.PROP_HEIGHT
+			)
+		) {
 			this.faceSide = camgaze.constants.RIGHT;
-		} else if (this.inProportionRange(0.54, 0.37)) {
+			this.eyeCenter = new camgaze.structures.Point(
+				this.getFace().x + 
+				(	
+					this.getFace().width * 
+					camgaze.constants.RIGHT_PROP_WIDTH
+				) +
+				this.eyeRect.width / 2,
+				this.getFace().y + 
+				(	
+					this.getFace().height * 
+					camgaze.constants.PROP_HEIGHT
+				)
+			);
+		} else if (
+			this.inProportionRange(
+				camgaze.constants.LEFT_PROP_WIDTH, 
+				camgaze.constants.PROP_HEIGHT
+			)
+		) {
 			this.faceSide = camgaze.constants.LEFT;
+			this.eyeCenter = new camgaze.structures.Point(
+				this.getFace().x + 
+				(	
+					this.getFace().width * 
+					camgaze.constants.LEFT_PROP_WIDTH
+				) +
+				this.eyeRect.width / 2,
+				this.getFace().y + 
+				(	
+					this.getFace().height * 
+					camgaze.constants.PROP_HEIGHT
+				) 
+			);
 		} else {
 			this.faceSide = camgaze.constants.NOT_IN_FACE;
+			this.eyeCenter = new camgaze.structures.Point(0, 0);
 		}
+
+		return this;
 	},
 
 	getFace : function () {
@@ -1109,49 +1161,13 @@ camgaze.EyeData.prototype = {
 	},
 
 	/*
-		Returns the vectors from the corners of 
-		the image with reference to the sub 
-		eye image.
-	*/
-	getCornerVectors : function () {
-		var pb = this.pupil;
-		var centroid = pb.getCentroid();
-		return {
-			topLeft : new camgaze.structures.Point(
-				centroid.x,
-				centroid.y
-			),
-			topRight : new camgaze.structures.Point(
-				centroid.x - this.eyeRect.width,
-				centroid.y
-			),
-			bottomLeft : new camgaze.structures.Point(
-				centroid.x,
-				centroid.y - this.eyeRect.height
-			),
-			bottomRight : new camgaze.structures.Point(
-				centroid.x - this.eyeRect.width,
-				centroid.y - this.eyeRect.height
-			)
-		}
-	}, 
-
-	/*
 		Returns the resultant vector from all of the
 		corners to the centroid point.
 	*/
 	getResultantVector : function () {
-		/*
-		var cVecs = this.getCornerVectors();
-		var resVec = new camgaze.structures.Point(0, 0);
-		for (var k in cVecs) {
-			//console.log(resVec);
-			resVec = resVec.add(cVecs[k]);
-		}
-		return resVec;
-		*/
-		var hc = this.getHaarCentroid();
-		return this.pupil.getCentroid().sub(hc).mult(4);
+		return this.getScaledCentroid().sub(
+			this.eyeCenter
+		).mult(3);
 	},
 
 	getMinMaxColors : function () {
@@ -1240,7 +1256,7 @@ camgaze.EyeTracker = function (xSize, ySize) {
 
 	this.previousEyes = new Array();
 	this.lostEyes = new camgaze.structures.Set(
-		camgaze.eyeHashFunc
+		camgaze.util.eyeHashFunc
 	);
 
 	this.resizeCanvas = document.createElement("canvas");
@@ -1519,18 +1535,6 @@ camgaze.EyeTracker.prototype = {
 			function (rect) {
 				if (Math.abs(rect.confidence) > 0.07) {
 					var eyeData = new camgaze.EyeData(rect);
-					faceRects.forEach(
-						function (fRect) {
-							if (
-								rect.x >= fRect.x && 
-								rect.x <= fRect.x + fRect.width &&
-								rect.y >= fRect.y &&
-								rect.y <= fRect.y + fRect.width
-							) {
-								eyeData.setFace(fRect);
-							}
-						}
-					);
 
 					// needs to use another canvas because
 					// stupid html5....
@@ -1548,6 +1552,18 @@ camgaze.EyeTracker.prototype = {
 						var minColor = pupilObj.minColor;
 						eyeData.setPupil(pupil);
 						eyeData.setMinMaxColor(minColor, maxColor);
+						faceRects.forEach(
+							function (fRect) {
+								if (
+									rect.x >= fRect.x && 
+									rect.x <= fRect.x + fRect.width &&
+									rect.y >= fRect.y &&
+									rect.y <= fRect.y + fRect.width
+								) {
+									eyeData.setFace(fRect);
+								}
+							}
+						);
 						trackingData.pushEye(eyeData);
 					}
 				}
@@ -1578,7 +1594,7 @@ camgaze.EyeTracker.prototype = {
 //////////////////////////////////////////////////////////////
 
 camgaze.EyeFilter = function () {
-	this.movAvgLength = 20;
+	this.movAvgLength = 5;
 	this.movAvgDict = {};
 	this.MovingAveragePoints = camgaze.structures.MovingAveragePoints;
 	this.origin = new camgaze.structures.Point(0, 0);
@@ -1624,7 +1640,7 @@ camgaze.EyeFilter.prototype = {
 
 						centroidMA : 
 							new self.MovingAveragePoints(
-								eye.getPupil().getCentroid(),
+								eye.getScaledCentroid(),
 								self.movAvgLength
 							),
 
