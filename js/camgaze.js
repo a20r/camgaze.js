@@ -32,6 +32,7 @@ camgaze.util = {};
 camgaze.structures = {};
 camgaze.drawing = {};
 camgaze.CVUtil = {};
+camgaze.constants = {};
 
 //////////////////////////////////////////////////////////////
 //
@@ -112,6 +113,18 @@ camgaze.Camgaze.prototype.setFrameOperator = function (callback) {
 
 	compatibility.requestAnimationFrame(frameOp);
 }
+
+//////////////////////////////////////////////////////////////
+//
+// constants
+//
+// Constants used throughout the API
+//
+//////////////////////////////////////////////////////////////
+
+camgaze.constants.LEFT = 1;
+camgaze.constants.RIGHT = 2;
+camgaze.constants.NOT_IN_FACE = 0;
 
 //////////////////////////////////////////////////////////////
 //
@@ -580,10 +593,19 @@ camgaze.CVUtil.HaarDetector = function (classifier, imageWidth, imageHeight) {
 	this.ctx = work_canvas.getContext("2d");
 
 
-	this.img_u8 = new jsfeat.matrix_t(w, h, jsfeat.U8_t | jsfeat.C1_t);
-	this.ii_sum = new Int32Array((w + 1) * (h + 1));
-	this.ii_sqsum = new Int32Array((w + 1) * (h + 1));
-	this.ii_tilted = new Int32Array((w + 1) * (h + 1));
+	this.img_u8 = new jsfeat.matrix_t(
+		w, h, 
+		jsfeat.U8_t | jsfeat.C1_t
+	);
+	this.ii_sum = new Int32Array(
+		(w + 1) * (h + 1)
+	);
+	this.ii_sqsum = new Int32Array(
+		(w + 1) * (h + 1)
+	);
+	this.ii_tilted = new Int32Array(
+		(w + 1) * (h + 1)
+	);
 	this.w = w;
 	this.h = h;
 }
@@ -592,10 +614,21 @@ camgaze.CVUtil.HaarDetector = function (classifier, imageWidth, imageHeight) {
 camgaze.CVUtil.HaarDetector.prototype = {
 	detectObjects : function (video, scaleFactor, minScale) {
 		this.ctx.drawImage(video, 0, 0, this.w, this.h);
-		var imageData = this.ctx.getImageData(0, 0, this.w, this.h);
+		var imageData = this.ctx.getImageData(
+			0, 0, 
+			this.w, this.h
+		);
+		//console.log(imageData);
 
-		jsfeat.imgproc.grayscale(imageData.data, this.img_u8.data);
-		jsfeat.imgproc.equalize_histogram(this.img_u8, this.img_u8);
+		jsfeat.imgproc.grayscale(
+			imageData.data, 
+			this.img_u8.data
+		);
+
+		jsfeat.imgproc.equalize_histogram(
+			this.img_u8, 
+			this.img_u8
+		);
 		//jsfeat.imgproc.gaussian_blur(img_u8, img_u8, 3);
 
 		// gets the integral image
@@ -1009,6 +1042,7 @@ camgaze.EyeData = function (eyeRect) {
 	this.uId = undefined;
 	this.maxColor = undefined;
 	this.minColor = undefined;
+	this.face = undefined;
 }
 
 camgaze.EyeData.prototype = {
@@ -1033,6 +1067,45 @@ camgaze.EyeData.prototype = {
 		this.maxColor = maxColor;
 		this.minColor = minColor;
 		return this;
+	},
+
+	setFace : function (faceRect) {
+		this.face = faceRect;
+		this.determineSide();
+		return this;
+	},
+
+	inProportionRange : function (xProp, yProp) {
+		return (
+			this.eyeRect.x >= this.getFace().x + (
+				this.getFace().width * xProp
+			) &&
+			this.eyeRect.x <= this.getFace().x + (
+				this.getFace().width * xProp +
+				this.eyeRect.width
+			) && 
+			this.eyeRect.y >= this.getFace().y + (
+				this.getFace().height * yProp
+			) &&
+			this.eyeRect.y <= this.getFace().y + (
+				this.getFace().height * yProp +
+				this.eyeRect.height
+			)
+		);
+	},
+
+	determineSide : function () {
+		if (this.inProportionRange(0.21, 0.37)) {
+			this.faceSide = camgaze.constants.RIGHT;
+		} else if (this.inProportionRange(0.54, 0.37)) {
+			this.faceSide = camgaze.constants.LEFT;
+		} else {
+			this.faceSide = camgaze.constants.NOT_IN_FACE;
+		}
+	},
+
+	getFace : function () {
+		return this.face;
 	},
 
 	/*
@@ -1148,6 +1221,12 @@ camgaze.EyeTracker = function (xSize, ySize) {
 
 	this.haarDetector = new camgaze.CVUtil.HaarDetector(
 		jsfeat.haar.eye,
+		this.xSize,
+		this.ySize
+	);
+
+	this.faceDetector = new camgaze.CVUtil.HaarDetector(
+		jsfeat.haar.frontalface,
 		this.xSize,
 		this.ySize
 	);
@@ -1409,7 +1488,13 @@ camgaze.EyeTracker.prototype = {
 
 		var unfilteredEyeRects = this.haarDetector.detectObjects(
 			video,
-			2.4, // scale factor
+			3.9, // scale factor
+			1 // min scale
+		);
+
+		var faceRects = this.faceDetector.detectObjects(
+			video,
+			1.1, // scale factor
 			1 // min scale
 		);
 
@@ -1434,6 +1519,18 @@ camgaze.EyeTracker.prototype = {
 			function (rect) {
 				if (Math.abs(rect.confidence) > 0.07) {
 					var eyeData = new camgaze.EyeData(rect);
+					faceRects.forEach(
+						function (fRect) {
+							if (
+								rect.x >= fRect.x && 
+								rect.x <= fRect.x + fRect.width &&
+								rect.y >= fRect.y &&
+								rect.y <= fRect.y + fRect.width
+							) {
+								eyeData.setFace(fRect);
+							}
+						}
+					);
 
 					// needs to use another canvas because
 					// stupid html5....
@@ -1669,12 +1766,21 @@ camgaze.drawing.CanvasDrawer.prototype = {
 		return this;
 	},
 
+	clearCanvas : function () {
+		this.context.clearRect(
+			0, 0,
+			this.drawingCanvas.width,
+			this.drawingCanvas.height
+		);
+	},
+
 	clearAll : function () {
 		this.drawingObjects = {
 			circles : new Array(),
 			rectangles : new Array(),
 			lines : new Array()
 		};
+
 		return this;
 	},
 
@@ -1694,6 +1800,7 @@ camgaze.drawing.CanvasDrawer.prototype = {
 	},
 
 	drawAll : function (clearBool) {
+		this.clearCanvas();
 		this.strokeCircles(false);
 		this.strokeRectangles(false);
 		this.strokeLines(false);
@@ -1701,6 +1808,8 @@ camgaze.drawing.CanvasDrawer.prototype = {
 		if (clearBool == undefined || clearBool) {
 			this.clearAll();
 		}
+
+		return this;
 	},
 
 	strokeCircles : function (clearBool) {
@@ -2061,4 +2170,3 @@ camgaze.Camera.prototype = {
 		);
 	}
 }
-
