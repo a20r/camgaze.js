@@ -127,7 +127,7 @@ camgaze.constants.LEFT = 1;
 camgaze.constants.RIGHT = 2;
 camgaze.constants.NOT_IN_FACE = 0;
 
-// eye proportions with regard to the face
+// eye proportions with regards to the face
 camgaze.constants.RIGHT_PROP_WIDTH = 0.21;
 camgaze.constants.LEFT_PROP_WIDTH = 0.54;
 camgaze.constants.PROP_HEIGHT = 0.37;
