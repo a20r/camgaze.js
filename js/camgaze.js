@@ -42,6 +42,13 @@ camgaze.constants = {};
 //
 //////////////////////////////////////////////////////////////
 
+/*
+	mCanvasId refers to the canvas that will be drawn on
+	at each iteration of the frame operator. If onlyCanvas
+	is true, the frame operator will be passed a CanvasDrawer
+	and it the return value of the frame operator will not
+	be displayed.
+*/
 camgaze.Camgaze = function (xSize, ySize, mCanvasId, onlyCanvas) {
 	if (onlyCanvas == undefined) {
 		onlyCanvas = false;
@@ -444,7 +451,7 @@ camgaze.structures.Set.prototype = {
 
 //////////////////////////////////////////////////////////////
 //
-// structures.MovingAveragePoints
+// MovingAveragePoints
 //
 // Implementation of a dynamic, moving average list. Elements 
 // are pushed to the list, but the list remains the same size 
@@ -1823,6 +1830,7 @@ camgaze.drawing.CanvasDrawer.prototype = {
 
 		if (clearBool == undefined || clearBool) {
 			this.clearAll();
+			this.clearCanvas();
 		}
 
 		return this;
