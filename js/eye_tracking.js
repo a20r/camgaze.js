@@ -9,7 +9,7 @@
 // is finished.
 //
 //////////////////////////////////////////////////////////////
-var trackingData;
+
 window.onload = function () {
 	
 	var cGaze = new camgaze.Camgaze(640, 480, "mainCanvas", true);
@@ -18,7 +18,7 @@ window.onload = function () {
 	//var drawer = new camgaze.drawing.ImageDrawer();
 	
 	var frameOp = function (image_data, video, drawer) {
-		trackingData = eyeTracker.track(image_data, video);
+		var trackingData = eyeTracker.track(image_data, video);
 		//console.log(trackingData);
 		var gazeList = eyeFilter.getFilteredGaze(trackingData);
 		if (trackingData.eyeList.length > 0) {
