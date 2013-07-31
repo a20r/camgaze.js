@@ -584,7 +584,7 @@ camgaze.CVUtil.HaarDetector = function (classifier, imageWidth, imageHeight) {
 	// This number is a result of 
 	// unicorn magic. Play with it 
 	// if you please.
-	var max_work_size = 180;
+	var max_work_size = 160;
 
 	var scale = Math.min(
 		max_work_size / imageWidth, 
@@ -1057,6 +1057,7 @@ camgaze.EyeData = function (eyeRect) {
 	this.minColor = undefined;
 	this.face = undefined;
 	this.eyeCenter = undefined;
+	this.orientation = undefined;
 }
 
 camgaze.EyeData.prototype = {
@@ -1121,7 +1122,7 @@ camgaze.EyeData.prototype = {
 				camgaze.constants.PROP_HEIGHT
 			)
 		) {
-			this.faceSide = camgaze.constants.RIGHT;
+			this.orientation = camgaze.constants.RIGHT;
 			this.eyeCenter = new camgaze.structures.Point(
 				this.getFace().x + 
 				(	
@@ -1141,7 +1142,7 @@ camgaze.EyeData.prototype = {
 				camgaze.constants.PROP_HEIGHT
 			)
 		) {
-			this.faceSide = camgaze.constants.LEFT;
+			this.orientation = camgaze.constants.LEFT;
 			this.eyeCenter = new camgaze.structures.Point(
 				this.getFace().x + 
 				(	
@@ -1156,7 +1157,7 @@ camgaze.EyeData.prototype = {
 				) 
 			);
 		} else {
-			this.faceSide = camgaze.constants.NOT_IN_FACE;
+			this.orientation = camgaze.constants.NOT_IN_FACE;
 			this.eyeCenter = new camgaze.structures.Point(0, 0);
 		}
 
@@ -1258,7 +1259,7 @@ camgaze.EyeTracker = function (xSize, ySize) {
 	// probably way to big right now
 	this.averageContourSize = 200;
 
-	this.MAX_COLOR = 35;
+	this.MAX_COLOR = 30;
 	this.MIN_COLOR = 0;
 
 	this.previousEyes = new Array();
@@ -1515,6 +1516,8 @@ camgaze.EyeTracker.prototype = {
 			1 // min scale
 		);
 
+		//console.log(unfilteredEyeRects.length);
+
 		var faceRects = this.faceDetector.detectObjects(
 			video,
 			1.1, // scale factor
@@ -1523,7 +1526,7 @@ camgaze.EyeTracker.prototype = {
 
 		var eyeRects = this.filterRects(
 			unfilteredEyeRects,
-			40 // distance threshold
+			20 // distance threshold
 		);
 
 		// gets the video frame
@@ -1601,7 +1604,7 @@ camgaze.EyeTracker.prototype = {
 //////////////////////////////////////////////////////////////
 
 camgaze.EyeFilter = function () {
-	this.movAvgLength = 5;
+	this.movAvgLength = 3;
 	this.movAvgDict = {};
 	this.MovingAveragePoints = camgaze.structures.MovingAveragePoints;
 	this.origin = new camgaze.structures.Point(0, 0);
@@ -1692,8 +1695,27 @@ camgaze.EyeFilter.prototype = {
 		].eyeData = eye;
 	},
 
+	getAverageLookingPoint : function (td) {
+		var avgPoint = new camgaze.structures.Point(0, 0);
+		var totalNum = 0;
+		td.getEyeList().forEach(
+			function (eye) {
+				if (eye.orientation != camgaze.constants.NOT_IN_FACE) {
+					avgPoint = avgPoint.add(
+						this.movAvgDict[
+							eye.getId()
+						].resultant.getLastCompoundedResult()
+					);
+					totalNum++;
+				}
+			}
+		);
+		return avgPoint.div(totalNum);
+	},
+
 	getFilteredGaze : function (td) {
 		var fDict = this.updateFilterData(td);
+		var self = this;
 		return Object.keys(fDict).map(
 			function (key) {
 				return {
