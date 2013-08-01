@@ -36,6 +36,8 @@
                 <ul class="nav nav-pills pull-right">
                     <li class="active"><a href="/camgaze.js">Home</a></li>
                     <li><a href="http://github.com/wallarelvo/camgaze.js">Source</a></li>
+                    <li><a href="#demos">Demos</a></li>
+                    <li><a href="#videos">Videos</a></li>
                 </ul>
                 <h3 class="muted">Camgaze.js</h3>
             </div>
@@ -49,7 +51,7 @@
                     </a>
                 </p>
             </div>
-            <div class="hero-unit">
+            <div class="hero-unit" id="demos">
                 <h1 style="padding-bottom:10;">Demos</h1>
                 <ul class="nav nav-pills nav-stacked">
                     <li>
@@ -70,7 +72,7 @@
                 </ul>
             </div>
 
-            <div class="hero-unit">
+            <div class="hero-unit" id="videos">
                 <h1 style="padding-bottom:10;">Videos</h1>
                 <iframe width="480" height="340" src="//www.youtube.com/embed/w1vurmCOI_I" frameborder="0" allowfullscreen></iframe>
                 <iframe width="480" height="340" src="//www.youtube.com/embed/0GDYRIPZKWM" frameborder="0" allowfullscreen></iframe>
