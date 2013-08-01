@@ -17,7 +17,7 @@
             }
 
             iframe {
-                padding-bottom: 20px;
+                padding-bottom: 40px;
             }
     	</style>
     	<!-- Le Bootstrap styles -->
