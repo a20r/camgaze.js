@@ -35,9 +35,10 @@
             <div class="masthead">
                 <ul class="nav nav-pills pull-right">
                     <li class="active"><a href="/camgaze.js">Home</a></li>
-                    <li><a href="http://github.com/wallarelvo/camgaze.js">Source</a></li>
+                    <li><a href="#about">About</a></li>
                     <li><a href="#demos">Demos</a></li>
                     <li><a href="#videos">Videos</a></li>
+                    <li><a href="http://github.com/wallarelvo/camgaze.js">Source</a></li>
                 </ul>
                 <h3 class="muted">Camgaze.js</h3>
             </div>
@@ -49,6 +50,14 @@
                     <a href="https://github.com/wallarelvo/camgaze.js/archive/master.zip" class="btn btn-primary btn-large">
                         Download source »
                     </a>
+                </p>
+            </div>
+            <div class="hero-unit">
+                <h1 style="padding-bottom:10;">About</h1>
+                <p>
+                    <b>Camgaze.js</b> is a JavaScript computer vision library
+                    which primary focus is for eye tracking and gaze detection.
+                    
                 </p>
             </div>
             <div class="hero-unit" id="demos">
