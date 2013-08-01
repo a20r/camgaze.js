@@ -14,7 +14,11 @@
             .container-narrow {
                 margin: 0 auto;
                 max-width: 600px;
-              }
+            }
+
+            video {
+            	display: none;
+            }
     	</style>
     	<!-- Le Bootstrap styles -->
         <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
@@ -36,11 +40,11 @@
                 <h3 class="muted">Camgaze.js</h3>
             </div>
             <div class="hero-unit">
-                <h3>Number of Blobs: <span id="blobNumber"></span><h3>
-                <h3>Average Blob Position: <span id="blobPos"></span><h3>
-
-                <canvas id="mainCanvas"></canvas>
-                <video autoplay></video>
+                <h5>Number of Blobs: <span id="blobNumber"></span><h5>
+                <h5>Average Blob Position: <span id="blobPos"></span><h5>
+                <div align="center">
+                	<canvas id="mainCanvas"></canvas>
+                </div>
             </div>
 
             <div class="footer">
@@ -58,6 +62,7 @@
                 </p>
             </div>
 	    </div>
+	    <video autoplay></video>
 
 		<!-- JQuery and Bootstrap Javascript files -->
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
@@ -70,8 +75,8 @@
 		<script text="text/javascript" src="/camgaze.js/js/camgaze.js"></script>
 		<script text="text/javascript">
 			window.onload = function () {
-				var width = 320;
-				var height = 240;
+				var width = 400;
+				var height = 300;
 				var cGaze = new camgaze.Camgaze(width, height, "mainCanvas");
 				var drawer = new camgaze.drawing.ImageDrawer();
 
