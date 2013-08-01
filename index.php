@@ -13,7 +13,7 @@
             
             .container-narrow {
                 margin: 0 auto;
-                max-width: auto;
+                max-width: 600px;
               }
     	</style>
     	<!-- Le Bootstrap styles -->
