@@ -1,42 +1,63 @@
-<html>
-<head>
-	<title>Blob Detection Demo</title>
-	<!-- Bootsrap -->
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="en">
+    <head>
+    	<meta charset="utf-8">
+    	<title>Camgaze.js</title>
+    	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    	<meta name="description" content="">
+    	<meta name="author" content="">
+    	<style type="text/css">
+        	body {
+        		padding-top: 60px;
+        		padding-bottom: 40px;
+        	}
+            
+            .container-narrow {
+                margin: 0 auto;
+                max-width: 600px;
+              }
+    	</style>
+    	<!-- Le Bootstrap styles -->
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    	<!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
+          <script src="js/html5shiv.js"></script>
+          <![endif]-->
 
-	<!-- Le Bootstrap styles -->
-	<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
-
-	<!-- Le other styles -->
-	<style>
-		body {
-			padding-top: 60px;
-			padding-left: 30px;
-			padding-right: 30px;
-			background: lightgrey;
-		}
-
-	    video {
-	      display:none;
-	    }
-
-	</style>
-</head>
-	<body>
-		<!-- Navigation bar -->
-		<div class="navbar navbar-fixed-top navbar-inverse">
-			<div class="navbar-inner">
-				<div class="container">
-                	<a class="brand" href="https://github.com/wallarelvo/camgaze.js">GitHub</a>
-            	</div>
+        <link type="text/css" rel="stylesheet" href="chrome-extension://cpngackimfmofbokmjmljamhdncknpmg/style.css">
+        <script type="text/javascript" charset="utf-8" src="chrome-extension://cpngackimfmofbokmjmljamhdncknpmg/page_context.js"></script>
+    </head>
+    <body screen_capture_injected="true">
+        <div class="container-narrow">
+            <div class="masthead">
+                <ul class="nav nav-pills pull-right">
+                    <li class="active"><a href="#">Home</a></li>
+                    <li><a href="http://github.com/wallarelvo/camgaze.js">Source</a></li>
+                </ul>
+                <h3 class="muted">Camgaze.js</h3>
             </div>
-	  	</div>
+            <div class="hero-unit">
+                <h3>Number of Blobs: <span id="blobNumber"></span><h3>
+                <h3>Average Blob Position: <span id="blobPos"></span><h3>
 
-	  	<h3>Number of Blobs: <span id="blobNumber"></span><h3>
-	  	<h3>Average Blob Position: <span id="blobPos"></span><h3>
+                <canvas id="mainCanvas"></canvas>
+                <video autoplay></video>
+            </div>
 
-	    <canvas id="mainCanvas"></canvas>
-	    <video autoplay></video>
+            <div class="footer">
+                <p>
+                    Creators: 
+                    <a href="http://www.linkedin.com/pub/alexander-wallar/68/985/b87">
+                        Alex Wallar
+                    </a>
+                </p>
+                <p>
+                    Website by: 
+                    <a href="http://www.thundersun.net">
+                        Valentin Tunev
+                    </a>
+                </p>
+            </div>
+	    </div>
 
 		<!-- JQuery and Bootstrap Javascript files -->
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
