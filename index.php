@@ -84,7 +84,7 @@
                     Creator: 
                     <a href="http://www.linkedin.com/pub/alexander-wallar/68/985/b87">
                         Alex Wallar
-                    </a>
+                    </a>, aw204@st-andrews.ac.uk
                 </p>
                 <p>
                     Website by: 
