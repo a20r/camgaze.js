@@ -66,8 +66,8 @@ func fileResponseCreator(folder string) func(w http.ResponseWriter, r *http.Requ
 // file requests
 func displayHandler() {
     http.HandleFunc("/", fileResponseCreator("."))
-    http.HandleFunc("/cascades/", fileResponseCreator(".."))
-    http.HandleFunc("/js/", fileResponseCreator(".."))
+    http.HandleFunc("/camgaze.js/cascades/", fileResponseCreator("../.."))
+    http.HandleFunc("/camgaze.js/js/", fileResponseCreator("../.."))
 }
 
 func main() {
