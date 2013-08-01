@@ -25,7 +25,6 @@
 
         <link type="text/css" rel="stylesheet" href="chrome-extension://cpngackimfmofbokmjmljamhdncknpmg/style.css">
         <script type="text/javascript" charset="utf-8" src="chrome-extension://cpngackimfmofbokmjmljamhdncknpmg/page_context.js"></script>
-        <style type="text/css"></style>
     </head>
     <body screen_capture_injected="true">
         <div class="container-narrow">
@@ -40,8 +39,25 @@
                 <img src="http://aw204.host.cs.st-andrews.ac.uk/camgaze.js/imgs/eye_tracking.jpg">
                 <h1>Camgaze.js</h1>
                 <p>Eye Tracking and Gaze Prediction in JavaScript</p>
+                <ul class="nav nav-pills nav-stacked">
+                    <li>
+                        <a href="examples/blob_detection.html">
+                            Blob Detection Demo
+                        </a>
+                    </li>
+                    <li>
+                        <a href="examples/face_detection.html">
+                            Face Detection Demo
+                        </a>
+                    </li>
+                    <li>
+                        <a href="examples/smiley_face.html">
+                            Gaze Prediction Demo
+                        </a>
+                    </li>
+                </ul>
                 <p>
-                    <a href="Taros2013.zip" class="btn btn-primary btn-large">
+                    <a href="https://github.com/wallarelvo/camgaze.js/archive/master.zip" class="btn btn-primary btn-large">
                         Download source »
                     </a>
                 </p>
