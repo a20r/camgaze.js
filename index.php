@@ -68,7 +68,7 @@
 
             <div class="hero-unit">
                 <h1 style="padding-bottom:10;">Videos</h1>
-                <iframe width="420" height="315" src="//www.youtube.com/embed/w1vurmCOI_I" frameborder="0" allowfullscreen></iframe>
+                <iframe width="480" height="340" src="//www.youtube.com/embed/w1vurmCOI_I" frameborder="0" allowfullscreen></iframe>
             </div>
 
             <div class="footer">
