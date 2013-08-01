@@ -56,8 +56,16 @@
                 <h1 style="padding-bottom:10;">About</h1>
                 <p>
                     <b>Camgaze.js</b> is a JavaScript computer vision library
-                    which primary focus is for eye tracking and gaze detection.
-                    
+                    which primary focus is eye tracking and gaze detection.
+                    <b>Camgaze.js</b> uses the 
+                    <a href="http://inspirit.github.io/jsfeat/">jsfeat</a> 
+                    computer vision library as a backbone and builds upon
+                    its foundation. <b>Camgaze.js</b> enables easier detection
+                    of objects using the
+                    <a href="http://en.wikipedia.org/wiki/Viola%E2%80%93Jones_object_detection_framework">Viola-Jones
+                    Object Detection Framework</a>. It also provides algorithms
+                    for binary image operations such as blob detection 
+                    and image moment calculations. 
                 </p>
             </div>
             <div class="hero-unit" id="demos">
