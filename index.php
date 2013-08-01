@@ -30,7 +30,7 @@
         <div class="container-narrow">
             <div class="masthead">
                 <ul class="nav nav-pills pull-right">
-                    <li class="active"><a href="#">Home</a></li>
+                    <li class="active"><a href="/camgaze.js">Home</a></li>
                     <li><a href="http://github.com/wallarelvo/camgaze.js">Source</a></li>
                 </ul>
                 <h3 class="muted">Camgaze.js</h3>
