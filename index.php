@@ -47,23 +47,25 @@
             </div>
             <div class="hero-unit">
                 <h1 style="padding-bottom:10;">Demos</h1>
-                <ul algin="center" class="nav nav-pills nav-stacked">
-                    <li>
-                        <a href="examples/blob_detection.html">
-                            Blob Detection
-                        </a>
-                    </li>
-                    <li>
-                        <a href="examples/face_detection.html">
-                            Face Detection
-                        </a>
-                    </li>
-                    <li>
-                        <a href="examples/smiley_face.html">
-                            Gaze Prediction
-                        </a>
-                    </li>
-                </ul>
+                <div align="center">
+                    <ul class="nav nav-pills nav-stacked">
+                        <li>
+                            <a href="examples/blob_detection.html">
+                                Blob Detection
+                            </a>
+                        </li>
+                        <li>
+                            <a href="examples/face_detection.html">
+                                Face Detection
+                            </a>
+                        </li>
+                        <li>
+                            <a href="examples/smiley_face.html">
+                                Gaze Prediction
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
 
             <div class="footer">
