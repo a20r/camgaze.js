@@ -1,0 +1,360 @@
+/*
+ * Beaker - Responsive Landing Page - V.1.0
+ * Author: Shy Markets
+ * Author URL: http://creativemarket.com/shymarkets
+ * All Right Reserved
+ * Credits:
+ * * http://twitter.github.com/bootstrap/
+ * * http://fortawesome.github.com/Font-Awesome/
+ **/
+ 
+/*************************************************************
+                         google font
+**************************************************************/
+@import url(http://fonts.googleapis.com/css?family=Lato:100,300,400,700);
+
+/*************************************************************
+                    reset some defaults styles
+**************************************************************/
+body {
+  font-family: lato;
+  font-size: 15px;
+  font-weight: 300;
+  color: rgb(124, 124, 124);
+}
+
+a {
+  color: rgb(50, 50, 50);
+  -webkit-transition: all 300ms ease;
+  -moz-transition: all 300ms ease;
+  -ms-transition: all 300ms ease;
+  -o-transition: all 300ms ease;
+  transition: all 300ms ease;
+}
+
+a:hover, a:focus {
+  color: rgb(219, 82, 47);
+  text-decoration: none;
+}
+ 
+/*************************************************************
+                             header
+**************************************************************/
+.site-header {
+  background-image: url(../img/bg.jpg);
+  background-repeat: no-repeat, repeat;
+  -webkit-background-size:cover;
+  -moz-background-size:cover;
+  background-size:cover;
+  padding-top: 100px;
+}
+
+/* logo - icon is from fontawesome font */
+.site-title {
+  color: #fff;
+  font-weight: 300;
+  font-size: 30px;
+}
+
+/* header-description */
+.header-description {
+  margin: 130px 0 0;
+}
+.header-description h2 {  
+  font-weight: 400;
+  font-size: 70px;
+  color: rgb(255, 255, 255);
+  text-shadow: 0 0px 12px rgba(36, 36, 36, 0.55);
+  padding: 0px 0 40px 0;
+}
+
+/* header button - call to action button */
+.header-btn {
+  color: #fff;
+  border-radius: 9px;
+  margin-top: 130px;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+  font-weight: 300;
+  font-size: 24px;
+  padding: 20px 35px;
+  border: 2px solid rgb(219, 82, 47);
+  background: rgb(219, 82, 47);
+  display: inline-block;
+}
+.header-btn:hover {
+  color: #fff;
+  background: transparent;
+}
+
+/* header features */
+.header-features {
+  color: #fff;
+  display: block;
+}
+.header-feature{
+  padding-bottom: 70px;
+}
+
+
+/*************************************************************
+                        section#slider
+**************************************************************/
+.nexus {
+  background-image: url(../img/nexus.png);
+  width: 254px;
+  height: 408px;
+  margin: -125px auto 0;
+  position: relative;
+}
+.slider {
+  width: 191px;
+  margin: 52px 31px 0;
+  height: 309px;
+  position: absolute;
+  background: rgb(15, 15, 15);
+}
+.carousel-indicators {
+  bottom: 15px;
+  top: auto;
+  right: 104px;
+  bottom: -18px;
+}
+.purchase-button {
+  margin: 50px 0;
+  text-align: center;
+}
+.purchase-button a {
+  color: #fff;
+  display: inline-block;
+  font-size: 20px;
+  padding: 20px 50px;
+  font-weight: 300;
+  background: rgb(54, 54, 54);
+  border: 1px solid rgb(54, 54, 54);
+   
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  
+  -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,0.19);
+  -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,0.19);
+  -ms-box-shadow: inset 0 1px 0 rgba(255,255,255,0.19);
+  -o-box-shadow: inset 0 1px 0 rgba(255,255,255,0.19);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.19);
+}
+.purchase-button a:active {
+  color: #fff;
+  border: 1px solid rgb(54, 54, 54);
+  
+  -webkit-box-shadow: inset 0 1px 0 rgba(0,0,0,0.19);
+  -moz-box-shadow: inset 0 1px 0 rgba(0,0,0,0.19);
+  -ms-box-shadow: inset 0 1px 0 rgba(0,0,0,0.19);
+  -o-box-shadow: inset 0 1px 0 rgba(0,0,0,0.19);
+  box-shadow: inset 0 1px 0 rgba(0,0,0,0.19);
+}
+.purchase-button a i {
+  margin-right: 10px;
+}
+.purchase-button a:hover {
+  text-decoration: none;
+}
+
+/*************************************************************
+                        section#team
+**************************************************************/
+#teams {
+  padding: 200px 0;
+  background: #fff;
+}
+.member {
+  padding: 0 30%;
+}
+.member img {
+  border: 2px solid rgb(255, 255, 255);
+  
+  -webkit-border-radius: 100%;
+  -moz-border-radius: 100%;
+  border-radius: 100%;
+  
+  -webkit-box-shadow: 0 0 8px rgba(0, 0, 0, 0.21);
+  -moz-box-shadow: 0 0 8px rgba(0, 0, 0, 0.21);
+  -ms-box-shadow: 0 0 8px rgba(0, 0, 0, 0.21);
+  -o-box-shadow: 0 0 8px rgba(0, 0, 0, 0.21);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.21);
+}
+
+
+/*************************************************************
+                        #footer
+**************************************************************/
+.footer {
+  position: relative;
+  background: rgb(75, 75, 75);
+  color: #fff;
+}
+.notify-wrapper {
+  position: absolute;
+  left: 50%;
+  top: -40px;
+}
+.notify-inner {
+  position: relative;
+  right: 50%;
+  padding: 29px 10px 27px;
+  background: rgb(255, 255, 255, .55);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  
+  -webkit-border-radius: 40px;
+  -moz-border-radius: 40px;
+  border-radius: 40px;
+  
+  -webkit-box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.17);
+  -moz-box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.17);
+  -ms-box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.17);
+  -o-box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.17);
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.17);
+}
+.notify {
+  font-size: 20px;
+  color: rgb(255, 255, 255);
+  font-weight: 300;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  padding: 17px 50px;
+  background: rgba(147,206,222,1);
+  background: -moz-linear-gradient(top, rgba(147,206,222,1) 0%, rgba(73,165,191,1) 100%);
+  background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(147,206,222,1)), color-stop(100%, rgba(73,165,191,1)));
+  background: -webkit-linear-gradient(top, rgba(147,206,222,1) 0%, rgba(73,165,191,1) 100%);
+  background: -o-linear-gradient(top, rgba(147,206,222,1) 0%, rgba(73,165,191,1) 100%);
+  background: -ms-linear-gradient(top, rgba(147,206,222,1) 0%, rgba(73,165,191,1) 100%);
+  background: linear-gradient(to bottom, rgba(147,206,222,1) 0%, rgba(73,165,191,1) 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#93cede', endColorstr='#49a5bf', GradientType=0 );
+  
+  -webkit-border-radius: 40px;
+  -moz-border-radius: 40px;
+  border-radius: 40px;
+  
+  -webkit-box-shadow: 0 0 2px rgba(255, 255, 255, .5), inset 0 1px 0 rgba(255,255,255,0.7);
+  -moz-box-shadow: 0 0 2px rgba(255, 255, 255, .5), inset 0 1px 0 rgba(255,255,255,0.7);
+  -ms-box-shadow: 0 0 2px rgba(255, 255, 255, .5), inset 0 1px 0 rgba(255,255,255,0.7);
+  -o-box-shadow: 0 0 2px rgba(255, 255, 255, .5), inset 0 1px 0 rgba(255,255,255,0.7);
+  box-shadow: 0 0 2px rgba(255, 255, 255, .5), inset 0 1px 0 rgba(255,255,255,0.7);
+}
+.notify:active, .notify:hover {
+  color: rgba(255, 255, 255, .5);
+}
+.notify:active {
+  border: 1px solid rgba(0, 0, 0, 0.29);
+  
+  -webkit-box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35);
+  -moz-box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35);
+  -ms-box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35);
+  -o-box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35);
+}
+
+
+/* footer notes */
+.footer-notes {
+  padding: 150px 30% 100px;
+  position: inline-block;
+}
+.footer-notes p {
+  padding-bottom: 20px;
+}
+.footer-notes p + p {
+  border-top: 1px dashed rgb(220, 220, 220);
+  padding: 25px;
+}
+.footer-notes a {
+  color: #fff;
+}
+.footer-notes a:hover {
+  text-decoration: underline;
+}
+
+
+/*************************************************************
+                        responsive fix
+**************************************************************/
+/* Large desktop */
+@media (min-width: 1100px) { 
+  
+}
+
+@media (min-width:768px) and (max-width:1024px) {
+}
+ 
+/* Portrait tablet to landscape and desktop */
+@media (min-width: 768px) and (max-width: 979px) { 
+  .site-header {
+    padding-bottom: 50px;
+  }
+  .nexus {
+    margin: 0px -27px 0;
+  }
+  
+  .purchase-button a{
+    font-size: 15px;
+  }
+
+}
+ 
+/* Landscape phone to portrait tablet */
+@media (max-width: 767px) { 
+  body {
+    padding-right: 0px;
+    padding-left: 0px;
+  }
+  .container {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+  
+  .site-header {
+    padding-bottom: 651px;
+  }
+  
+  .purchase-button {
+    position: relative !important;
+  }
+  
+  .header-description {
+    margin: 66px 0 0;
+  }
+  .header-description h2 {
+    font-size: 59px;
+    line-height: 62px;
+  }
+  .purchase-button a {
+    font-size: 14px;
+    padding: 16px 24px;
+  }
+  .nexus {
+    margin: -64px auto 117px;
+  }
+  
+  .member {
+    padding: 0 0;
+    margin-bottom: 50px;
+  }
+  
+  .notify {
+    font-size: 16px;
+    display: inline-block;
+    padding: 17px 25px;
+  }
+  .notify-inner {
+    padding: 7px 8px 8px;
+  }
+  
+  
+  .footer-notes {
+    padding: 150px 0 100px;
+  }
+  
+}  
+/* Landscape phones and down */
+@media (max-width: 480px) { 
+
+}
