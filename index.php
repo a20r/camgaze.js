@@ -39,7 +39,7 @@
                 <img src="http://aw204.host.cs.st-andrews.ac.uk/camgaze.js/imgs/eye_tracking.jpg">
                 <h1 style="padding-bottom:10;">Camgaze.js</h1>
                 <p>Eye Tracking and Gaze Prediction in JavaScript</p>
-                <ul class="nav nav-pills pull-right">
+                <ul class="nav nav-pills nav-stacked">
                     <li>
                         <a href="examples/blob_detection.html">
                             Blob Detection Demo
