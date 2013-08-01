@@ -81,7 +81,7 @@
 
             <div class="footer">
                 <p>
-                    Creators: 
+                    Creator: 
                     <a href="http://www.linkedin.com/pub/alexander-wallar/68/985/b87">
                         Alex Wallar
                     </a>
