@@ -25,12 +25,12 @@
 	<body>
 		<!-- Navigation bar -->
 		<div class="navbar navbar-fixed-top navbar-inverse">
-	      <div class="navbar-inner">
-            <div class="container">
-                <a class="brand" href="https://github.com/wallarelvo/camgaze.js">GitHub</a>
+			<div class="navbar-inner">
+				<div class="container">
+                	<a class="brand" href="https://github.com/wallarelvo/camgaze.js">GitHub</a>
+            	</div>
             </div>
-	      </div>
-	  </div>
+	  	</div>
 
 	<div style="white-space: nowrap">
 	    <canvas id="mainCanvas" style="display: inline-block;"></canvas>
@@ -41,16 +41,23 @@
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
 
 		<!-- Concuss.js and Canvas utilities -->
-		<script text="text/javascript" src="/js/jsfeat.js"></script>
-		<script text="text/javascript" src="/js/compatibility.js"></script>
-		<script text="text/javascript" src="/cascades/eye.js"></script>
-		<script text="text/javascript" src="/cascades/frontalface.js"></script>
-		<script text="text/javascript" src="/js/camgaze.js"></script>
+		<script text="text/javascript" src="js/jsfeat.js"></script>
+		<script text="text/javascript" src="js/compatibility.js"></script>
+		<script text="text/javascript" src="cascades/eye.js"></script>
+		<script text="text/javascript" src="cascades/frontalface.js"></script>
+		<script text="text/javascript" src="js/camgaze.js"></script>
 		<script text="text/javascript">
 			window.onload = function () {
-				
-				var cGaze = new camgaze.Camgaze(640, 480, "mainCanvas", true);
-				var eyeTracker = new camgaze.EyeTracker(640, 480);
+				var width = 640;
+				var height = 480;
+
+				var cGaze = new camgaze.Camgaze(
+					width, 
+					height, 
+					"mainCanvas", 
+					true
+				);
+				var eyeTracker = new camgaze.EyeTracker(width, height);
 				var eyeFilter = new camgaze.EyeFilter();
 				//var drawer = new camgaze.drawing.ImageDrawer();
 

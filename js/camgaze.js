@@ -584,7 +584,7 @@ camgaze.CVUtil.HaarDetector = function (classifier, imageWidth, imageHeight) {
 	// This number is a result of 
 	// unicorn magic. Play with it 
 	// if you please.
-	var max_work_size = 160;
+	var max_work_size = 200;
 
 	var scale = Math.min(
 		max_work_size / imageWidth, 
@@ -1512,7 +1512,7 @@ camgaze.EyeTracker.prototype = {
 
 		var unfilteredEyeRects = this.haarDetector.detectObjects(
 			video,
-			3.9, // scale factor
+			2.4, // scale factor
 			1 // min scale
 		);
 
@@ -1604,7 +1604,7 @@ camgaze.EyeTracker.prototype = {
 //////////////////////////////////////////////////////////////
 
 camgaze.EyeFilter = function () {
-	this.movAvgLength = 3;
+	this.movAvgLength = 5;
 	this.movAvgDict = {};
 	this.MovingAveragePoints = camgaze.structures.MovingAveragePoints;
 	this.origin = new camgaze.structures.Point(0, 0);
@@ -2076,6 +2076,31 @@ camgaze.drawing.ImageDrawer.prototype = {
 			img.width, 
 			img.height
 		);
+	},
+
+	drawFill : function (img, fillIndexes, color) {
+		this.drawingCanvas.width = img.width;
+		this.drawingCanvas.height = img.height;
+		this.context.putImageData(
+			img,
+			0, 0
+		);
+
+		var imgCopy = this.context.getImageData(
+			0, 0,
+			img.width, 
+			img.height
+		);
+
+		fillIndexes.forEach(
+			function (fillIndex) {
+				imgCopy.data[4 * fillIndex] = color[0];
+				imgCopy.data[4 * fillIndex + 1] = color[1];
+				imgCopy.data[4 * fillIndex + 2] = color[2];
+			}
+		)
+
+		return imgCopy;
 	}
 }
 

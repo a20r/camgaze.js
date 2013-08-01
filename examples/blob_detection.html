@@ -1,0 +1,102 @@
+<html>
+<head>
+	<title>Blob Detection Demo</title>
+	<!-- Bootsrap -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le Bootstrap styles -->
+	<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+
+	<!-- Le other styles -->
+	<style>
+		body {
+			padding-top: 60px;
+			padding-left: 30px;
+			padding-right: 30px;
+			background: lightgrey;
+		}
+
+	    video {
+	      display:none;
+	    }
+
+	</style>
+</head>
+	<body>
+		<!-- Navigation bar -->
+		<div class="navbar navbar-fixed-top navbar-inverse">
+			<div class="navbar-inner">
+				<div class="container">
+                	<a class="brand" href="https://github.com/wallarelvo/camgaze.js">GitHub</a>
+            	</div>
+            </div>
+	  	</div>
+
+	  	<h3>Number of Blobs: <span id="blobNumber"></span><h3>
+	  	<h3>Average Blob Position: <span id="blobPos"></span><h3>
+
+	    <canvas id="mainCanvas"></canvas>
+	    <video autoplay></video>
+
+		<!-- JQuery and Bootstrap Javascript files -->
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+
+		<!-- Concuss.js and Canvas utilities -->
+		<script text="text/javascript" src="/js/jsfeat.js"></script>
+		<script text="text/javascript" src="/js/compatibility.js"></script>
+		<script text="text/javascript" src="/cascades/eye.js"></script>
+		<script text="text/javascript" src="/cascades/frontalface.js"></script>
+		<script text="text/javascript" src="/js/camgaze.js"></script>
+		<script text="text/javascript">
+			window.onload = function () {
+				var width = 320;
+				var height = 240;
+				var cGaze = new camgaze.Camgaze(width, height, "mainCanvas");
+				var drawer = new camgaze.drawing.ImageDrawer();
+
+				var frameOp = function (image_data, video) {
+					var grayImg = camgaze.CVUtil.toGrayscale(image_data);
+					var binaryImg = camgaze.CVUtil.grayScaleInRange(
+						grayImg,
+						10, 26
+					);
+					var blobs = camgaze.CVUtil.getConnectedComponents(binaryImg, 5);
+					blobs.forEach(
+						function (blob) {
+							image_data = drawer.drawFill(
+								image_data,
+								blob.getContour(),
+								[255, 0, 0] // red
+							);
+						}
+					);
+
+					var averagePos = blobs.map(
+						function (blob) {
+							return blob.getCentroid();
+						}
+					).reduce(
+						function (previousPoint, currentPoint) {
+							return previousPoint.add(
+								currentPoint
+							);
+						}
+					).div(blobs.length);
+
+					$("#blobNumber").html(blobs.length);
+					$("#blobPos").html(
+						"( " + 
+						averagePos.x.toFixed(0) + 
+						", " +
+						averagePos.y.toFixed(0) + 
+						" )"
+					);
+
+					return image_data;
+				};
+				cGaze.setFrameOperator(frameOp);
+			} 
+		</script>
+	</body>
+</html>
+
