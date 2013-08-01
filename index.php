@@ -46,8 +46,8 @@
                 </p>
             </div>
             <div class="hero-unit">
-                <h2 style="padding-bottom:10;">Demos</h2>
-                <ul class="nav nav-pills nav-stacked">
+                <h1 style="padding-bottom:10;">Demos</h1>
+                <ul algin="center" class="nav nav-pills nav-stacked">
                     <li>
                         <a href="examples/blob_detection.html">
                             Blob Detection
