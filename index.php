@@ -29,12 +29,12 @@
         <li class="active"><a href="#">Home</a></li>
         <li><a href="http://github.com/wallarelvo/camgaze.js">Source</a></li>
       </ul>
-      <h3 class="muted">CRoPS</h3>
+      <h3 class="muted">Camgaze.js</h3>
     </div>
     <div class="hero-unit">
       <img src="http://aw204.host.cs.st-andrews.ac.uk/CRoPS/page-0.jpg">
-     <h1>CRoPS</h1>
-     <p>Combined Roadmaps and Potentials for Swarms</p>
+     <h1>Camgaze.js</h1>
+     <p>Eye Tracking and Gaze Prediction in JavaScript</p>
      <p><a href="Taros2013.zip" class="btn btn-primary btn-large">Download source »</a></p>
 
    </div>
