@@ -39,38 +39,46 @@
                 <img src="http://aw204.host.cs.st-andrews.ac.uk/camgaze.js/imgs/eye_tracking.jpg">
                 <h1 style="padding-bottom:10;">Camgaze.js</h1>
                 <p>Eye Tracking and Gaze Prediction in JavaScript</p>
-                <ul class="nav nav-pills nav-stacked">
-                    <li>
-                        <a href="examples/blob_detection.html">
-                            Blob Detection Demo
-                        </a>
-                    </li>
-                    <li>
-                        <a href="examples/face_detection.html">
-                            Face Detection Demo
-                        </a>
-                    </li>
-                    <li>
-                        <a href="examples/smiley_face.html">
-                            Gaze Prediction Demo
-                        </a>
-                    </li>
-                </ul>
                 <p>
                     <a href="https://github.com/wallarelvo/camgaze.js/archive/master.zip" class="btn btn-primary btn-large">
                         Download source »
                     </a>
                 </p>
-
             </div>
+            <div class="hero-unit">
+                <h2 style="padding-bottom:10;">Demos</h2>
+                <ul class="nav nav-pills nav-stacked">
+                    <li>
+                        <a href="examples/blob_detection.html">
+                            Blob Detection
+                        </a>
+                    </li>
+                    <li>
+                        <a href="examples/face_detection.html">
+                            Face Detection
+                        </a>
+                    </li>
+                    <li>
+                        <a href="examples/smiley_face.html">
+                            Gaze Prediction
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
             <div class="footer">
-            <p>
-                Creators: 
-                <a href="http://www.linkedin.com/pub/alexander-wallar/68/985/b87">
-                    Alex Wallar
-                </a>
-            </p>
-            <p>Website by: <a href="http://www.thundersun.net">Valentin Tunev</a></p>
+                <p>
+                    Creators: 
+                    <a href="http://www.linkedin.com/pub/alexander-wallar/68/985/b87">
+                        Alex Wallar
+                    </a>
+                </p>
+                <p>
+                    Website by: 
+                    <a href="http://www.thundersun.net">
+                        Valentin Tunev
+                    </a>
+                </p>
             </div>
         </div>
     </body>
