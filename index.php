@@ -49,19 +49,19 @@
                 <h1 style="padding-bottom:10;">Demos</h1>
                 <ul class="nav nav-pills nav-stacked">
                     <li>
-                        <h4 href="examples/blob_detection.html">
-                            Blob Detection
-                        </h4>
+                        <a href="examples/blob_detection.html">
+                            <h4>Blob Detection</h4>
+                        </a>
                     </li>
                     <li>
-                        <h4 href="examples/face_detection.html">
-                            Face Detection
-                        </h4>
+                        <a href="examples/face_detection.html">
+                            <h4>Face Detection</h4>
+                        </a>
                     </li>
                     <li>
-                        <h4 href="examples/smiley_face.html">
-                            Gaze Prediction
-                        </h4>
+                        <a href="examples/smiley_face.html">
+                            <h4>Gaze Prediction</h4>
+                        </a>
                     </li>
                 </ul>
             </div>
