@@ -1700,7 +1700,10 @@ camgaze.EyeFilter.prototype = {
 		].eyeData = eye;
 	},
 
-	getAverageLookingPoint : function (td) {
+	getAverageLookingPoint : function (td, update) {
+		if (update == undefined || update) {
+			this.updateFilterData(td);
+		}
 		var avgPoint = new camgaze.structures.Point(0, 0);
 		var totalNum = 0;
 		td.getEyeList().forEach(
@@ -1709,7 +1712,7 @@ camgaze.EyeFilter.prototype = {
 					avgPoint = avgPoint.add(
 						this.movAvgDict[
 							eye.getId()
-						].resultant.getLastCompoundedResult()
+						].resultantVectorMA.getLastCompoundedResult()
 					);
 					totalNum++;
 				}
@@ -1749,16 +1752,68 @@ camgaze.EyeFilter.prototype = {
 
 } // end of EyeFilter prototype
 
-camgaze.LinearCalibrator = function (topLeft, topRight, bottomLeft, bottomRight) {
-	this.topLeft = topLeft;
-	this.topRight = topRight;
-	this.bottomLeft = bottomLeft;
-	this.bottomRight = bottomRight;
+camgaze.LinearCalibrator = function (outXMin, outXMax, outYMin, outYMax, options) {
+
+	this.outXMin = outXMin;
+	this.outXMax = outXMax;
+
+	this.outYMin = outYMin;
+	this.outYMax = outYMax;
+
+	if (options != undefined) {
+		this.topLeft = options.topLeft;
+		this.topRight = options.topRight;
+		this.bottomLeft = options.bottomLeft;
+		this.bottomRight = options.bottomRight;
+	}
 }
 
 camgaze.LinearCalibrator.prototype = {
+	
+	mapVal : function (x, in_min, in_max, out_min, out_max) {
+		return (
+			(x - in_min) * 
+			(out_max - out_min) / 
+			(in_max - in_min) + 
+			out_min
+		);
+	},
 
-}
+	setTopLeft : function (topLeft) {
+		this.topLeft = topLeft;
+	},
+
+	setTopRight : function (topRight) {
+		this.topRight = topRight;
+	},
+
+	setBottomLeft : function (bottomLeft) {
+		this.bottomLeft = bottomLeft;
+	},
+
+	setBottomRight : function (bottomRight) {
+		this.bottomRight = bottomRight;
+	},
+	
+	getMappedPoint : function (unMappedPoint) {
+		return new camgaze.structures.Point(
+			this.mapVal(
+				unMappedPoint.x,
+				this.topLeft.x,
+				this.topRight.x,
+				this.outXMin,
+				this.outXMax
+			),
+			this.mapVal(
+				unMappedPoint.y,
+				this.topLeft.y,
+				this.bottomLeft.y,
+				this.outYMin,
+				this.outYMax
+			);
+		);
+	}
+} // end of LinearCalibrator prototype
 
 //////////////////////////////////////////////////////////////
 // 
