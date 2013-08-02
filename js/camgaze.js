@@ -1810,7 +1810,7 @@ camgaze.LinearCalibrator.prototype = {
 				this.bottomLeft.y,
 				this.outYMin,
 				this.outYMax
-			);
+			)
 		);
 	}
 } // end of LinearCalibrator prototype
