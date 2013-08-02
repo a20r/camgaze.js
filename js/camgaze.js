@@ -1706,7 +1706,7 @@ camgaze.EyeFilter.prototype = {
 		}
 		var avgPoint = new camgaze.structures.Point(0, 0);
 		var totalNum = 0;
-		var self;
+		var self = this;
 		td.getEyeList().forEach(
 			function (eye) {
 				if (eye.orientation != camgaze.constants.NOT_IN_FACE) {
