@@ -19,6 +19,14 @@
             iframe {
                 padding-bottom: 40px;
             }
+
+            div#badge {
+                width: XXpx;
+                height: YYpx;
+                position: fixed;
+                bottom: 0;
+                right: 0;
+            }
     	</style>
     	<!-- Le Bootstrap styles -->
         <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
@@ -31,9 +39,11 @@
         <script type="text/javascript" charset="utf-8" src="chrome-extension://cpngackimfmofbokmjmljamhdncknpmg/page_context.js"></script>
     </head>
     <body screen_capture_injected="true">
-    <a href="https://github.com/wallarelvo/camgaze.js/fork" style="position: absolute; z-index:2; top: 0; right: 0; border: 0;">
-        <img src="http://webaudiodemos.appspot.com/input/img/forkme.png" alt="Fork me on GitHub">
-    </a>
+    <div id="badge">
+        <a href="https://github.com/wallarelvo/camgaze.js/fork" style="position: absolute; z-index:2; top: 0; right: 0; border: 0;">
+            <img src="http://webaudiodemos.appspot.com/input/img/forkme.png" alt="Fork me on GitHub">
+        </a>
+    </div>
         <div class="container-narrow">
             <div class="masthead">
                 <ul class="nav nav-pills pull-right">
