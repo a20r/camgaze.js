@@ -1245,13 +1245,13 @@ camgaze.EyeTracker = function (xSize, ySize) {
 	this.ySize = ySize;
 
 	this.haarDetector = new camgaze.CVUtil.HaarDetector(
-		jsfeat.haar.eye,
+		camgaze.cascades.eye.eye,
 		this.xSize,
 		this.ySize
 	);
 
 	this.faceDetector = new camgaze.CVUtil.HaarDetector(
-		jsfeat.haar.frontalface,
+		camgaze.cascades.frontalface,
 		this.xSize,
 		this.ySize
 	);
