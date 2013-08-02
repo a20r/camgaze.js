@@ -165,7 +165,8 @@
 				} else {
 					calibrator.setBottomRight(currentPoint);
 					lookingPointMovingAverage = new camgaze.structures.MovingAveragePoints(
-						calibrator.getMappedPoint(currentPoint, 10)
+						calibrator.getMappedPoint(currentPoint),
+						20
 					);
 				}
 				$("#setButton").html(pointNameList[++indexInPointList]);
