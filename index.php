@@ -21,8 +21,8 @@
             }
 
             div#badge {
-                width: 100px;
-                height: 100px;
+                width: 141px;
+                height: 141px;
                 position: fixed;
                 bottom: 0;
                 right: 0;
