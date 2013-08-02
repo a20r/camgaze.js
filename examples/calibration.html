@@ -147,7 +147,7 @@
 						} else {
 							image_data = drawer.drawCircle(
 								image_data,
-								midPoint.add(avgPoint),
+								currentPoint,
 								5,
 								-1,
 								"red"
@@ -161,6 +161,7 @@
 
 			function setPoint() {
 				setPointFunctionList[indexInPointList](currentPoint);
+				console.log(calibrator.topLeft);
 				$("#setButton").html(pointNameList[++indexInPointList]);
 			}
 
