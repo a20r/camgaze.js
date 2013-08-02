@@ -88,7 +88,6 @@
 		<script text="text/javascript" src="/camgaze.js/cascades/frontalface.js"></script>
 		<script text="text/javascript">
 			var indexInPointList = 0;
-			var setPointFunctionList = undefined;
 			var pointNameList = [
 				"Set Top Left Point",
 				"Set Top Right Point",
@@ -116,13 +115,6 @@
 				var drawer = new camgaze.drawing.ImageDrawer();
 
 				calibrator = new camgaze.LinearCalibrator(width, height);
-
-				setPointFunctionList = [
-					calibrator.setTopLeft,
-					calibrator.setTopRight,
-					calibrator.setBottomLeft,
-					calibrator.setBottomRight
-				];
 
 				var frameOp = function (image_data, video) {
 					var trackingData = eyeTracker.track(image_data, video);
@@ -160,8 +152,15 @@
 			} 
 
 			function setPoint() {
-				setPointFunctionList[indexInPointList](currentPoint);
-				console.log(calibrator.topLeft);
+				if (indexInPointList == 0) {
+					calibrator.setTopLeft(currentPoint);
+				} else if (indexInPointList == 1) {
+					calibrator.setTopRight(currentPoint);
+				} else if (indexInPointList == 2) {
+					calibrator.setBottomLeft(currentPoint);
+				} else {
+					calibrator.setBottomRight(currentPoint);
+				}
 				$("#setButton").html(pointNameList[++indexInPointList]);
 			}
 
