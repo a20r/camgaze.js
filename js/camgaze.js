@@ -482,7 +482,7 @@ camgaze.structures.MovingAveragePoints.prototype = {
 	},
 
 	removeOutliers : function (maList, refPoint) {
-		var acceptableStds = 2;
+		var acceptableStds = 3.5;
 		var distList = maList.map(
 			function (point) {
 				return point.distTo(refPoint);
