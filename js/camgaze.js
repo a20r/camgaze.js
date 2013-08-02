@@ -1796,6 +1796,15 @@ camgaze.LinearCalibrator.prototype = {
 		this.bottomRight = bottomRight;
 	},
 	
+	allDefined : function () {
+		return (
+			this.topLeft != undefined &&
+			this.topRight != undefined &&
+			this.bottomLeft != undefined &&
+			this.bottomRight != undefined
+		);
+	},
+
 	getMappedPoint : function (unMappedPoint) {
 		return new camgaze.structures.Point(
 			this.mapVal(
