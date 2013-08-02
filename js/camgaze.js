@@ -1369,12 +1369,16 @@ camgaze.EyeTracker.prototype = {
 			by getting the minimum weight from
 			the weightPupil function.
 		*/
-		for (var minColor = this.MIN_COLOR; 
-			minColor < this.MAX_COLOR - step; 
-			minColor += step) {
-			for (var maxColor = minColor + step; 
-				maxColor < this.MAX_COLOR; 
-				maxColor += step) {
+		for (
+				var minColor = this.MIN_COLOR; 
+				minColor < this.MAX_COLOR - step; 
+				minColor += step
+		) {
+			for (
+					var maxColor = minColor + step; 
+					maxColor < this.MAX_COLOR; 
+					maxColor += step
+			) {
 				var pPupils = this.getUnfilteredPupils(
 					img, 
 					minColor,
