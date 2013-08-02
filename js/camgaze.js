@@ -33,6 +33,7 @@ camgaze.structures = {};
 camgaze.drawing = {};
 camgaze.CVUtil = {};
 camgaze.constants = {};
+camgaze.cascades = {};
 
 //////////////////////////////////////////////////////////////
 //
@@ -1756,7 +1757,7 @@ camgaze.LinearCalibrator = function (topLeft, topRight, bottomLeft, bottomRight)
 }
 
 camgaze.LinearCalibrator.prototype = {
-	
+
 }
 
 //////////////////////////////////////////////////////////////

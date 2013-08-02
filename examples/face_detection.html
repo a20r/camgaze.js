@@ -87,7 +87,7 @@
 				var height = 440;
 				var cGaze = new camgaze.Camgaze(width, height, "mainCanvas");
 				var faceDetector = new camgaze.CVUtil.HaarDetector(
-					jsfeat.haar.frontalface,
+					camgaze.cascades.frontalface,
 					width,
 					height
 				);
