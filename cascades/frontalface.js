@@ -1,4 +1,3 @@
-
 /**
  * this cascade is derived from https://github.com/mtschirs/js-objectdetect implementation
  * @author Martin Tschirsich / http://www.tu-darmstadt.de/~m_t
