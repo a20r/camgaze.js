@@ -96,6 +96,7 @@
 			];
 			var currentPoint = new camgaze.structures.Point(0, 0);
 			var calibrator = undefined;
+			var lookingPointMovingAverage = undefined;
 
 			window.onload = function () {
 				var width = 640;
@@ -129,8 +130,11 @@
 						if (calibrator.allDefined()) {
 							image_data = drawer.drawCircle(
 								image_data,
-								calibrator.getMappedPoint(
-									currentPoint
+								lookingPointMovingAverage.compound(
+									calibrator.getMappedPoint(
+										currentPoint
+									),
+									midPoint
 								),
 								5,
 								-1,
@@ -160,6 +164,9 @@
 					calibrator.setBottomLeft(currentPoint);
 				} else {
 					calibrator.setBottomRight(currentPoint);
+					lookingPointMovingAverage = new camgaze.structures.MovingAveragePoints(
+						calibrator.getMappedPoint(currentPoint, 10);
+					);
 				}
 				$("#setButton").html(pointNameList[++indexInPointList]);
 			}
