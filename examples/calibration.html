@@ -55,9 +55,6 @@
                 	<canvas id="mainCanvas"></canvas>
                 	<video style="display: none;" autoplay></video>
                 </div>
-                <button id="setButton" onclick="setPoint()" class="btn btn-large btn-primary">
-                	Set Top Left Point
-                </button>
             </div>
 
             <div class="footer">
@@ -87,16 +84,6 @@
 		<script text="text/javascript" src="/camgaze.js/cascades/eye.js"></script>
 		<script text="text/javascript" src="/camgaze.js/cascades/frontalface.js"></script>
 		<script text="text/javascript">
-			var indexInPointList = 0;
-			var pointNameList = [
-				"Set Top Left Point",
-				"Set Top Right Point",
-				"Set Bottom Left Point",
-				"Set Bottom Right Point"
-			];
-			var currentPoint = new camgaze.structures.Point(0, 0);
-			var calibrator = undefined;
-			var lookingPointMovingAverage = undefined;
 
 			window.onload = function () {
 				var width = 640;
@@ -115,8 +102,6 @@
 				var eyeFilter = new camgaze.EyeFilter();
 				var drawer = new camgaze.drawing.ImageDrawer();
 
-				calibrator = new camgaze.LinearCalibrator(0, width, 0, height);
-
 				var frameOp = function (image_data, video) {
 					var trackingData = eyeTracker.track(image_data, video);
 					if (trackingData.eyeList.length > 0) {
@@ -124,63 +109,19 @@
 						var avgPoint = eyeFilter.getAverageLookingPoint(
 							trackingData
 						);
-
-						currentPoint = midPoint.add(avgPoint);
-
-						if (calibrator.allDefined()) {
-							image_data = drawer.drawCircle(
-								image_data,
-								lookingPointMovingAverage.compound(
-									calibrator.getMappedPoint(
-										currentPoint
-									),
-									midPoint
-								),
-								5,
-								-1,
-								"red"
-							);
-						} else {
-							image_data = drawer.drawCircle(
-								image_data,
-								currentPoint,
-								5,
-								-1,
-								"red"
-							);
-						}
+ 
+						image_data = drawer.drawCircle(
+							image_data,
+							midPoint.add(avgPoint.mult(4))
+							5,
+							-1,
+							"red"
+						);
 					}
 					return image_data;
 				};
 				cGaze.setFrameOperator(frameOp);
 			} 
-
-			function setPoint() {
-				if (indexInPointList == 0) {
-					calibrator.setTopLeft(currentPoint);
-				} else if (indexInPointList == 1) {
-					calibrator.setTopRight(currentPoint);
-				} else if (indexInPointList == 2) {
-					calibrator.setBottomLeft(currentPoint);
-				} else {
-					calibrator.setBottomRight(currentPoint);
-					lookingPointMovingAverage = new camgaze.structures.MovingAveragePoints(
-						calibrator.getMappedPoint(currentPoint),
-						20
-					);
-				}
-				$("#setButton").html(pointNameList[++indexInPointList]);
-			}
-
-		</script>
-		<script>
-		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-		  ga('create', 'UA-42869545-1', 'st-andrews.ac.uk');
-		  ga('send', 'pageview');
 
 		</script>
 	</body>
