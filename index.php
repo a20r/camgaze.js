@@ -52,20 +52,33 @@
                     </a>
                 </p>
             </div>
-            <div class="hero-unit">
+            <div class="hero-unit" id="about">
                 <h1 style="padding-bottom:10;">About</h1>
                 <p>
                     <b>Camgaze.js</b> is a JavaScript computer vision library
                     which primary focus is eye tracking and gaze detection.
-                    <b>Camgaze.js</b> uses the 
+                    Camgaze.js uses the 
                     <a href="http://inspirit.github.io/jsfeat/">jsfeat</a> 
                     computer vision library as a backbone and builds upon
-                    its foundation. <b>Camgaze.js</b> enables easier detection
+                    its foundation. Camgaze.js enables easier detection
                     of objects using the
                     <a href="http://en.wikipedia.org/wiki/Viola%E2%80%93Jones_object_detection_framework">Viola-Jones
                     Object Detection Framework</a>. It also provides algorithms
                     for binary image operations such as blob detection 
-                    and image moment calculations. 
+                    and image moment calculations. However Camgaze.js' biggest
+                    contribution to the online community is that it provides
+                    a suite of classes and functions to detect pupils and
+                    predict gaze direction.
+                </p>
+                <p>
+                    <b>Camgaze.js</b> is being developed by
+                    <a href="http://www.linkedin.com/pub/alexander-wallar/68/985/b87">
+                        Alex Wallar
+                    </a> as part of a National Science Foundation funded 
+                    internship at the University of Notre Dame's 
+                    <a href="http://www3.nd.edu/~darts/reu.html">
+                        Experimental Research in Wireless Networking
+                    </a> group.
                 </p>
             </div>
             <div class="hero-unit" id="demos">
