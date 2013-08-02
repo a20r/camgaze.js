@@ -24,7 +24,7 @@
                 width: 141px;
                 height: 141px;
                 position: fixed;
-                bottom: 0;
+                top: 0;
                 right: 0;
             }
     	</style>
