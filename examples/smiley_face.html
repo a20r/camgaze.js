@@ -104,7 +104,6 @@
 					var gazeList = eyeFilter.getFilteredGaze(trackingData);
 					//console.log(eyeFilter.getAverageLookingPoint(trackingData));
 					if (trackingData.eyeList.length > 0) {
-						drawer.clearAll();
 						gazeList.forEach(
 							function (eye) {
 								// draws the face circle
