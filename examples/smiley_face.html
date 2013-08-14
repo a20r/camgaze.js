@@ -146,7 +146,7 @@
 
 								// draws the second eye circle
 								image_data = drawer.drawCircle(
-									image_data
+									image_data,
 									{
 										x : (
 											eye.eyeData.getFace().x + 
@@ -181,7 +181,7 @@
 							}
 						);
 					}
-					return image_data
+					return image_data;
 				};
 				cGaze.setFrameOperator(frameOp);
 			} 
