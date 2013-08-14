@@ -91,14 +91,14 @@
 				var cGaze = new camgaze.Camgaze(
 					width, 
 					height, 
-					"mainCanvas", 
-					true
+					"mainCanvas"
 				);
 				var eyeTracker = new camgaze.EyeTracker(width, height);
 				var eyeFilter = new camgaze.EyeFilter();
+				var drawer = new camgaze.ImageDrawer();
 				//var drawer = new camgaze.drawing.ImageDrawer();
 
-				var frameOp = function (image_data, video, drawer) {
+				var frameOp = function (image_data, video) {
 					var trackingData = eyeTracker.track(image_data, video);
 					//console.log(trackingData);
 					var gazeList = eyeFilter.getFilteredGaze(trackingData);
@@ -108,7 +108,8 @@
 						gazeList.forEach(
 							function (eye) {
 								// draws the face circle
-								drawer.drawCircle(
+								image_data = drawer.drawCircle(
+									image_data,
 									{
 										x : (
 											eye.eyeData.getFace().x + 
@@ -125,7 +126,8 @@
 								);
 
 								// draws the first eye circle
-								drawer.drawCircle(
+								image_data = drawer.drawCircle(
+									image_data,
 									{
 										x : (
 											eye.eyeData.getFace().x + 
@@ -143,7 +145,8 @@
 								);
 
 								// draws the second eye circle
-								drawer.drawCircle(
+								image_data = drawer.drawCircle(
+									image_data
 									{
 										x : (
 											eye.eyeData.getFace().x + 
@@ -157,126 +160,6 @@
 									},
 									eye.eyeData.getHaarRectangle().width / 2.2,  // radius
 									2, // line width (filled)
-									"red"
-								);
-
-								// draws the first nose line
-								drawer.drawLine(
-									{
-										x : (
-											eye.eyeData.getFace().x + 
-											eye.eyeData.getFace().width / 2 
-										),
-
-										y : (
-											eye.eyeData.getFace().y + 
-											eye.eyeData.getFace().height / 2 
-										)
-									},
-
-									{
-										x : (
-											eye.eyeData.getFace().x + 20 +
-											eye.eyeData.getFace().width / 2 
-										),
-
-										y : (
-											eye.eyeData.getFace().y + 20 +
-											eye.eyeData.getFace().height / 2 
-										)
-									},
-
-									2,
-									"red"
-								);
-
-								// draws horizontal nose line
-								drawer.drawLine(
-									{
-										x : (
-											eye.eyeData.getFace().x + 20 +
-											eye.eyeData.getFace().width / 2 
-										),
-
-										y : (
-											eye.eyeData.getFace().y + 20 +
-											eye.eyeData.getFace().height / 2 
-										)
-									},
-
-									{
-										x : (
-											eye.eyeData.getFace().x +
-											eye.eyeData.getFace().width / 2 
-										),
-
-										y : (
-											eye.eyeData.getFace().y + 20 +
-											eye.eyeData.getFace().height / 2 
-										)
-									},
-
-									2,
-									"red"
-								);
-
-								// draws smile
-								drawer.drawLine(
-									{
-										x : (
-											eye.eyeData.getFace().x +
-											eye.eyeData.getFace().width * 0.5
-										),
-
-										y : (
-											eye.eyeData.getFace().y + 
-											eye.eyeData.getFace().height * 0.7
-										)
-									},
-
-									{
-										x : (
-											eye.eyeData.getFace().x +
-											eye.eyeData.getFace().width * 0.4
-										),
-
-										y : (
-											eye.eyeData.getFace().y +
-											eye.eyeData.getFace().height * 0.6
-										)
-									},
-
-									2,
-									"red"
-								);
-
-								// draws smile
-								drawer.drawLine(
-									{
-										x : (
-											eye.eyeData.getFace().x +
-											eye.eyeData.getFace().width * 0.5
-										),
-
-										y : (
-											eye.eyeData.getFace().y + 
-											eye.eyeData.getFace().height * 0.7
-										)
-									},
-
-									{
-										x : (
-											eye.eyeData.getFace().x +
-											eye.eyeData.getFace().width * 0.6
-										),
-
-										y : (
-											eye.eyeData.getFace().y +
-											eye.eyeData.getFace().height * 0.6
-										)
-									},
-
-									2,
 									"red"
 								);
 
