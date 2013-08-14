@@ -163,7 +163,8 @@
 								);
 
 								// draws the gaze
-								drawer.drawLine(
+								image_data = drawer.drawLine(
+									image_data,
 									eye.centroid.filtered,
 									eye.centroid.filtered.add(eye.gazeVector),
 									2,
@@ -171,7 +172,8 @@
 								);
 
 								// draws the pupil
-								drawer.drawCircle(
+								iamge_data = drawer.drawCircle(
+									image_data,
 									eye.centroid.filtered,
 									4,  // radius
 									-1, // line width (filled)
