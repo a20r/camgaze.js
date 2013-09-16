@@ -1517,7 +1517,7 @@ camgaze.EyeTracker.prototype = {
 
 		var unfilteredEyeRects = this.haarDetector.detectObjects(
 			video,
-			1.1, // scale factor
+			2.4, // scale factor
 			1 // min scale
 		);
 
