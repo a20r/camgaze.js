@@ -1525,7 +1525,7 @@ camgaze.EyeTracker.prototype = {
 
 		var faceRects = this.faceDetector.detectObjects(
 			video,
-			2.1, // scale factor
+			1.9, // scale factor
 			1 // min scale
 		);
 
@@ -1548,7 +1548,7 @@ camgaze.EyeTracker.prototype = {
 		var self = this;
 		eyeRects.forEach(
 			function (rect) {
-				if (Math.abs(rect.confidence) > 0.07) {
+				if (Math.abs(rect.confidence) > 0) {
 					var eyeData = new camgaze.EyeData(rect);
 
 					// needs to use another canvas because

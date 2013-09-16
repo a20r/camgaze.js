@@ -165,8 +165,8 @@
 								// draws the gaze
 								image_data = drawer.drawLine(
 									image_data,
-									eye.centroid.filtered,
-									eye.centroid.filtered.add(eye.gazeVector),
+									eye.centroid.unfiltered,
+									eye.centroid.unfiltered.add(eye.gazeVector),
 									5,
 									"green"
 								);
