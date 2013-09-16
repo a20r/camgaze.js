@@ -1525,7 +1525,7 @@ camgaze.EyeTracker.prototype = {
 
 		var faceRects = this.faceDetector.detectObjects(
 			video,
-			1.1, // scale factor
+			2.1, // scale factor
 			1 // min scale
 		);
 
