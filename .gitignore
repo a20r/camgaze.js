@@ -6,6 +6,8 @@
 *.blg
 *.log
 
+paper/template.*
+
 # C extensions
 *.so
 
