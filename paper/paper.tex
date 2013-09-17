@@ -1,0 +1,65 @@
+
+
+\documentclass[annual]{acmsiggraph}
+
+\TOGonlineid{45678}
+\TOGvolume{0}
+\TOGnumber{0}
+\TOGarticleDOI{1111111.2222222}
+\TOGprojectURL{}
+\TOGvideoURL{}
+\TOGdataURL{}
+\TOGcodeURL{}
+
+\newcommand{\Acronym}[1]{\ensuremath{{\small{\texttt{#1}}}}}
+\newcommand{\Name}{\Acronym{Camgaze.js}}
+\newcommand{\Symbol}[1]{\ensuremath{\mathcal{#1}}}
+\newcommand{\Function}[1]{\ensuremath{{\small \textsc{#1}}}}
+\newcommand{\Constant}[1]{\ensuremath{\small{\texttt{#1}}}}
+\newcommand{\Var}[1]{\ensuremath{{\small{\textsl{#1}}}}}
+
+\title{Camgaze.js : Mobile Eye Tracking and Gaze Prediction in JavaScript}
+\author{Alex Wallar \\ Christian Poellabauer \\ Patrick Flynn}
+\pdfauthor{Alex Wallar}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\end{abstract}
+
+\section{Introduction}
+
+\section{Motivation}
+
+\section{Related Works}
+
+\section{Implementation}
+
+$\Name$ goes through two steps in order to predict the gaze direction. 
+Firstly, $\Name$ detects each pupil. It then uses the pupils deviation 
+from a unique point on the face to determine the gaze metric, \Symbol{G}. 
+This metric needs to be calibrated in order for there to be a mapping 
+from \Symbol{G} to a point on the screen. Once this gaze metric has been 
+calibrated, $\Name$ should be able to interpolate area of the 
+screen the user is looking at. A high level description of the 
+algortihm is shown below.
+
+\subsection{Pupil Detection}
+
+\subsection{Determining the Gaze Metric}
+
+\subsection{Calibration}
+
+\section{Testing}
+
+\section{Applications}
+
+\section{Discussion}
+
+\bibliographystyle{acmsiggraph}
+\bibliography{paper}
+
+\end{document}

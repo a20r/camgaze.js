@@ -1,6 +1,10 @@
 *.py[cod]
 .DS_Store
-.go
+
+*.aux
+*.bbl
+*.blg
+*.log
 
 # C extensions
 *.so
