@@ -1,6 +1,8 @@
 
 
 \documentclass[annual]{acmsiggraph}
+\usepackage{relsize}
+\usepackage{amsmath}
 \usepackage{algorithm}
 \usepackage[noend]{algorithmic}
 
@@ -80,8 +82,33 @@ algortihm is shown below.
 
 Detecting the pupils enables $\Name$ to determine the gaze direction.
 Pupil detection in this approach is aimed to be fast in order to 
-be deployable onto mobile devices. Firstly, the eyes are detected
-using the Viola-Jones Object Detection Framework \cite{Viola01}. 
+be deployable onto mobile devices. Firstly, the frame is converted to 
+grayscale and the eye is detected using the Viola-Jones Object 
+Detection Framework \cite{Viola01}. The region of interest (ROI) is
+then thresholded for an array of different colors and blob detection
+takes place. All of the detected connected components are stored as 
+possible pupils. Out of these possible pupils, the one with the 
+minimum overall error is designated as the pupil. Below are the 
+expressions to be minimized.
+
+\begin{eqnarray}
+\Function{err}_{\alpha}(p) &=& \frac{
+    \mathlarger{\sum}_{c \in Corners}{
+        \vert 
+            \frac{\pi}{4} - \Function{arctan}(
+                \vert \frac{p_y - c_y}{p_x - c_x} \vert
+            ) 
+        \vert
+    }
+}{\pi} \\
+\Function{err}_{size}(p) &=& \frac{
+     \vert
+        \Var{avgPupilSize} - \Function{size}(p)
+    \vert
+}{2}
+\end{eqnarray}
+
+The center of the designated pupil is then returned.
 
 \subsection{Determining the Gaze Metric}
 

@@ -1527,11 +1527,13 @@ camgaze.EyeTracker.prototype = {
 
 		//console.log(unfilteredEyeRects.length);
 
-		var faceRects = this.faceDetector.detectObjects(
-			video,
-			2.8, // scale factor
-			1 // min scale
-		);
+		// var faceRects = this.faceDetector.detectObjects(
+		// 	video,
+		// 	2.8, // scale factor
+		// 	1 // min scale
+		// );
+
+		var faceRects = new Array();
 
 		var eyeRects = this.filterRects(
 			unfilteredEyeRects,
