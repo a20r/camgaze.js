@@ -1071,7 +1071,7 @@ camgaze.EyeData.prototype = {
 		this.maxColor = maxColor;
 		this.minColor = minColor;
 		return this;
-	},1
+	},
 
 	/*
 		Returns the resultant vector from all of the
