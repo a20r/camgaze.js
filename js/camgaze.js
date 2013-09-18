@@ -1192,8 +1192,8 @@ camgaze.EyeData.prototype = {
 
 	getHaarCentroid : function () {
 		return new camgaze.structures.Point(
-			this.eyeRect.width / 2,
-			this.eyeRect.height / 2
+			this.eyeRect.x + this.eyeRect.width / 2,
+			this.eyeRect.y + this.eyeRect.height / 2
 		);
 	},
 
