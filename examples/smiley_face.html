@@ -106,64 +106,6 @@
 					if (trackingData.eyeList.length > 0) {
 						gazeList.forEach(
 							function (eye) {
-								if (eye.eyeData.getFace() != undefined) {
-									// draws the face circle
-									image_data = drawer.drawCircle(
-										image_data,
-										{
-											x : (
-												eye.eyeData.getFace().x + 
-												eye.eyeData.getFace().width / 2
-											),
-											y : (
-												eye.eyeData.getFace().y + 
-												eye.eyeData.getFace().height / 2
-											)
-										},
-										eye.eyeData.getFace().width / 2,
-										2,
-										"red"
-									);
-
-									// draws the first eye circle
-									image_data = drawer.drawCircle(
-										image_data,
-										{
-											x : (
-												eye.eyeData.getFace().x + 
-												eye.eyeData.getFace().width * 0.21 + 
-												eye.eyeData.getHaarRectangle().width / 2
-											),
-											y : (
-												eye.eyeData.getFace().y + 
-												eye.eyeData.getFace().height * 0.37
-											)
-										},
-										eye.eyeData.getHaarRectangle().width / 2.2,  // radius
-										2, // line width (filled)
-										"red"
-									);
-
-									// draws the second eye circle
-									image_data = drawer.drawCircle(
-										image_data,
-										{
-											x : (
-												eye.eyeData.getFace().x + 
-												eye.eyeData.getFace().width * 0.54 + 
-												eye.eyeData.getHaarRectangle().width / 2
-											),
-											y : (
-												eye.eyeData.getFace().y + 
-												eye.eyeData.getFace().height * 0.37
-											)
-										},
-										eye.eyeData.getHaarRectangle().width / 2.2,  // radius
-										2, // line width (filled)
-										"red"
-									);
-								}
-
                                 image_data = drawer.drawRectangle(
                                     image_data,
                                     eye.eyeData.getHaarRectangle(),

@@ -130,16 +130,6 @@ camgaze.Camgaze.prototype.setFrameOperator = function (callback) {
 //
 //////////////////////////////////////////////////////////////
 
-// relative position on face
-camgaze.constants.LEFT = 1;
-camgaze.constants.RIGHT = 2;
-camgaze.constants.NOT_IN_FACE = 0;
-
-// eye proportions with regard to the face
-camgaze.constants.RIGHT_PROP_WIDTH = 0.21;
-camgaze.constants.LEFT_PROP_WIDTH = 0.54;
-camgaze.constants.PROP_HEIGHT = 0.37;
-
 //////////////////////////////////////////////////////////////
 //
 // util
@@ -1056,8 +1046,6 @@ camgaze.EyeData = function (eyeRect) {
 	this.uId = undefined;
 	this.maxColor = undefined;
 	this.minColor = undefined;
-	this.face = undefined;
-	this.eyeCenter = undefined;
 	this.orientation = undefined;
 }
 
@@ -1083,100 +1071,13 @@ camgaze.EyeData.prototype = {
 		this.maxColor = maxColor;
 		this.minColor = minColor;
 		return this;
-	},
-
-	setFace : function (faceRect) {
-		this.face = faceRect;
-		this.determineSide();
-		return this;
-	},
-
-	inProportionRange : function (xProp, yProp) {
-
-		var cPoint = new camgaze.structures.Point(
-			this.getFace().x + (
-				this.getFace().width * xProp
-			) + this.eyeRect.width / 2,
-
-			this.getFace().y + (
-				this.getFace().height * yProp
-			)
-		);
-		return (
-			cPoint.distTo(this.getScaledCentroid()) < 
-			this.eyeRect.width / 2
-		);
-	},
-
-	/*
-		Determines the which eye (left or right) is the
-		one depicted in this structure. Also sets the 
-		eye center which is later used to determine the
-		gaze. These properties are derived by the 
-		statistical proportions of the face and therefore
-		can become inaccurate. More testing is needed
-	*/
-	determineSide : function () {
-		if (
-			this.inProportionRange(
-				camgaze.constants.RIGHT_PROP_WIDTH,
-				camgaze.constants.PROP_HEIGHT
-			)
-		) {
-			this.orientation = camgaze.constants.RIGHT;
-			this.eyeCenter = new camgaze.structures.Point(
-				this.getFace().x + 
-				(	
-					this.getFace().width * 
-					camgaze.constants.RIGHT_PROP_WIDTH
-				) +
-				this.eyeRect.width / 2,
-				this.getFace().y + 
-				(	
-					this.getFace().height * 
-					camgaze.constants.PROP_HEIGHT
-				)
-			);
-		} else if (
-			this.inProportionRange(
-				camgaze.constants.LEFT_PROP_WIDTH, 
-				camgaze.constants.PROP_HEIGHT
-			)
-		) {
-			this.orientation = camgaze.constants.LEFT;
-			this.eyeCenter = new camgaze.structures.Point(
-				this.getFace().x + 
-				(	
-					this.getFace().width * 
-					camgaze.constants.LEFT_PROP_WIDTH
-				) +
-				this.eyeRect.width / 2,
-				this.getFace().y + 
-				(	
-					this.getFace().height * 
-					camgaze.constants.PROP_HEIGHT
-				) 
-			);
-		} else {
-			this.orientation = camgaze.constants.NOT_IN_FACE;
-			this.eyeCenter = new camgaze.structures.Point(0, 0);
-		}
-
-		return this;
-	},
-
-	getFace : function () {
-		return this.face;
-	},
+	},1
 
 	/*
 		Returns the resultant vector from all of the
 		corners to the centroid point.
 	*/
 	getResultantVector : function () {
-		//if (this.eyeCenter == undefined) {
-		//	return new camgaze.structures.Point(0, 0);
-		//}
 
 		return this.getScaledCentroid().sub(
 			this.getHaarCentroid()
@@ -1250,12 +1151,6 @@ camgaze.EyeTracker = function (xSize, ySize) {
 
 	this.haarDetector = new camgaze.CVUtil.HaarDetector(
 		camgaze.cascades.eye,
-		this.xSize,
-		this.ySize
-	);
-
-	this.faceDetector = new camgaze.CVUtil.HaarDetector(
-		camgaze.cascades.frontalface,
 		this.xSize,
 		this.ySize
 	);
@@ -1525,16 +1420,6 @@ camgaze.EyeTracker.prototype = {
 			1 // min scale
 		);
 
-		//console.log(unfilteredEyeRects.length);
-
-		// var faceRects = this.faceDetector.detectObjects(
-		// 	video,
-		// 	2.8, // scale factor
-		// 	1 // min scale
-		// );
-
-		var faceRects = new Array();
-
 		var eyeRects = this.filterRects(
 			unfilteredEyeRects,
 			20 // distance threshold
@@ -1573,18 +1458,6 @@ camgaze.EyeTracker.prototype = {
 						var minColor = pupilObj.minColor;
 						eyeData.setPupil(pupil);
 						eyeData.setMinMaxColor(minColor, maxColor);
-						faceRects.forEach(
-							function (fRect) {
-								if (
-									rect.x >= fRect.x && 
-									rect.x <= fRect.x + fRect.width &&
-									rect.y >= fRect.y &&
-									rect.y <= fRect.y + fRect.width
-								) {
-									eyeData.setFace(fRect);
-								}
-							}
-						);
 						trackingData.pushEye(eyeData);
 					}
 				}
