@@ -23,6 +23,7 @@
 \newcommand{\Function}[1]{\ensuremath{{\small \textsc{#1}}}}
 \newcommand{\Constant}[1]{\ensuremath{\small{\texttt{#1}}}}
 \newcommand{\Var}[1]{\ensuremath{{\small{\textsl{#1}}}}}
+\newcommand{\argmax}[1]{\underset{#1}{\operatorname{arg}\,\operatorname{max}}\;}
 
 \title{Camgaze.js : Mobile Eye Tracking and Gaze Prediction in JavaScript}
 \author{Alex Wallar \\ Christian Poellabauer \\ Patrick Flynn}
@@ -108,7 +109,33 @@ expressions to be minimized.
 }{2}
 \end{eqnarray}
 
-The center of the designated pupil is then returned.
+Once the correct pupil is detected, the center of the designated pupil 
+is then returned.
+
+%\begin{algorithm}
+%\caption{Pseudocode for Pupil Detection}
+%\label{algo:PupilDetection}
+%\begin{algorithmic}[1]
+%\setcounter{ALC@line}{0}
+%
+%\vspace*{1mm}
+%
+%\STATE $\Var{frame} \leftarrow \Function{GrabFrame}()$
+%
+%\WHILE{$\Function{StillCalibrating()} == \True$}
+%\STATE $P_{list} \leftarrow \Function{DetectPupils()}$
+%\STATE $\Symbol{G} \leftarrow \Function{DetermineGazeMetric}(P_{list})$
+%\STATE $\Symbol{F} \leftarrow \Function{Calibrate}(\Symbol{G}, \Symbol{F})$
+%\ENDWHILE
+%
+%\WHILE{$\Function{SessionFinished()} == \False$}
+%\STATE $P_{list} \leftarrow \Function{DetectPupils()}$
+%\STATE $\Symbol{G} \leftarrow \Function{DetermineGazeMetric}(P_{list})$
+%\STATE $\Function{ProjectGazeOntoScreen}(\Symbol{F}(\Symbol{G}))$
+%\ENDWHILE
+%
+%\end{algorithmic}
+%\end{algorithm}
 
 \subsection{Determining the Gaze Metric}
 
