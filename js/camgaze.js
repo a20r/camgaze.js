@@ -1174,6 +1174,10 @@ camgaze.EyeData.prototype = {
 		corners to the centroid point.
 	*/
 	getResultantVector : function () {
+		if (this.eyeCenter.x == undefined) {
+			return new camgaze.structures.Point(0, 0);
+		}
+		
 		return this.getScaledCentroid().sub(
 			this.eyeCenter
 		).mult(3);
