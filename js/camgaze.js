@@ -1264,7 +1264,7 @@ camgaze.EyeTracker = function (xSize, ySize) {
 	// probably way to big right now
 	this.averageContourSize = 200;
 
-	this.MAX_COLOR = 20;
+	this.MAX_COLOR = 30;
 	this.MIN_COLOR = 10;
 
 	this.previousEyes = new Array();
