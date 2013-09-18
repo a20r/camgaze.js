@@ -106,7 +106,7 @@
 					if (trackingData.eyeList.length > 0) {
 						gazeList.forEach(
 							function (eye) {
-								if (eye.eyeData.getFace() == undefined) {
+								if (eye.eyeData.getFace() != undefined) {
 									// draws the face circle
 									image_data = drawer.drawCircle(
 										image_data,
