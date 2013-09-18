@@ -164,6 +164,15 @@
 									);
 								}
 
+                                image_data = drawer.drawRectangle(
+                                    image_data,
+                                    eye.eyeData.getHaarRectangle(),
+                                    eye.eyeData.getHaarRectangle().width,
+                                    eye.eyeData.getHaarRectangle().height,
+                                    5,
+                                    "blue"
+                                );
+
 								// draws the gaze
 								image_data = drawer.drawLine(
 									image_data,
