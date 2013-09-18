@@ -1,11 +1,13 @@
 
 
 \documentclass[annual]{acmsiggraph}
+\usepackage{algorithm}
+\usepackage[noend]{algorithmic}
 
-\TOGonlineid{45678}
-\TOGvolume{0}
-\TOGnumber{0}
-\TOGarticleDOI{1111111.2222222}
+\TOGonlineid{}
+\TOGvolume{}
+\TOGnumber{}
+\TOGarticleDOI{}
 \TOGprojectURL{}
 \TOGvideoURL{}
 \TOGdataURL{}
@@ -13,6 +15,8 @@
 
 \newcommand{\Acronym}[1]{\ensuremath{{\small{\texttt{#1}}}}}
 \newcommand{\Name}{\Acronym{Camgaze.js}}
+\newcommand{\False}{\Constant{false}}
+\newcommand{\True}{\Constant{true}}
 \newcommand{\Symbol}[1]{\ensuremath{\mathcal{#1}}}
 \newcommand{\Function}[1]{\ensuremath{{\small \textsc{#1}}}}
 \newcommand{\Constant}[1]{\ensuremath{\small{\texttt{#1}}}}
@@ -46,6 +50,31 @@ from \Symbol{G} to a point on the screen. Once this gaze metric has been
 calibrated, $\Name$ should be able to interpolate area of the 
 screen the user is looking at. A high level description of the 
 algortihm is shown below.
+
+\begin{algorithm}
+\caption{Pseudocode for $\Name$}
+\label{algo:Main}
+\begin{algorithmic}[1]
+\setcounter{ALC@line}{0}
+
+\vspace*{1mm}
+
+\STATE $\Symbol{F} \leftarrow \Function{InitGazeMapping}()$
+
+\WHILE{$\Function{StillCalibrating()} == \True$}
+\STATE $P_{list} \leftarrow \Function{DetectPupils()}$
+\STATE $\Symbol{G} \leftarrow \Function{DetermineGazeMetric}(P_{list})$
+\STATE $\Symbol{F} \leftarrow \Function{Calibrate}(\Symbol{G}, \Symbol{F})$
+\ENDWHILE
+
+\WHILE{$\Function{SessionFinished()} == \False$}
+\STATE $P_{list} \leftarrow \Function{DetectPupils()}$
+\STATE $\Symbol{G} \leftarrow \Function{DetermineGazeMetric}(P_{list})$
+\STATE $\Function{ProjectGazeOntoScreen}(\Symbol{F}(\Symbol{G}))$
+\ENDWHILE
+
+\end{algorithmic}
+\end{algorithm}
 
 \subsection{Pupil Detection}
 
