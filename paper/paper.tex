@@ -39,9 +39,7 @@
 
 \section{Introduction}
 
-\section{Motivation}
-
-\section{Related Works}
+\section{Challenges}
 
 \section{Implementation}
 
@@ -84,7 +82,7 @@ algortihm is shown below.
 Detecting the pupils enables $\Name$ to determine the gaze direction.
 Pupil detection in this approach is aimed to be fast in order to 
 be deployable onto mobile devices. Firstly, the frame is converted to 
-grayscale and the eye is detected using the Viola-Jones Object 
+grayscale and the eye is detected using the Viola-Jones Object
 Detection Framework \cite{Viola01}. The region of interest (ROI) is
 then thresholded for an array of different colors and blob detection
 takes place. All of the detected connected components are stored as 
@@ -109,43 +107,31 @@ expressions to be minimized.
 }{2}
 \end{eqnarray}
 
-Once the correct pupil is detected, the center of the designated pupil 
-is then returned.
-
-%\begin{algorithm}
-%\caption{Pseudocode for Pupil Detection}
-%\label{algo:PupilDetection}
-%\begin{algorithmic}[1]
-%\setcounter{ALC@line}{0}
-%
-%\vspace*{1mm}
-%
-%\STATE $\Var{frame} \leftarrow \Function{GrabFrame}()$
-%
-%\WHILE{$\Function{StillCalibrating()} == \True$}
-%\STATE $P_{list} \leftarrow \Function{DetectPupils()}$
-%\STATE $\Symbol{G} \leftarrow \Function{DetermineGazeMetric}(P_{list})$
-%\STATE $\Symbol{F} \leftarrow \Function{Calibrate}(\Symbol{G}, \Symbol{F})$
-%\ENDWHILE
-%
-%\WHILE{$\Function{SessionFinished()} == \False$}
-%\STATE $P_{list} \leftarrow \Function{DetectPupils()}$
-%\STATE $\Symbol{G} \leftarrow \Function{DetermineGazeMetric}(P_{list})$
-%\STATE $\Function{ProjectGazeOntoScreen}(\Symbol{F}(\Symbol{G}))$
-%\ENDWHILE
-%
-%\end{algorithmic}
-%\end{algorithm}
+$\Function{err}_{\alpha}$ refers to how far the blob center is from the
+center of the Haar bounding rectangle. We use angle deviation instead
+of pixel distance for this metric because we assume that the pupil would
+not always reside to close to the center and a direct pixel distance
+might yield other blobs more suitable. The angle deviation acts a weak
+error function in order to be more lenient without the use of constants.
+Once the blob with the minimum error is extracted, the center of the blob
+is returned.
 
 \subsection{Determining the Gaze Metric}
 
-\subsection{Calibration}
+The gaze metric is determined by establishing a reference point that will
+in a constant position with reference to the pupil center. Using this point,
+we are able to capture the motion of the pupil without the influence of
+head movement or tablet jitter.
 
-\section{Testing}
+\section{Methodology}
 
 \section{Applications}
 
 \section{Discussion}
+
+\section{Limitations}
+
+\section{Future Research}
 
 \bibliographystyle{acmsiggraph}
 \bibliography{paper}
