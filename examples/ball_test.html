@@ -5,70 +5,93 @@
         <script text="text/javascript" src="/camgaze.js/js/compatibility.js"></script>
         <script text="text/javascript" src="/camgaze.js/js/camgaze.js"></script>
         <script text="text/javascript" src="/camgaze.js/cascades/eye.js"></script>
+        <script type="text/javascript" src="http://codeorigin.jquery.com/jquery-2.0.3.min.js"></script>
     </head>
     <body>
+    	<button id="startButton" onclick="startButtonClicked()">Start</button>
         <canvas id="mainCanvas"></canvas>
         <video style="display:none;" autoplay></video>
         <script text="text/javascript">
-			window.onload = function () {
-				var height = 480;
-				var width = 640;
+			function startButtonClicked() {
+
+				$("#startButton").remove();
+				//alert("balls");
+				// width and height of the canvas
+				var height = document.height;
+				var width = document.width;
 
 				var cGaze = new camgaze.Camgaze(
 					width, 
 					height, 
-					"mainCanvas"
+					"mainCanvas",
+					true
 				);
-				var eyeTracker = new camgaze.EyeTracker(width, height);
+
+				// height and width here refer to the video width and height
+				var eyeTracker = new camgaze.EyeTracker(640, 480);
 				var eyeFilter = new camgaze.EyeFilter();
-                
+
+				var canvas = document.getElementById('mainCanvas');
+
+				var drawer = new camgaze.drawing.CanvasDrawer(
+					"mainCanvas",
+					document.width,
+					document.height
+				);
+				var clickCounter = 0;
+				var calibrationPoints = [
+					new camgaze.structures.Point(
+						33, 
+						40
+					),
+					new camgaze.structures.Point(
+						document.width - 50, 
+						40
+					),
+					new camgaze.structures.Point(
+						33, 
+						document.height - 70
+					),
+					new camgaze.structures.Point(
+						document.width - 50, 
+						document.height - 70
+					)
+				];
+
+				canvas.addEventListener("click", function (e) {
+					if (clickCounter < 3) {
+						clickCounter++;
+					}
+				});
+
 				var frameOp = function (image_data, video, canvasDrawer) {
+					canvasDrawer.clearAll()
+					canvasDrawer.clearCanvas()
 					var trackingData = eyeTracker.track(image_data, video);
 					//console.log(trackingData);
 					var gazeList = eyeFilter.getFilteredGaze(trackingData);
 					//console.log(eyeFilter.getAverageLookingPoint(trackingData));
+					
+					canvasDrawer.drawCircle(
+						calibrationPoints[clickCounter],
+						30,  // radius
+						-1, // line width (filled)
+						"green"
+					)
+
 					if (trackingData.eyeList.length > 0) {
 						gazeList.forEach(
 							function (eye) {
 								canvasDrawer.drawCircle(
-									image_data,
 									eye.centroid.unfiltered,
 									5,  // radius
 									-1, // line width (filled)
 									"red"
 								);
-								/*
-                                image_data = canvasDrawer.drawRectangle(
-                                    image_data,
-                                    eye.eyeData.getHaarRectangle(),
-                                    eye.eyeData.getHaarRectangle().width,
-                                    eye.eyeData.getHaarRectangle().height,
-                                    5,
-                                    "blue"
-                                );
-
-								// draws the gaze
-								image_data = drawer.drawLine(
-									image_data,
-									eye.centroid.unfiltered,
-									eye.centroid.unfiltered.add(eye.gazeVector),
-									5,
-									"green" 
-								);
-
-								// draws the pupil
-								image_data = drawer.drawCircle(
-									image_data,
-									eye.centroid.unfiltered,
-									5,  // radius
-									-1, // line width (filled)
-									"red"
-								);
-								*/
 							}
 						);
 					}
-					return image_data;
+					canvasDrawer.drawAll(false);
 				};
 				cGaze.setFrameOperator(frameOp);
 			} 
