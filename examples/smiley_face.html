@@ -96,8 +96,7 @@
 				var eyeTracker = new camgaze.EyeTracker(width, height);
 				var eyeFilter = new camgaze.EyeFilter();
 				var drawer = new camgaze.drawing.ImageDrawer();
-				//var drawer = new camgaze.drawing.ImageDrawer();
-
+                
 				var frameOp = function (image_data, video) {
 					var trackingData = eyeTracker.track(image_data, video);
 					//console.log(trackingData);
