@@ -537,9 +537,7 @@ camgaze.structures.MovingAveragePoints.prototype = {
 	compound : function (value, refPoint) {
 		this.put(value);
 		var maListCopy = this.movAvgList.slice(0);
-		this.lastMean = this.getMean(
-			this.removeOutliers(maListCopy, refPoint)
-		);
+		this.lastMean = this.getMean(maListCopy);
 		return this.lastMean;
 	},
 
@@ -1492,7 +1490,7 @@ camgaze.EyeTracker.prototype = {
 //////////////////////////////////////////////////////////////
 
 camgaze.EyeFilter = function () {
-	this.movAvgLength = 250;
+	this.movAvgLength = 50;
 	this.movAvgDict = {};
 	this.MovingAveragePoints = camgaze.structures.MovingAveragePoints;
 	this.origin = new camgaze.structures.Point(0, 0);
