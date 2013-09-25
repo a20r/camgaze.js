@@ -302,8 +302,8 @@ camgaze.structures.Point.prototype = {
 
 	div : function (number) {
 		return new camgaze.structures.Point(
-			parseInt(this.x) / number,
-			parseInt(this.y) / number
+			parseInt(parseInt(this.x) / number),
+			parseInt(parseInt(this.y) / number)
 		);
 	},
 
@@ -1600,7 +1600,7 @@ camgaze.EyeFilter.prototype = {
 				totalNum++;
 			}
 		);
-		return totalNum == 0 ? +avgPoint : +avgPoint.div(totalNum);
+		return totalNum == 0 ? avgPoint : avgPoint.div(totalNum);
 	},
 
 	getFilteredGaze : function (td) {
