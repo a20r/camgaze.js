@@ -1600,7 +1600,7 @@ camgaze.EyeFilter.prototype = {
 				totalNum++;
 			}
 		);
-		return totalNum == 0 ? parseInt(avgPoint) : parseInt(avgPoint.div(totalNum));
+		return totalNum == 0 ? +avgPoint : +avgPoint.div(totalNum);
 	},
 
 	getFilteredGaze : function (td) {
