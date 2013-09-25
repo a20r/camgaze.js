@@ -74,10 +74,14 @@
 						trackingData
 					);
 
+					console.log(new camgaze.structures.Point(
+							(document.width / 2).toFixed(0) + avgLookingPoint.x,
+							(document.height / 2).toFixed(0) + avgLookingPoint.y
+					))
 					canvasDrawer.drawCircle(
 						new camgaze.structures.Point(
-							(canvas.width / 2).toFixed(0) + avgLookingPoint.x,
-							(canvas.height / 2).toFixed(0) + avgLookingPoint.y
+							(document.width / 2).toFixed(0) + avgLookingPoint.x,
+							(document.height / 2).toFixed(0) + avgLookingPoint.y
 						),
 						10,
 						-1,
