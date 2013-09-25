@@ -71,14 +71,13 @@
 					var gazeList = eyeFilter.getFilteredGaze(trackingData);
 					
 					var avgLookingPoint = eyeFilter.getAverageLookingPoint(
-						trackingData, false
+						trackingData
 					);
 
-					console.log(avgLookingPoint);
 					canvasDrawer.drawCircle(
 						new camgaze.structures.Point(
-							avgLookingPoint.x,
-							avgLookingPoint.y
+							(canvas.width / 2).toFixed(0) + avgLookingPoint.x,
+							(canvas.height / 2).toFixed(0) + avgLookingPoint.y
 						),
 						10,
 						-1,
