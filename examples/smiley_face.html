@@ -99,10 +99,9 @@
 
 				var frameOp = function (image_data, video) {
 					var trackingData = eyeTracker.track(image_data, video);
-					//console.log(trackingData);
+
 					var gazeList = eyeFilter.getFilteredGaze(trackingData);
 
-					//console.log(eyeFilter.getAverageLookingPoint(trackingData));
 					if (trackingData.eyeList.length > 0) {
 						gazeList.forEach(
 							function (eye) {
