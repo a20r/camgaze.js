@@ -68,10 +68,20 @@
 					canvasDrawer.clearAll()
 					canvasDrawer.clearCanvas()
 					var trackingData = eyeTracker.track(image_data, video);
-					//console.log(trackingData);
 					var gazeList = eyeFilter.getFilteredGaze(trackingData);
-					//console.log(eyeFilter.getAverageLookingPoint(trackingData));
 					
+					var avgLookingPoint = eyeFilter.getAverageLookingPoint(
+						trackingData
+					);
+
+					canvasDrawer.drawCircle(
+						new camgaze.structures.Point(
+							(canvas.width / 2).toFixed(0) + avgLookingPoint.x,
+							(canvas.height / 2).toFixed(0) + avgLookingPoint.y,
+						);
+
+					);
+
 					canvasDrawer.drawCircle(
 						calibrationPoints[clickCounter],
 						30,  // radius
