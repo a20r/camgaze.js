@@ -537,7 +537,9 @@ camgaze.structures.MovingAveragePoints.prototype = {
 	compound : function (value, refPoint) {
 		this.put(value);
 		var maListCopy = this.movAvgList.slice(0);
-		this.lastMean = this.getMean(maListCopy);
+		this.lastMean = this.getMean(
+			this.removeOutliers(maListCopy, refPoint)
+		);
 		return this.lastMean;
 	},
 
@@ -1494,6 +1496,10 @@ camgaze.EyeFilter = function () {
 	this.movAvgDict = {};
 	this.MovingAveragePoints = camgaze.structures.MovingAveragePoints;
 	this.origin = new camgaze.structures.Point(0, 0);
+	this.lookingPointMovAvg = new camgaze.structures.MovingAveragePoints(
+		this.origin,
+		self.movAvgLength
+	);
 }
 
 camgaze.EyeFilter.prototype = {
@@ -1557,6 +1563,12 @@ camgaze.EyeFilter.prototype = {
 				currentDict[eye.getId()] = self.movAvgDict[eye.getId()];
 			} // inner func
 		); // for each
+
+		this.lookingPointMovAvg.compound(
+			this.getAverageResultantVector(td, false),
+			this.origin
+		);
+
 		return currentDict;
 	},
 
@@ -1581,7 +1593,11 @@ camgaze.EyeFilter.prototype = {
 		].eyeData = eye;
 	},
 
-	getAverageLookingPoint : function (td, update) {
+	getAverageLookingPoint : function (td) {
+		return this.lookingPointMovAvg.getLastCompoundedResult();
+	}
+
+	getAverageResultantVector : function (td, update) {
 		if (update == undefined || update) {
 			this.updateFilterData(td);
 		}
