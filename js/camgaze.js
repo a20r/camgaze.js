@@ -59,6 +59,10 @@ camgaze.Camgaze = function (xSize, ySize, mCanvasId, onlyCanvas) {
 	this.onlyCanvas = onlyCanvas;
 	this.xSize = xSize;
 	this.ySize = ySize;
+
+	document.getElementById(mCanvasId).height = ySize;
+	document.getElementById(mCanvasId).width = xSize;
+
 	this.cam = new camgaze.Camera( 
 		onlyCanvas ? 640 : xSize, 
 		onlyCanvas ? 480 : ySize,
