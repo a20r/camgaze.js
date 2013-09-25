@@ -1595,7 +1595,7 @@ camgaze.EyeFilter.prototype = {
 
 	getAverageLookingPoint : function (td) {
 		return this.lookingPointMovAvg.getLastCompoundedResult();
-	}
+	},
 
 	getAverageResultantVector : function (td, update) {
 		if (update == undefined || update) {
