@@ -1592,14 +1592,12 @@ camgaze.EyeFilter.prototype = {
 		var self = this;
 		td.getEyeList().forEach(
 			function (eye) {
-				if (eye.orientation != camgaze.constants.NOT_IN_FACE) {
-					avgPoint = avgPoint.add(
-						self.movAvgDict[
-							eye.getId()
-						].resultantVectorMA.getLastCompoundedResult()
-					);
-					totalNum++;
-				}
+				avgPoint = avgPoint.add(
+					self.movAvgDict[
+						eye.getId()
+					].resultantVectorMA.getLastCompoundedResult()
+				);
+				totalNum++;
 			}
 		);
 		return avgPoint.div(totalNum);
