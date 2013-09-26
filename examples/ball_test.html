@@ -1,6 +1,7 @@
 
 <html>
     <head>
+    	<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
         <script text="text/javascript" src="/camgaze.js/js/jsfeat.js"></script>
         <script text="text/javascript" src="/camgaze.js/js/compatibility.js"></script>
         <script text="text/javascript" src="/camgaze.js/js/camgaze.js"></script>
@@ -8,7 +9,11 @@
         <script type="text/javascript" src="http://codeorigin.jquery.com/jquery-2.0.3.min.js"></script>
     </head>
     <body>
-    	<button id="startButton" onclick="startButtonClicked()">Start</button>
+    	<div align="center">
+    		<button class="btn btn-primary btn-lg" id="startButton" onclick="startButtonClicked()">
+    			Start
+    		</button>
+    	</div>
         <canvas id="mainCanvas"></canvas>
         <video style="display:none;" autoplay></video>
         <script text="text/javascript">
