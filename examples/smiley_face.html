@@ -83,6 +83,9 @@
 		<script text="text/javascript" src="/camgaze.js/js/camgaze.js"></script>
 		<script text="text/javascript" src="/camgaze.js/cascades/eye.js"></script>
 		<script text="text/javascript" src="/camgaze.js/cascades/frontalface.js"></script>
+        <script type="text/javascript" src="http://foo123.github.io/examples/parallel/js/parallel.min.js"></script>
+        <script type="text/javascript" src="http://foo123.github.io/examples/common/js/haar-detector.min.js"></script>
+        <script type="text/javascript" src="http://foo123.github.io/examples/common/cascades/haarcascade_frontalface_alt.js"></script>
 		<script text="text/javascript">
 			window.onload = function () {
 				var height = 480;
@@ -101,6 +104,15 @@
 					var trackingData = eyeTracker.track(image_data, video);
 
 					var gazeList = eyeFilter.getFilteredGaze(trackingData);
+
+                    new HAAR.Detector(haarcascade_frontalface_alt, Parallel)
+                                        .image(image) // use the image
+                                        .interval(30) // set detection interval for asynchronous detection (if not parallel)
+                                        .complete(function(){  // onComplete callback
+                                            console.log(this.Selection, this.objects);
+                                            alert(l+" Objects found");
+                                        })
+                                        .detect(1, 1.25, 0.1, 1, true); // go
 
 					if (trackingData.eyeList.length > 0) {
 						gazeList.forEach(
