@@ -7,13 +7,18 @@
         <script text="text/javascript" src="/camgaze.js/js/camgaze.js"></script>
         <script text="text/javascript" src="/camgaze.js/cascades/eye.js"></script>
         <script type="text/javascript" src="http://codeorigin.jquery.com/jquery-2.0.3.min.js"></script>
+        <style>
+        	button {
+        		top: 50%;
+        		left: 50%;
+        		position: fixed;
+        	}
+        </style>
     </head>
     <body>
-    	<div align="center">
-    		<button class="btn btn-primary btn-lg" id="startButton" onclick="startButtonClicked()">
-    			Start
-    		</button>
-    	</div>
+		<button class="btn btn-primary btn-lg" id="startButton" onclick="startButtonClicked()">
+			Start
+		</button>
         <canvas id="mainCanvas"></canvas>
         <video style="display:none;" autoplay></video>
         <script text="text/javascript">
