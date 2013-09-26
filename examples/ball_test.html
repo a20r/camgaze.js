@@ -40,6 +40,10 @@
 				// height and width here refer to the video width and height
 				var eyeTracker = new camgaze.EyeTracker(640, 480);
 				var eyeFilter = new camgaze.EyeFilter();
+				var eyeCalibrator = new camgaze.LinearCalibrator(
+					0, width,
+					0, height
+				);
 
 				var canvas = document.getElementById('mainCanvas');
 
@@ -85,21 +89,44 @@
 					);
 
 					canvasDrawer.drawCircle(
-						new camgaze.structures.Point(
-							parseInt((document.width / 2).toFixed(0)) + 3 * avgLookingPoint.x,
-							parseInt((document.height / 2).toFixed(0)) + 3 * avgLookingPoint.y
-						),
-						10,
-						-1,
-						"blue"
-					);
-
-					canvasDrawer.drawCircle(
 						calibrationPoints[clickCounter],
 						30,  // radius
 						-1, // line width (filled)
 						"green"
 					)
+
+					var calibFunc;
+					switch (clickCounter) {
+						case 0:
+							calibFunc = eyeCalibrator.setTopLeft;
+							break;
+						case 1:
+							calibFunc = eyeCalibrator.setTopRight;
+							break;
+						case 2:
+							calibFunc = eyeCalibrator.setBottomLeft;
+							break;
+						case 3:
+							calibFunc = eyeCalibrator.setBottomRight;
+						default:
+							calibFunc = eyeCalibrator.getMappedPoint;
+					}
+
+					var calibPoint = new camgaze.structures.Point(
+						parseInt(
+							(document.width / 2).toFixed(0)
+						) + 3 * avgLookingPoint.x,
+						parseInt(
+							(document.height / 2).toFixed(0)
+						) + 3 * avgLookingPoint.y
+					);
+
+					canvasDrawer.drawCircle(
+						calibFunc(calibPoint);
+						10,
+						-1,
+						"blue"
+					);
 
 					if (trackingData.eyeList.length > 0) {
 						gazeList.forEach(

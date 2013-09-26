@@ -1677,18 +1677,22 @@ camgaze.LinearCalibrator.prototype = {
 
 	setTopLeft : function (topLeft) {
 		this.topLeft = topLeft;
+		return topLeft;
 	},
 
 	setTopRight : function (topRight) {
 		this.topRight = topRight;
+		return topRight;
 	},
 
 	setBottomLeft : function (bottomLeft) {
 		this.bottomLeft = bottomLeft;
+		return bottomLeft;
 	},
 
 	setBottomRight : function (bottomRight) {
 		this.bottomRight = bottomRight;
+		return bottomRight;
 	},
 	
 	allDefined : function () {
