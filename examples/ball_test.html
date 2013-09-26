@@ -95,34 +95,44 @@
 						"green"
 					)
 
-					var calibFunc;
-					switch (clickCounter) {
-						case 0:
-							calibFunc = eyeCalibrator.setTopLeft;
-							break;
-						case 1:
-							calibFunc = eyeCalibrator.setTopRight;
-							break;
-						case 2:
-							calibFunc = eyeCalibrator.setBottomLeft;
-							break;
-						case 3:
-							calibFunc = eyeCalibrator.setBottomRight;
-						default:
-							calibFunc = eyeCalibrator.getMappedPoint;
-					}
-
+					var drawPoint;
 					var calibPoint = new camgaze.structures.Point(
 						parseInt(
 							(document.width / 2).toFixed(0)
-						) + 3 * avgLookingPoint.x,
+						) - 3 * avgLookingPoint.x,
 						parseInt(
 							(document.height / 2).toFixed(0)
-						) + 3 * avgLookingPoint.y
+						) - 3 * avgLookingPoint.y
 					);
+					switch (clickCounter) {
+						case 0:
+							drawPoint = eyeCalibrator.setTopLeft(
+								calibPoint
+							);
+							break;
+						case 1:
+							drawPoint = eyeCalibrator.setTopRight(
+								calibPoint
+							);
+							break;
+						case 2:
+							drawPoint = eyeCalibrator.setBottomLeft(
+								calibPoint
+							);
+							break;
+						case 3:
+							drawPoint = eyeCalibrator.setBottomRight(
+								calibPoint
+							);
+						default:
+							drawPoint = eyeCalibrator.getMappedPoint(
+								calibPoint
+							);
+					}
+
 
 					canvasDrawer.drawCircle(
-						calibFunc(calibPoint),
+						drawPointPoint,
 						10,
 						-1,
 						"blue"
