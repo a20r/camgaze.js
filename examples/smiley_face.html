@@ -105,14 +105,14 @@
 
 					var gazeList = eyeFilter.getFilteredGaze(trackingData);
 
-                    new HAAR.Detector(haarcascade_frontalface_alt, Parallel)
-                                        .image(image_data) // use the image
-                                        .interval(30) // set detection interval for asynchronous detection (if not parallel)
-                                        .complete(function(){  // onComplete callback
-                                            console.log(this.Selection, this.objects);
-                                            alert(l+" Objects found");
-                                        })
-                                        .detect(1, 1.25, 0.1, 1, true); // go
+                    // new HAAR.Detector(haarcascade_frontalface_alt, Parallel)
+                    //                     .image(image_data) // use the image
+                    //                     .interval(30) // set detection interval for asynchronous detection (if not parallel)
+                    //                     .complete(function(){  // onComplete callback
+                    //                         console.log(this.Selection, this.objects);
+                    //                         alert(l+" Objects found");
+                    //                     })
+                    //                     .detect(1, 1.25, 0.1, 1, true); // go
 
 					if (trackingData.eyeList.length > 0) {
 						gazeList.forEach(
