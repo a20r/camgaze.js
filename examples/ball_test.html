@@ -72,10 +72,8 @@
 					)
 				];
 
-				canvas.addEventListener("click", function (e) {
-					if (clickCounter < 4) {
-						clickCounter++;
-					}
+                canvas.addEventListener("click", function (e) {
+					clickCounter++;
 				});
 
 				var frameOp = function (image_data, video, canvasDrawer) {
@@ -83,17 +81,18 @@
 					canvasDrawer.clearCanvas()
 					var trackingData = eyeTracker.track(image_data, video);
 					var gazeList = eyeFilter.getFilteredGaze(trackingData);
-					
 					var avgLookingPoint = eyeFilter.getAverageLookingPoint(
 						trackingData
 					);
 
-					canvasDrawer.drawCircle(
-						calibrationPoints[clickCounter],
-						30,  // radius
-						-1, // line width (filled)
-						"green"
-					)
+                    if (clickCounter < 4) {
+					    canvasDrawer.drawCircle(
+						    calibrationPoints[clickCounter],
+						    30,  // radius
+						    -1, // line width (filled)
+						    "green"
+					    );
+                    }
 
 					var drawPoint;
 					var calibPoint = new camgaze.structures.Point(
@@ -102,18 +101,18 @@
 						) - 3 * avgLookingPoint.x,
 						parseInt(
 							(document.height / 2).toFixed(0)
-						) - 3 * avgLookingPoint.y
+						) + 3 * avgLookingPoint.y
 					);
 					switch (clickCounter) {
 						case 0:
 							drawPoint = eyeCalibrator.setTopLeft(
 								calibPoint
-							);
+                            );
 							break;
 						case 1:
 							drawPoint = eyeCalibrator.setTopRight(
 								calibPoint
-							);
+                            );
 							break;
 						case 2:
 							drawPoint = eyeCalibrator.setBottomLeft(
@@ -123,11 +122,12 @@
 						case 3:
 							drawPoint = eyeCalibrator.setBottomRight(
 								calibPoint
-							);
-						default:
+                            );
+                            break;
+                        default:
 							drawPoint = eyeCalibrator.getMappedPoint(
 								calibPoint
-							);
+                            );
 					}
 
 
