@@ -22,6 +22,13 @@
         <canvas id="mainCanvas"></canvas>
         <video style="display:none;" autoplay></video>
         <script text="text/javascript">
+
+            var numberOfTestPoints = 10;
+
+            function getRandomInt (min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
 			function startButtonClicked() {
 
 				$("#startButton").remove();
@@ -51,8 +58,13 @@
 					"mainCanvas",
 					document.width,
 					document.height
-				);
-				var clickCounter = 0;
+                );
+
+                // counts the number of clicks the user does
+                // onto the canvas
+                var clickCounter = 0;
+
+                // points shown to the user for calibration
 				var calibrationPoints = [
 					new camgaze.structures.Point(
 						33, 
@@ -85,6 +97,8 @@
 						trackingData
 					);
 
+                    // Determines if a calibration point should be
+                    // shown on the screen
                     if (clickCounter < 4) {
 					    canvasDrawer.drawCircle(
 						    calibrationPoints[clickCounter],
@@ -94,7 +108,9 @@
 					    );
                     }
 
-					var drawPoint;
+                    var drawPoint;
+
+                    // Gaze Metric
 					var calibPoint = new camgaze.structures.Point(
 						parseInt(
 							(document.width / 2).toFixed(0)
@@ -102,8 +118,10 @@
 						parseInt(
 							(document.height / 2).toFixed(0)
 						) + 3 * avgLookingPoint.y
-					);
-					switch (clickCounter) {
+                    );
+
+                    // determines where to draw the looking point
+                    switch (clickCounter) {
 						case 0:
 							drawPoint = eyeCalibrator.setTopLeft(
 								calibPoint
@@ -130,13 +148,29 @@
                             );
 					}
 
-
 					canvasDrawer.drawCircle(
 						drawPoint,
 						10,
 						-1,
 						"blue"
 					);
+
+                    if (
+                        clickCounter < numberOfTestPoints + 4 &&
+                        clickCounter > 3
+                    ) {
+                        var testPoint = new camgaze.structures.Point(
+                            getRandomInt(20, width - 20),
+                            getRandomInt(20, height - 20)
+                        );
+
+                        canvasDrawer.drawCircle(
+                            testPoint,
+                            20,
+                            -1,
+                            "black"
+                        );
+                    }
 
 					if (trackingData.eyeList.length > 0) {
 						gazeList.forEach(
@@ -151,7 +185,9 @@
 						);
 					}
 					canvasDrawer.drawAll(false);
-				};
+                };
+
+                // sets the operation at each interation
 				cGaze.setFrameOperator(frameOp);
 			} 
 		</script>
