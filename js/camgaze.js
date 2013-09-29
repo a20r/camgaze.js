@@ -1497,7 +1497,7 @@ camgaze.EyeTracker.prototype = {
 //////////////////////////////////////////////////////////////
 
 camgaze.EyeFilter = function () {
-	this.movAvgLength = 35;
+	this.movAvgLength = 20;
 	this.movAvgDict = {};
 	this.MovingAveragePoints = camgaze.structures.MovingAveragePoints;
 	this.origin = new camgaze.structures.Point(0, 0);
