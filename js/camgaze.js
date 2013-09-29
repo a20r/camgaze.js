@@ -1088,8 +1088,11 @@ camgaze.EyeData.prototype = {
 	getResultantVector : function () {
 
 		return this.getScaledCentroid().sub(
-			this.face
-		).mult(3);
+            new camgaze.structures.Point(
+                this.face.x + this.face.width / 2,
+                this.face.y + this.face.height / 2
+            )
+		).mult(1);
 	},
 
 	getMinMaxColors : function () {
