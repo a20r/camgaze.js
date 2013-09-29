@@ -84,8 +84,9 @@
 					)
 				];
 
+                var testPoint;
                 canvas.addEventListener("click", function (e) {
-                    var testPoint = new camgaze.structures.Point(
+                    testPoint = new camgaze.structures.Point(
                         getRandomInt(20, width - 20),
                         getRandomInt(20, height - 20)
                     );
