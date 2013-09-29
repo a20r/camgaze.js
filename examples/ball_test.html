@@ -95,6 +95,16 @@
                     if (clickCounter > 3) {
                         distList.push(testPoint.distTo(drawPoint));
                     }
+
+                    if (clickCounter == 3) {
+                        alert("Start the test");
+                    }
+
+                    if (clickCounter == numberOfTestPoints + 3) {
+                        alert("You are done!");
+                    }
+
+
                     testPoint = new camgaze.structures.Point(
                         getRandomInt(20, width - 20),
                         getRandomInt(20, height - 20)
@@ -166,10 +176,6 @@
 						"blue"
 					);
 
-                    if (clickCounter == 3) {
-                        alert("Start the test");
-                    }
-
                     if (
                         clickCounter < numberOfTestPoints + 4 &&
                         clickCounter > 3
@@ -180,10 +186,6 @@
                             -1,
                             "black"
                         );
-                    }
-
-                    if (clickCounter == numberOfTestPoints + 3) {
-                        alert("You are done!");
                     }
 
 					if (trackingData.eyeList.length > 0) {
