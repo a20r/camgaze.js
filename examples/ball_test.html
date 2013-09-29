@@ -126,7 +126,7 @@
                     if (clickCounter < 4) {
 					    canvasDrawer.drawCircle(
 						    calibrationPoints[clickCounter],
-						    30,  // radius
+						    70,  // radius
 						    -1, // line width (filled)
 						    "green"
 					    );
@@ -167,7 +167,23 @@
 							drawPoint = eyeCalibrator.getMappedPoint(
 								calibPoint
                             );
-					}
+                    }
+
+                    if (drawPoint.x > width) {
+                        drawPoint.x = width);
+                    }
+
+                    if (drawPoint.y > height) {
+                        drawPoint.y = height;
+                    }
+
+                    if (drawPoint.x < 0) {
+                        drawPoint.x = 0;
+                    }
+
+                    if (drawPoint.y < 0) {
+                        drawPoint.y = 0;
+                    }
 
 					canvasDrawer.drawCircle(
 						drawPoint,
