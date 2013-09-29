@@ -1713,15 +1713,15 @@ camgaze.LinearCalibrator.prototype = {
 		return new camgaze.structures.Point(
 			this.mapVal(
 				unMappedPoint.x,
-				this.topLeft.x - 20,
-				this.topRight.x + 20,
+				this.topLeft.x - 10,
+				this.topRight.x + 10,
 				this.outXMin,
 				this.outXMax
 			).toFixed(0),
 			this.mapVal(
 				unMappedPoint.y,
-				this.topLeft.y - 10,
-				this.bottomLeft.y + 10,
+				this.topLeft.y - 5,
+				this.bottomLeft.y + 5,
 				this.outYMin,
 				this.outYMax
 			).toFixed(0)
