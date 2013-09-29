@@ -24,9 +24,14 @@
         <script text="text/javascript">
 
             var numberOfTestPoints = 10;
+            var distList = new Array();
 
             function getRandomInt (min, max) {
                 return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            function getDistList() {
+                return distList;
             }
 
 			function startButtonClicked() {
@@ -88,7 +93,7 @@
                 var drawPoint;
                 canvas.addEventListener("click", function (e) {
                     if (clickCounter > 3) {
-                        console.log(testPoint.distTo(drawPoint));
+                        distList.push(testPoint.distTo(drawPoint));
                     }
                     testPoint = new camgaze.structures.Point(
                         getRandomInt(20, width - 20),
@@ -161,6 +166,10 @@
 						"blue"
 					);
 
+                    if (clickCounter == 3) {
+                        alert("Start the test");
+                    }
+
                     if (
                         clickCounter < numberOfTestPoints + 4 &&
                         clickCounter > 3
@@ -171,6 +180,10 @@
                             -1,
                             "black"
                         );
+                    }
+
+                    if (clickCounter == numberOfTestPoints + 3) {
+                        alert("You are done!");
                     }
 
 					if (trackingData.eyeList.length > 0) {
