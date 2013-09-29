@@ -1088,10 +1088,7 @@ camgaze.EyeData.prototype = {
 	getResultantVector : function () {
 
 		return this.getScaledCentroid().sub(
-            new camgaze.structures.Point(
-                this.face.x + this.face.width / 2,
-                this.face.y + this.face.height / 2
-            )
+		    this.getHaarCentroid()
 		).mult(3);
 	},
 
@@ -1165,12 +1162,6 @@ camgaze.EyeTracker = function (xSize, ySize) {
 		this.xSize,
 		this.ySize
 	);
-
-	this.faceDetector = new camgaze.CVUtil.HaarDetector(
-	    camgaze.cascades.frontalface,
-	    this.xSize,
-	    this.ySize
-    );
 
 	// need to figure out this value
 	// probably way to big right now
@@ -1437,12 +1428,6 @@ camgaze.EyeTracker.prototype = {
 			1 // min scale
 		);
 
-		var faceRects = this.faceDetector.detectObjects(
-		    video,
-		    1.1,
-		    1
-        );
-
 		var eyeRects = this.filterRects(
 			unfilteredEyeRects,
 			20 // distance threshold
@@ -1474,7 +1459,7 @@ camgaze.EyeTracker.prototype = {
 						rect.height
 					);
 					eyeData.setImage(eyeImg);
-					eyeData.setFace(faceRects[0]);
+
 					var pupilObj = self.getPupil(eyeImg);
 					if (pupilObj != undefined) {
 						var pupil = pupilObj.pupil;
