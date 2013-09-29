@@ -1720,8 +1720,8 @@ camgaze.LinearCalibrator.prototype = {
 			).toFixed(0),
 			this.mapVal(
 				unMappedPoint.y,
-				this.topLeft.y - 5,
-				this.bottomLeft.y + 5,
+				this.topLeft.y - 10,
+				this.bottomLeft.y + 10,
 				this.outYMin,
 				this.outYMax
 			).toFixed(0)
