@@ -85,7 +85,11 @@
 				];
 
                 var testPoint;
+                var drawPoint;
                 canvas.addEventListener("click", function (e) {
+                    if (clickCounter > 3) {
+                        console.log(testPoint.distTo(drawPoint));
+                    }
                     testPoint = new camgaze.structures.Point(
                         getRandomInt(20, width - 20),
                         getRandomInt(20, height - 20)
@@ -112,9 +116,6 @@
 						    "green"
 					    );
                     }
-
-                    var drawPoint;
-
                     // Gaze Metric
 					var calibPoint = new camgaze.structures.Point(
 						parseInt(
@@ -163,7 +164,7 @@
                     if (
                         clickCounter < numberOfTestPoints + 4 &&
                         clickCounter > 3
-                    ) { 
+                    ) {
                         canvasDrawer.drawCircle(
                             testPoint,
                             20,
