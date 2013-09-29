@@ -1092,7 +1092,7 @@ camgaze.EyeData.prototype = {
                 this.face.x + this.face.width / 2,
                 this.face.y + this.face.height / 2
             )
-		).mult(1);
+		).mult(3);
 	},
 
 	getMinMaxColors : function () {
