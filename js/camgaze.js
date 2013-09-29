@@ -1440,8 +1440,6 @@ camgaze.EyeTracker.prototype = {
 		    1
         );
 
-        trackingData.setFace(faceRects[0]);
-
 		var eyeRects = this.filterRects(
 			unfilteredEyeRects,
 			20 // distance threshold
@@ -1473,6 +1471,7 @@ camgaze.EyeTracker.prototype = {
 						rect.height
 					);
 					eyeData.setImage(eyeImg);
+					eyeData.setFace(faceRects[0]);
 					var pupilObj = self.getPupil(eyeImg);
 					if (pupilObj != undefined) {
 						var pupil = pupilObj.pupil;
