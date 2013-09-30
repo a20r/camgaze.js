@@ -191,7 +191,7 @@
                             //);
 
                             drawPoint = net.run(calibPoint.toList());
-                            drawPoint = new camgaze.structures.Point(drawPoint.x * document.width, drawPoint.y * document.height);
+                            drawPoint = new camgaze.structures.Point(drawPoint[0] * document.width, drawPoint[1] * document.height);
                             console.log(drawPoint);
                     }
 
