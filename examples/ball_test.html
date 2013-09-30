@@ -90,6 +90,7 @@
 					)
 				];
 
+                var calibPoint
                 var testPoint;
                 var drawPoint;
                 var calibList = new Array();
@@ -98,6 +99,11 @@
                     if (clickCounter > 3) {
                         distList.push(testPoint.distTo(drawPoint));
                     }
+
+                    if(clickCounter < calibrationPoints.length) {
+                        calibList.push({input: calibPoint.toList(), output: calibrationPoints[clickCounter].toList()});
+                    }
+
 
                     if (clickCounter == 3) {
                         net.train(calibList);
@@ -137,7 +143,7 @@
 					    );
                     }
                     // Gaze Metric
-					var calibPoint = new camgaze.structures.Point(
+					calibPoint = new camgaze.structures.Point(
 						parseInt(
 							(document.width / 2).toFixed(0)
 						) - 3 * avgLookingPoint.x,
@@ -198,11 +204,6 @@
 						-1,
 						"blue"
 					);
-
-                    if(clickCounter < calibrationPoints.length) {
-                        calibList.push({input: calibPoint.toList(), output: calibrationPoints[clickCounter].toList()});
-                    }
-
 
                     if (
                         clickCounter < numberOfTestPoints + 4 &&
