@@ -538,7 +538,8 @@ camgaze.structures.MovingAveragePoints.prototype = {
 		this.put(value);
 		var maListCopy = this.movAvgList.slice(0);
 		this.lastMean = this.getMean(
-			this.removeOutliers(maListCopy, refPoint)
+			//this.removeOutliers(maListCopy, refPoint)
+			maListCopy
 		);
 		return this.lastMean;
 	},

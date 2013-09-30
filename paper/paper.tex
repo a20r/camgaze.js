@@ -48,23 +48,15 @@ a more feasible scope of use.
 
 \section{Introduction}
 
-Eye tracking is a challenging problem, that has been attempted to be solved
-since the 18th century (Ahrens, A., 1891. Die Bewegung der Augen beim Schreiben.
-Rostock: University of Rostock). Currently, it is mostly viewed as a proble
-in Computer Vision.
-The majority of eye tracking solutions available on the market today are a combination
-of software and specialised hardware. The principles behind hardware varies greatly:
-it ranges from head-mounted cameras to lenses with integrated coils. It is believed
-that the state of the art solutions can allow accuracy up to NN\% {link}. Despite that,
-carrying out eye tracking experiments remains an issue – it is expensive, requires
-complicated deployment and calibration and, in most cases, has to be carried out
-in a controlled environment.
+Eye tracking is a challenging problem, that has been attempted to be solved since the 19th century (Ahrens, A., 1891). Die Bewegung der Augen beim Schreiben. Rostock: University of Rostock). Currently, it is mostly viewed as a problem in Computer Vision.
 
-In the recent years, it has been shown (Agustin, 2009; Sewell and Komogortsev, 2010)
-that it is possible to use commodity cameras, often built into modern computers to
-perform eye tracking with promising quality. Deployment of such systems is relatively 
-simple, but in the described cases it is tied to specific computer platforms (Oleg - Texas iPad App).
-Web applications are “rich” websites that are able to run without external plugins inside the browser. 
+The majority of eye tracking solutions available on the market today are a combination of software and specialised hardware. The principles behind hardware varies greatly: it ranges from head-mounted cameras to lenses with integrated coils. It is believed that the state of the art solutions can allow accuracy up to NN\% {link}. Despite that, carrying out eye tracking experiments remains an issue – it is expensive, requires complicated deployment and calibration and, in most cases, has to be carried out in a controlled environment.
+
+In the recent years, it has been shown (Agustin, 2009; Sewell and Komogortsev, 2010) that it is possible to use commodity cameras, often built into modern computers to perform eye tracking with promising quality. Deployment of such systems is relatively simple, but in the described cases it is tied to specific computer platforms (Oleg - Texas iPad App).
+
+Web applications are “rich” websites that are able to run without external plugins inside the browser. Recently, the web-browsers have evolved to adapt to the market’s requirements – new technologies have risen, allowing web application to be increasingly interactive. For example, WebRTC (Web Real-Time Communication) is an API that aims to enable in-browser audio and video communication. As of September 2013, WebRTC is supported in the stable versions of Google Chrome and Mozilla Firefox. A recent report (http://disruptive-analysis.com/webrtc.htm), claims that by 2016 there will be 3 billion capable devices and 1 billion individual users of WebRTC-enabled devices.
+We describe Camgaze.js – a Javascript library that uses WebRTC to obtain the video from built-in or USB cameras and measures the point of gaze. We believe that it can be deployed in a wide range of applications such as website interface analytics and concussion testing as well as interactive input.
+
 
 \section{Challenges}
 
@@ -155,6 +147,15 @@ head movement or tablet jitter.
 \section{Applications}
 
 \section{Discussion}
+
+\subsection{Ethics}
+Camgaze.js has an ambition of bringing eye tracking to larger-scale deployment. This intensifies the need to address the privacy concerns some users might have. The library we describe attempts to do this in several ways.
+
+When the user accesses a web page that uses Camgaze.js, they are prompted a notice that the website is attempting to use the video from their computer. This is the default behaviour of both Chrome and Firefox and this behaviour can not be overridden by any website. Camgaze.js displays a notice, disclosing for what specific purposes this data will be used. Thus, we prevent capturing the data from unaware user.
+
+As previously mentioned, Camgaze.js is implemented in Javascript. Since the absolute majority of modern web browsers have an built-in Javascript interpreter, it is possible to do the eye tracking on the client-side. This allows the proposed solution to avoid sending and storing the user’s video stream to an external server. 
+In general, we believe that sensible measures have been taken to mitigate the impact on the user’s the privacy.
+
 
 \section{Limitations}
 
