@@ -101,7 +101,18 @@
                     }
 
                     if(clickCounter < calibrationPoints.length) {
-                        calibList.push({input: calibPoint.toList(), output: calibrationPoints[clickCounter].toList()});
+                        calibList.push(
+                            {
+                                input: [
+                                    calibPoint.x / document.width, 
+                                    calibPoint.y / document.height
+                                ],
+                                output: [
+                                    calibrationPoints[clickCounter].x / document.width,
+                                    calibrationPoints[clickCounter].y / document.height
+                                ]
+                            }
+                        );
                     }
 
 
@@ -149,7 +160,7 @@
 						) - 3 * avgLookingPoint.x,
 						parseInt(
 							(document.height / 2).toFixed(0)
-						) + 3 * avgLookingPoint.y
+						) + 3 * avgLooki ngPoint.y
                     );
 
                     // determines where to draw the looking point
@@ -180,6 +191,7 @@
                             //);
 
                             drawPoint = net.run(calibPoint.toList());
+                            drawPoint = new camgaze.structures.Point(drawPoint.x * document.width, drawPoint.y * document.height);
                             console.log(drawPoint);
                     }
 
