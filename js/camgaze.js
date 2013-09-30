@@ -1504,7 +1504,7 @@ camgaze.EyeFilter = function () {
 	this.origin = new camgaze.structures.Point(0, 0);
 	this.lookingPointMovAvg = new camgaze.structures.MovingAveragePoints(
 		this.origin,
-		20
+		4
 	);
 }
 
