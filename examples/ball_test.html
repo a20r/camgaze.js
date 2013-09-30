@@ -93,8 +93,9 @@
                 var calibPoint
                 var testPoint;
                 var drawPoint;
-                var calibList = new Array();
-                var net = new brain.NeuralNetwork();
+                var mappedMovingAverage;
+                //var calibList = new Array();
+                //var net = new brain.NeuralNetwork();
                 canvas.addEventListener("click", function (e) {
                     if (clickCounter > 3) {
                         distList.push(testPoint.distTo(drawPoint));
@@ -121,6 +122,10 @@
                     if (clickCounter == 3) {
                         //net.train(calibList);
                         alert("Start the test");
+                        mappedMovingAverage = new camgaze.structures.MovingAveragePoints(
+                            new camgaze.structures.Point(0, 0),
+                            50
+                        );
                     }
 
                     if (clickCounter == numberOfTestPoints + 3) {
@@ -150,7 +155,7 @@
                     if (clickCounter < 4) {
 					    canvasDrawer.drawCircle(
 						    calibrationPoints[clickCounter],
-						    70,  // radius
+						    10,  // radius
 						    -1, // line width (filled)
 						    "green"
 					    );
@@ -192,6 +197,7 @@
 								calibPoint
                             );
 
+                            drawPoint = mappedMovingAverage.compound(drawPoint);
                             //drawPoint = net.run(calibPoint.toList());
                             //drawPoint = new camgaze.structures.Point(drawPoint[0] * document.width, drawPoint[1] * document.height);
                             //console.log(drawPoint);
@@ -226,7 +232,7 @@
                     ) {
                         canvasDrawer.drawCircle(
                             testPoint,
-                            20,
+                            50,
                             -1,
                             "black"
                         );
