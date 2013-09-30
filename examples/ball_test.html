@@ -6,7 +6,7 @@
         <script text="text/javascript" src="/camgaze.js/js/compatibility.js"></script>
         <script text="text/javascript" src="/camgaze.js/js/camgaze.js"></script>
         <script text="text/javascript" src="/camgaze.js/cascades/eye.js"></script>
-        <!--<script text="text/javascript" src="/camgaze.js/cascades/frontalface.js"></script>-->
+        <script text="text/javascript" src="http://cloud.github.com/downloads/harthur/brain/brain-0.6.0.js"></script>
         <script type="text/javascript" src="http://codeorigin.jquery.com/jquery-2.0.3.min.js"></script>
         <style>
         	button {
@@ -92,17 +92,21 @@
 
                 var testPoint;
                 var drawPoint;
+                var calibList = new Array();
+                var net = new brain.NeuralNetwork();
                 canvas.addEventListener("click", function (e) {
                     if (clickCounter > 3) {
                         distList.push(testPoint.distTo(drawPoint));
                     }
 
                     if (clickCounter == 3) {
+                        net.train(calibList);
                         alert("Start the test");
                     }
 
                     if (clickCounter == numberOfTestPoints + 3) {
                         alert("You are done!");
+
                     }
 
 
@@ -165,9 +169,11 @@
                             );
                             break;
                         default:
-							drawPoint = eyeCalibrator.getMappedPoint(
-								calibPoint
-                            );
+							//drawPoint = eyeCalibrator.getMappedPoint(
+							//	calibPoint
+                            //);
+
+                            drawPoint = net.run(calibPoint.toList());
                     }
 
                     if (drawPoint.x > width) {
@@ -192,6 +198,11 @@
 						-1,
 						"blue"
 					);
+
+                    if(clickCounter < calibrationPoints.length) {
+                        calibList.push({input: calibPoint.toList(), output: calibrationPoints[clickCounter].toList()});
+                    }
+
 
                     if (
                         clickCounter < numberOfTestPoints + 4 &&
