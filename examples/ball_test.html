@@ -100,6 +100,7 @@
                         distList.push(testPoint.distTo(drawPoint));
                     }
 
+                    /*
                     if(clickCounter < calibrationPoints.length) {
                         calibList.push(
                             {
@@ -114,10 +115,11 @@
                             }
                         );
                     }
+                    */
 
 
                     if (clickCounter == 3) {
-                        net.train(calibList);
+                        //net.train(calibList);
                         alert("Start the test");
                     }
 
@@ -186,13 +188,13 @@
                             );
                             break;
                         default:
-							//drawPoint = eyeCalibrator.getMappedPoint(
-							//	calibPoint
-                            //);
+							drawPoint = eyeCalibrator.getMappedPoint(
+								calibPoint
+                            );
 
-                            drawPoint = net.run(calibPoint.toList());
-                            drawPoint = new camgaze.structures.Point(drawPoint[0] * document.width, drawPoint[1] * document.height);
-                            console.log(drawPoint);
+                            //drawPoint = net.run(calibPoint.toList());
+                            //drawPoint = new camgaze.structures.Point(drawPoint[0] * document.width, drawPoint[1] * document.height);
+                            //console.log(drawPoint);
                     }
 
                     if (drawPoint.x > width) {
