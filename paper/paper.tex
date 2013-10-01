@@ -149,30 +149,30 @@ from \Symbol{G} to a point on the screen. Once this gaze metric has been
 calibrated, $\Name$ is able to interpolate area of the screen the user is
 looking at. A high level description of the algortihm is shown below.
 
-\begin{algorithm}
-\caption{Pseudocode for $\Name$}
-\label{algo:Main}
-\begin{algorithmic}[1]
-\setcounter{ALC@line}{0}
-
-\vspace*{1mm}
-
-\STATE $\Symbol{F} \leftarrow \Function{InitGazeMapping}()$
-
-\WHILE{$\Function{StillCalibrating()} == \True$}
-\STATE $P_{list} \leftarrow \Function{DetectPupils()}$
-\STATE $\Symbol{G} \leftarrow \Function{DetermineGazeMetric}(P_{list})$
-\STATE $\Symbol{F} \leftarrow \Function{Calibrate}(\Symbol{G}, \Symbol{F})$
-\ENDWHILE
-
-\WHILE{$\Function{SessionFinished()} == \False$}
-\STATE $P_{list} \leftarrow \Function{DetectPupils()}$
-\STATE $\Symbol{G} \leftarrow \Function{DetermineGazeMetric}(P_{list})$
-\STATE $\Function{ProjectGazeOntoScreen}(\Symbol{F}(\Symbol{G}))$
-\ENDWHILE
-
-\end{algorithmic}
-\end{algorithm}
+%\begin{algorithm}
+%\caption{Pseudocode for $\Name$}
+%\label{algo:Main}
+%\begin{algorithmic}[1]
+%\setcounter{ALC@line}{0}
+%
+%\vspace*{1mm}
+%
+%\STATE $\Symbol{F} \leftarrow \Function{InitGazeMapping}()$
+%
+%\WHILE{$\Function{StillCalibrating()} == \True$}
+%\STATE $P_{list} \leftarrow \Function{DetectPupils()}$
+%\STATE $\Symbol{G} \leftarrow \Function{DetermineGazeMetric}(P_{list})$
+%\STATE $\Symbol{F} \leftarrow \Function{Calibrate}(\Symbol{G}, \Symbol{F})$
+%\ENDWHILE
+%
+%\WHILE{$\Function{SessionFinished()} == \False$}
+%\STATE $P_{list} \leftarrow \Function{DetectPupils()}$
+%\STATE $\Symbol{G} \leftarrow \Function{DetermineGazeMetric}(P_{list})$
+%\STATE $\Function{ProjectGazeOntoScreen}(\Symbol{F}(\Symbol{G}))$
+%\ENDWHILE
+%
+%\end{algorithmic}
+%\end{algorithm}
 
 \subsection{Pupil Detection}
 
@@ -237,15 +237,12 @@ pupils accurately and derive a gaze metric.
 
 \end{figure}
 
-The gaze metric is determined by establishing a reference point that will
-remain in a constant position with reference to the pupil center. Using this
-point, we are able to capture the motion of the pupil without the influence of
-head or camera movement.
-
-For this work, we use the center of the Haar rectangle that is detected around
-the eye. This point will remain in a constant position with reference to the
-movement of the pupil and therefore we are able to determine the gaze of the
-user.
+In this work, the notion of a \emph{gaze metric} is used. The gaze metric is a
+quantifiable measurement that describes the gaze direction for an eye. To
+determine the gaze direction, we must be able to capture the movement of the
+pupil relative to the eye. This is done by computing the horizontal and
+vertical displacements from the center of the Haar bounding rectangle
+surrounding the eye.
 
 \subsection{Calibration}
 
@@ -276,9 +273,9 @@ screen.
 The application we created for calibration presents a point in each corner of
 the screen one at a time. The user is told to look at the given point click on
 the screen when they are done. The click on the screen will show each
-calibration point until all of the corners have been mapped. 
+calibration point until all of the corners have been mapped.
 
-\subsection{Using JavaScript}
+\subsection{Obtaining Video Data}
 
 %\begin{figure}[ht]
 %
