@@ -238,21 +238,45 @@ pupils accurately and derive a gaze metric.
 \end{figure}
 
 The gaze metric is determined by establishing a reference point that will
-in a constant position with reference to the pupil center. Using this point,
-we are able to capture the motion of the pupil without the influence of head
-movement or camera movement.
+remain in a constant position with reference to the pupil center. Using this
+point, we are able to capture the motion of the pupil without the influence of
+head or camera movement.
 
 For this work, we use the center of the Haar rectangle that is detected around
-the eye. This point will in a constant position with reference to the movement
-of the pupil and therefore we are able to determine the gaze of the user.
+the eye. This point will remain in a constant position with reference to the
+movement of the pupil and therefore we are able to determine the gaze of the
+user.
 
 \subsection{Calibration}
 
-The manner in which we do calibration is aimed to be very easy for a web user
-to do. Four corner points are shown to the user one at a time. After the user
-looks at the calibration point, the user clicks the screen and the next point
-is shown. Using these four points, a linear mapping can be created from the
-gaze metric to the screen.
+Calibration in an eye tracking system is necessary to ensure that the predicted
+point of gaze resembles the expected point of gaze. The calibration creates a
+mapping from what the eye tracker determines the gaze metric is to a point on
+the screen. For visible light based eye tracking using commodity eye trackers,
+neural network \cite{holland2012eye} and linear based calibration techniques
+have been deployed. In our work, we use a linear based approach due to ease of
+implementation and computing power restrictions imposed by doing the
+computation inside the browser in real-time.
+
+The linear approach works by placing sample points in the corners of the
+viewing screen and asking the user to look at these points, one at a time.
+Using the data gathered from the eye tracker and the knowledge of what point
+the data corresponds to on the screen, we can construct a linear mapping from
+the gaze metric onto the screen. We map the distance from the \emph{preceived}
+point on the top left to the preceived point on the top right to the width of
+the screen. We also map the distance from the preceived top left point to the
+preceived bottom right point to the height of the screen. This mapping build
+parametric equations that be used to interpolate the looking point on the
+screen.
+
+The user basically creates a box in which the eye tracker thinks its looking in
+and maps the height and width of this preceived box to the dimensions of the
+screen.
+
+The application we created for calibration presents a point in each corner of
+the screen one at a time. The user is told to look at the given point click on
+the screen when they are done. The click on the screen will show each
+calibration point until all of the corners have been mapped. 
 
 \subsection{Using JavaScript}
 
