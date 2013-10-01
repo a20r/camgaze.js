@@ -43,7 +43,7 @@ JavaScript}
 \author{Alexander Wallar \thanks{email: aw204@st-andrews.ac.uk} \\ Aleksejs
 Sazonovs \thanks{email: as245@st-andrews.ac.uk} \\ University of St Andrews
 \and Christian Poellabauer \thanks{email: cpoellab@nd.edu} \\ Patrick Flynn
-\thanks{flynn@nd.edu} \\ University of Notre Dame}
+\thanks{email: flynn@nd.edu} \\ University of Notre Dame}
 
 \pdfauthor{Alexander Wallar, Christian Poellabauer, Patrick Flynn, Aleksejs
 Sazonovs}
@@ -142,7 +142,8 @@ which popular libraries such as OpenCV are written in. Projects like Emscripten
 are making early attempts to allow translation of LLVM bitcode code to
 Javascript, potentially allowing to port some of the well-established Computer
 Vision libraries to Javascript in the future. For now, we had to create a
-custom implementation of {ALEX} to use in $\Name$.
+custom implementation of connected component detection and image moment
+calculation to use in $\Name$.
 
 Despite some of the described difficulties, the authors of this paper believe
 that a combination of Javascript and WebRTC is a reasonable technological stack
@@ -235,7 +236,7 @@ pupils accurately and derive a gaze metric.
 left shows the connected component segmentation. In the top right image, the
 centers of the connected components are extracted. The image on the bottom left
 shows that out of the two detected connected components, the one with the green
-lines has a smaller overall error and is returned as the pupil. 
+lines has a smaller overall error and is returned as the pupil.
 
 \subsection{Determining the Gaze Metric}
 
@@ -330,7 +331,7 @@ Core i7 processor running on 2.9 GHz clock speed, 8 GB of RAM, 1280x800 screen
 resolution).  It is equipped with a built-in FaceTime HD Camera, capable of
 recording video with 720p resolution. The computer was running Apple OS X
 (10.8.2) and Google Chrome web browser (build 30.0.1599.66) at the time of the
-experiment. The screen of the laptop was $90\degrees$ with the base.
+experiment. The screen of the laptop was $90^{\circ}$ with the base.
 
 The room, where the experiments were held was equipped with mildly-bright
 flourescent lamps and had no natural light access. 
@@ -340,15 +341,6 @@ flourescent lamps and had no natural light access.
 \subsection{Procedure}
 
 \section{Results}
-
-\subsection{Accuracy}
-
-\subsection{Sampling Rate}
-
-
-
-\subsection{Usability}
-
 
 \section{Discussion}
 
@@ -376,6 +368,24 @@ impact on the user’s the privacy.
 
 \subsection{Limitations}
 
+Currently, Camgaze.js lacks any spatial awareness between the camera and the
+user. In some cases, due to specific change in alignment of the user the result
+from the eye tracker will be imprecise. Likewise, a change in head pose
+potentially disrupts the precision of $\Name$ (e.g. if the user is looking at
+the center of the screen but starts to tilt his / her head down, the gaze
+metric will predict the user looking up due to the displacement from the center
+of the eye to the pupil).
+
+The lack of well trained Haar classifiers also limits the ability of this work.
+The current classifiers available in JavaScript are not as highly trained and
+thus do not detect the eyes as frequently in different lighting conditions.
+This causes problems with $\Name$ because a gaze metric can not be determined
+and a ponit on the screen is not mapped. 
+
+%While the eye tracking is unlike to begin, if the user is not initially
+%properly aligned (e.g. the head is strongly tilted), it does not adjust to the
+%variations of the head position that are possible in the real environment.
+
 \section{Future Research \& Applications}
 
 Preliminary experiments show that $\Name$ is working on a tablet computer
@@ -390,7 +400,7 @@ libraries to Javascript, thus allowing to apply the latest developments in the
 field for the task that $\Name$ tries to solve.
 
 Additional research on the normalization of the video stream could be done.
-Porting some of the algorithms to Javascript would be a novel task. 
+Porting some of the algorithms to Javascript would be a novel task.
 
 We believe that $\Name$ should be used in cases, where the simplicity and
 scalability of deployment overweights the need for perfect precision of point

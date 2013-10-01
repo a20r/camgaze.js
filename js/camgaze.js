@@ -1090,7 +1090,7 @@ camgaze.EyeData.prototype = {
 
 		return new camgaze.structures.Point(
 		        this.getScaledCentroid().x - this.getHaarCentroid().x,
-		        this.getScaledCentroid().y - (1.1 * this.getHaarCentroid().y).toFixed(0)
+		        this.getScaledCentroid().y - (1.03 * this.getHaarCentroid().y).toFixed(0)
 		).mult(3);
 	},
 
