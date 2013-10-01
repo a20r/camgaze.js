@@ -124,7 +124,7 @@
                         alert("Start the test");
                         mappedMovingAverage = new camgaze.structures.MovingAveragePoints(
                             new camgaze.structures.Point(0, 0),
-                            20
+                            10
                         );
                     }
 
@@ -155,7 +155,7 @@
                     if (clickCounter < 4) {
 					    canvasDrawer.drawCircle(
 						    calibrationPoints[clickCounter],
-						    10,  // radius
+						    20,  // radius
 						    -1, // line width (filled)
 						    "green"
 					    );
