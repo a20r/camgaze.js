@@ -59,7 +59,7 @@ Eye tracking is a difficult problem that is usually solved using specialised
 hardware and therefore has limited availability due to cost and deployment
 difficulties. We describe $\Name$ – a client-side Javascript library that is
 able to measure the point of gaze using only commodity optical cameras without
-relying on external application installed besides a web-browser. In our work,
+relying on any external application installed besides a web-browser. In our work,
 we conduct experiments using $\Name$ to show the usability of such a system.
 We also discuss the challenges and applications of using an in-browser eye
 tracking system. Since the described eye tracker works inside the browser
@@ -83,7 +83,8 @@ remains an issue – it is expensive, requires complicated deployment and
 calibration and, in most cases, has to be carried out in a controlled
 environment.
 
-In the recent years, it has been shown \cite{SanAgustin2009}\cite{Sewell2010} that it is possible to use commodity cameras, often built into modern
+In the recent years, it has been shown \cite{SanAgustin2009}\cite{Sewell2010}
+that it is possible to use commodity cameras, often built into modern
 computers to perform eye tracking with promising quality. Deployment of such
 systems is relatively simple, but in the described cases it is tied to specific
 computer platforms (Oleg - Texas iPad App).
@@ -224,6 +225,19 @@ pupils accurately and derive a gaze metric.
 
 \subsection{Determining the Gaze Metric}
 
+The gaze metric is a quantifiable measurement that describes the gaze direction
+for an eye. To determine the gaze direction, we must be able to capture the
+movement of the pupil relative to the eye position. This is done by computing
+the horizontal and vertical displacements from the center of the Haar bounding
+rectangle surrounding the eye to the pupil center. Since the center of the Haar
+bounding rectangle stays in a constant position with reference to the pupil, it
+can be used to discern the relative movment of the pupil.
+
+Using a point that remains in a relatively constant position with reference to
+the pupil is vital for determining the gaze direction because the determined
+gaze will not be affected by the movment of the head or the jitter of the
+camera.
+
 \begin{figure}[ht]
 
     \centering
@@ -234,12 +248,7 @@ pupils accurately and derive a gaze metric.
 
 \end{figure}
 
-In this work, the notion of a \emph{gaze metric} is used. The gaze metric is a
-quantifiable measurement that describes the gaze direction for an eye. To
-determine the gaze direction, we must be able to capture the movement of the
-pupil relative to the eye. This is done by computing the horizontal and
-vertical displacements from the center of the Haar bounding rectangle
-surrounding the eye.
+
 
 \subsection{Calibration}
 
