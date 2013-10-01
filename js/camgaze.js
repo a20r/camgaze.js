@@ -1090,7 +1090,7 @@ camgaze.EyeData.prototype = {
 
 		return this.getScaledCentroid().sub(
 		    this.getHaarCentroid()
-		).mult(6);
+		).mult(3);
 	},
 
 	getMinMaxColors : function () {
