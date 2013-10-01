@@ -1,5 +1,4 @@
 
-
 \documentclass[annual]{acmsiggraph}
 \usepackage{relsize} 
 
@@ -58,10 +57,10 @@ cpoellab@nd.edu} \\ University of Notre Dame}
 
 Eye tracking is a difficult problem that is usually solved using specialised
 hardware and therefore has limited availability due to cost and deployment
-difficulties. We describe Camgaze.js – a client-side Javascript library that is
+difficulties. We describe $\Name$ – a client-side Javascript library that is
 able to measure the point of gaze using only commodity optical cameras without
 relying on external application installed besides a web-browser. In our work,
-we conduct experiments using Camgaze.js to show the usability of such a system.
+we conduct experiments using $\Name$ to show the usability of such a system.
 We also discuss the challenges and applications of using an in-browser eye
 tracking system. Since the described eye tracker works inside the browser
 without any additional installation setup, it provides a solution to a larger
@@ -72,8 +71,7 @@ deployment of eye tracking systems.
 \section{Introduction}
 
 Eye tracking is a challenging problem, that has been attempted to be solved
-since the 19th century (Ahrens, A., 1891). Die Bewegung der Augen beim
-Schreiben. Rostock: University of Rostock). Currently, it is mostly viewed as a
+since the 19th century \cite{Ahrens1891}. Currently, it is mostly viewed as a
 problem in Computer Vision.
 
 The majority of eye tracking solutions available on the market today are a
@@ -85,8 +83,7 @@ remains an issue – it is expensive, requires complicated deployment and
 calibration and, in most cases, has to be carried out in a controlled
 environment.
 
-In the recent years, it has been shown (Agustin, 2009; Sewell and Komogortsev,
-2010) that it is possible to use commodity cameras, often built into modern
+In the recent years, it has been shown \cite{SanAgustin2009}\cite{Sewell2010} that it is possible to use commodity cameras, often built into modern
 computers to perform eye tracking with promising quality. Deployment of such
 systems is relatively simple, but in the described cases it is tied to specific
 computer platforms (Oleg - Texas iPad App).
@@ -98,11 +95,11 @@ application to be increasingly interactive. For example, WebRTC (Web Real-Time
 Communication) is an API that aims to enable in-browser audio and video
 communication. As of September 2013, WebRTC is supported in the stable versions
 of Google Chrome and Mozilla Firefox. A recent report
-(http://disruptive-analysis.com/webrtc.htm), claims that by 2016 there will be
+\cite{DisruptiveAnalysis2013}, claims that by 2016 there will be
 3 billion capable devices and 1 billion individual users of WebRTC-enabled
 devices.
 
-We describe Camgaze.js – a Javascript library that uses WebRTC to obtain the
+We describe $\Name$ -- a Javascript library that uses WebRTC to obtain the
 video from built-in or USB cameras and measures the point of gaze. We believe
 that it can be deployed in a wide range of applications such as website
 interface analytics and concussion testing as well as interactive input.
@@ -118,12 +115,12 @@ position. Currently, WebRTC provides very limited options for changing any of
 the parameters of the camera that is providing a stream. This problem can be
 partially addressed by defining individual profiles for a variety of popular
 devices. The identification of the device is not a trivial task by itself, but
-services like DeviceAtlas (https://deviceatlas.com/) solve it by looking at a
+services like DeviceAtlas \cite{DeviceAtlas2013} solve it by looking at a
 variety of factors, such as browser’s User Agent and screen resolution.
 Unfortunately, this approach would be mostly applicable for handheld devices
 and not commodity PCs.
 
-The client-side Javascript environment in which Camgaze.js runs in sets some
+The client-side Javascript environment in which $\Name$ runs in sets some
 constraints. As of September 2013, we believe that there is lack of
 comprehensive Computer Vision library implemented in Javascript. There is
 currently no “simple” way to port native C/C++ code, which are languages in
@@ -131,7 +128,7 @@ which popular libraries such as OpenCV are written in. Projects like Emscripten
 are making early attempts to allow translation of LLVM bitcode code to
 Javascript, potentially allowing to port some of the well-established Computer
 Vision libraries to Javascript in the future. For now, we had to create a
-custom implementation of {ALEX} to use in Camgaze.js.
+custom implementation of {ALEX} to use in $\Name$.
 
 Despite some of the described difficulties, the authors of this paper believe
 that a combination of Javascript and WebRTC is a reasonable technological stack
@@ -305,18 +302,18 @@ place.
 
 \subsection{Ethics}
 
-Camgaze.js has an ambition of bringing eye tracking to larger-scale deployment.
+$\Name$ has an ambition of bringing eye tracking to larger-scale deployment.
 This intensifies the need to address the privacy concerns some users might
 have. The library we describe attempts to do this in several ways.
 
-When the user accesses a web page that uses Camgaze.js, they are prompted a
+When the user accesses a web page that uses $\Name$, they are prompted a
 notice that the website is attempting to use the video from their computer.
 This is the default behaviour of both Chrome and Firefox and this behaviour can
-not be overridden by any website. Camgaze.js displays a notice, disclosing for
+not be overridden by any website. $\Name$ displays a notice, disclosing for
 what specific purposes this data will be used. Thus, we prevent capturing the
 data from unaware user.
 
-As previously mentioned, Camgaze.js is implemented in Javascript. Since the
+As previously mentioned, $\Name$ is implemented in Javascript. Since the
 absolute majority of modern web browsers have an built-in Javascript
 interpreter, it is possible to do the eye tracking on the client-side. This
 allows the proposed solution to avoid sending and storing the user’s video
@@ -329,7 +326,7 @@ impact on the user’s the privacy.
 
 \section{Future Research \& Applications}
 
-Preliminary experiments show that Camgaze.js is working on a tablet computer
+Preliminary experiments show that $\Name$ is working on a tablet computer
 (Google Nexus 7 -- 2013 version, Chrome Beta 30.0.1599.81, V8 3.20.17.13
 Javascript engine), which brings a potentiall to bring eye tracking to a
 variety of hanheld devices. Further research could concentrate of feasibility
@@ -338,12 +335,12 @@ with a screen wider than 5’ inches).
 
 We hope to make progress with porting one of the popular Computer Vision
 libraries to Javascript, thus allowing to apply the latest developments in the
-field for the task that Camgaze.js tries to solve.
+field for the task that $\Name$ tries to solve.
 
 Additional research on the normalization of the video stream could be done.
 Porting some of the algorithms to Javascript would be a novel task. 
 
-We believe that Camgage.js should be used in cases, where the simplicity and
+We believe that $\Name$ should be used in cases, where the simplicity and
 scalability of deployment overweights the need for perfect precision of point
 of gaze prediction. Ability to open a webpage, click “ok” on a pop-up bar, and
 start eye tracking opens up possibilities for use of eye tracking for various
