@@ -1087,11 +1087,9 @@ camgaze.EyeData.prototype = {
 		corners to the centroid point.
 	*/
 	getResultantVector : function () {
-
-		return new camgaze.structures.Point(
-		        this.getScaledCentroid().x - this.getHaarCentroid().x,
-		        this.getScaledCentroid().y - (1.03 * this.getHaarCentroid().y).toFixed(0)
-		).mult(3);
+	    return this.getScaledCentroid().mult(2).sub(
+	            this.getHaarCentroid
+	    ).mult(3);
 	},
 
 	getMinMaxColors : function () {
