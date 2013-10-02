@@ -2,10 +2,11 @@
 import json
 import math
 import pprint
+import sys
 
 def getStats():
 
-    jsonStr = open("tests.json").read()
+    jsonStr = open(sys.argv[1]).read()
     jsonObj = json.loads(jsonStr)
 
     xMean = 0
