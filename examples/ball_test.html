@@ -114,7 +114,7 @@
                 var mappedMovingAverage;
 
                 // controls the state of the tests
-                canvas.addEventListener("click", function (e) {
+                setInterval(function (e) {
                     if (clickCounter > 3) {
                         distList.push(testPoint.distTo(drawPoint));
                         xDistList.push(Math.abs(testPoint.x - drawPoint.x));
@@ -139,7 +139,7 @@
                         getRandomInt(20, height - 20)
                     );
 					clickCounter++;
-				});
+				}, 5000);
 
 				var frameOp = function (image_data, video, canvasDrawer) {
 					canvasDrawer.clearAll()
@@ -224,12 +224,14 @@
                         drawPoint.y = 0;
                     }
 
+                    /*
 					canvasDrawer.drawCircle(
 						drawPoint,
 						10,
 						-1,
 						"blue"
-					);
+                        );
+                    */
 
                     if (
                         clickCounter < numberOfTestPoints + 4 &&
