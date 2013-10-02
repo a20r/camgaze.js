@@ -160,15 +160,18 @@
 						    "green"
 					    );
                     }
-                    // Gaze Metric
-					gazeMetric = new camgaze.structures.Point(
-						parseInt(
-							(document.width / 2).toFixed(0)
-						) - 3 * avgLookingPoint.x,
-						parseInt(
-							(document.height / 2).toFixed(0)
-						) + 3 * avgLookingPoint.y
-                    );
+
+                    if (trackingData.eyeList.length == 2)
+                        // Gaze Metric
+					    gazeMetric = new camgaze.structures.Point(
+						    parseInt(
+							    (document.width / 2).toFixed(0)
+						    ) - 3 * avgLookingPoint.x,
+						    parseInt(
+							    (document.height / 2).toFixed(0)
+						    ) + 3 * avgLookingPoint.y
+                        );
+                    }
 
                     // determines where to draw the looking point
                     switch (clickCounter) {
