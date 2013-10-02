@@ -231,10 +231,11 @@
                         drawPoint.y = 0;
                     }
 
-                    distTempList.push(testPoint.distTo(drawPoint));
-                    xTempList.push(Math.abs(testPoint.x - drawPoint.x));
-                    yTempList.push(Math.abs(testPoint.y - drawPoint.y));
-
+                    if (clickCounter > 3) {
+                        distTempList.push(testPoint.distTo(drawPoint));
+                        xTempList.push(Math.abs(testPoint.x - drawPoint.x));
+                        yTempList.push(Math.abs(testPoint.y - drawPoint.y));
+                    }
 
                     /*
 					canvasDrawer.drawCircle(
