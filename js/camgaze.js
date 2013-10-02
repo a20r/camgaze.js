@@ -1088,7 +1088,7 @@ camgaze.EyeData.prototype = {
 	*/
 	getResultantVector : function () {
 	    return this.pupil.getCentroid().add(this.getScaledCentroid().sub(
-	            this.getHaarCentroid
+	            this.getHaarCentroid()
 	    ).mult(3));
 	},
 
