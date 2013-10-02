@@ -1087,9 +1087,9 @@ camgaze.EyeData.prototype = {
 		corners to the centroid point.
 	*/
 	getResultantVector : function () {
-	    return this.getScaledCentroid().mult(2).sub(
+	    return this.pupil.getCentroid().add(this.getScaledCentroid().sub(
 	            this.getHaarCentroid
-	    ).mult(3);
+	    ).mult(3));
 	},
 
 	getMinMaxColors : function () {
