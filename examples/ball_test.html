@@ -145,10 +145,6 @@
 					canvasDrawer.clearAll()
 					canvasDrawer.clearCanvas()
 					var trackingData = eyeTracker.track(image_data, video);
-					var gazeList = eyeFilter.getFilteredGaze(trackingData);
-					var avgLookingPoint = eyeFilter.getAverageLookingPoint(
-						trackingData
-					);
 
                     // Determines if a calibration point should be
                     // shown on the screen
@@ -161,7 +157,14 @@
 					    );
                     }
 
+                    var gazeList;
+                    var avgLookingPoint;
                     if (trackingData.eyeList.length == 2) {
+                        gazeList = eyeFilter.getFilteredGaze(trackingData);
+					    avgLookingPoint = eyeFilter.getAverageLookingPoint(
+						    trackingData
+					    );
+
                         // Gaze Metric
 					    gazeMetric = new camgaze.structures.Point(
 						    parseInt(
@@ -240,7 +243,7 @@
                         );
                     }
 
-					if (trackingData.eyeList.length > 0) {
+					if (trackingData.eyeList.length == 2) {
 						gazeList.forEach(
 							function (eye) {
 								canvasDrawer.drawCircle(
@@ -257,7 +260,7 @@
 
                 // sets the operation at each interation
 				cGaze.setFrameOperator(frameOp);
-			} 
+			}
 		</script>
 </html>
 
