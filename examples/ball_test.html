@@ -113,12 +113,18 @@
                 // in the mapped point
                 var mappedMovingAverage;
 
+                var xTempList = new Array();
+                var yTempList = new Array();
+                var distTempList = new Array();
                 // controls the state of the tests
                 setInterval(function (e) {
                     if (clickCounter > 3) {
-                        distList.push(testPoint.distTo(drawPoint));
-                        xDistList.push(Math.abs(testPoint.x - drawPoint.x));
-                        yDistList.push(Math.abs(testPoint.y - drawPoint.y));
+                        distList.push(distTempList.mean());
+                        xDistList.push(xTempList.mean());
+                        yDistList.push(yTempList.mean());
+                        xTempList = new Array();
+                        yTempList = new Array();
+                        distTempList = new Array();
                     }
 
                     if (clickCounter == 3) {
@@ -204,6 +210,7 @@
                             );
 
                             drawPoint = mappedMovingAverage.compound(drawPoint);
+
                             //console.log(drawPoint);
                     }
 
@@ -223,6 +230,11 @@
                     if (drawPoint.y < 0) {
                         drawPoint.y = 0;
                     }
+
+                    distTempList.push(testPoint.distTo(drawPoint));
+                    xTempList.push(Math.abs(testPoint.x - drawPoint.x));
+                    yTempList.push(Math.abs(testPoint.y - drawPoint.y));
+
 
                     /*
 					canvasDrawer.drawCircle(
