@@ -113,10 +113,10 @@ of Google Chrome and Mozilla Firefox. A recent report
 3 billion capable devices and 1 billion individual users of WebRTC-enabled
 devices.
 
-We describe $\Name$ -- a Javascript library that uses WebRTC to obtain the
-video from built-in or USB cameras and measures the point of gaze. We believe
-that it can be deployed in a wide range of applications such as website
-interface analytics and concussion testing as well as interactive input.
+In this paper, we describe $\Name$ -- a Javascript library that uses WebRTC to obtain the video 
+from built-in or USB cameras and measures the point of gaze. It has the potential to be deployed 
+in a wide range of applications such as entertainment, healthcare and user-interface design. 
+
 
 
 \section{Challenges}
@@ -231,11 +231,11 @@ pupils accurately and derive a gaze metric.
 
 \end{figure}
 
-\textbf{Figure 1} depicts the process of pupil detection. The photo on the top
-left shows the connected component segmentation. In the top right image, the
-centers of the connected components are extracted. The image on the bottom left
-shows the deviation of the $\Function{err}_{\alpha}$ for the two connected
-components. Since the has a smaller overall error and is returned as the pupil.
+\textbf{Figure 1} depicts the process of pupil detection. The first photoshows
+the connected component segmentation. In the second image, the centers of the
+connected components are extracted. The final image shows the deviation of the
+$\Function{err}_{\alpha}$ for the two connected components.  Since the has a
+smaller overall error and is returned as the pupil.
 
 \subsection{Determining the Gaze Metric}
 
@@ -358,26 +358,24 @@ calculated to determine the uncertainty in measurement.
 
 \section{Results}
 
-\begin{table} \caption{Average Accuracies of Gaze Prediction}
-\begin{tabular}{l|l|l} \textbf{Average Accuracy} & \textbf{Value} (in) &
-\textbf{Uncertainty} (in) \\ \hline Distance & 2.1 & 0.1 \\ Horizontal
-Displacement      & 1.4 & 0.3 \\ Vertical Displacement& 1.3 & 0.3 \\
-\end{tabular} \end{table}
+\subsection{Accuracy}
 
-We have conducted 5 tests. The results of these tests are shown \textbf{Table
-1}. The distance accuracy refers to the average radius around the test point
-that tracker predicted the gaze to be. The horizontal and vertical displacments
-refer to the average component displacement from the test point and the
-predicted gaze point. These results are comparable to that of Holland and
-Komogorstev which implemented gaze prediction on a unmodified common tablet
-\cite{holland2012eye}. Since the constraints that exists when programming on a
-tablet and programming in JavaScript (JavaScript can run on a tablet through a
-web browser), the accuracy in the results can be compared. Their work performed
-with better accuracy by 0.7 inches during their first phase and by 0.6 inches
-in the second phase. The key factor in this difference is the existence of a
-computer vision library in Objective-C but not in JavaScript. Increasing the
-performance of the implemented computer vision algorithms will lead to better
-results. 
+We have conducted 5 tests. The result of these tests are shown \textbf{Table 1}
+as well as the results from Holland and Komogortsev's experiments.
+\shortcite{holland2012eye}.  The results of the supplementary tests are shown
+in \textbf{Table 2}. The distance accuracy refers to the average radius around
+the test point that tracker predicted the gaze to be. The horizontal and
+vertical displacments refer to the average component displacement from the test
+point to the predicted poitn of gaze. These results are comparable to that of
+Holland and Komogorstev which implemented gaze prediction on a unmodified
+common tablet \shortcite{hollandeye2012}. Since the constraints that exists
+when programming on a tablet and programming in JavaScript (JavaScript can run
+on a tablet through a web browser), the accuracy in the results can be
+compared.  Their work performed with better accuracy by 0.7 inches during their
+first phase and by 0.6 inches in the second phase. The key factor in this
+difference is the existence of a computer vision library in Objective-C but not
+in JavaScript.  Increasing the performance of the implemented computer vision
+algorithms will lead to better results.
 
 In general, we believe that the received results provide a positive indication
 of the viability of conducting eye tracking in a web-based environment. This
@@ -387,6 +385,19 @@ meant to show the feasibility of the proposed concept. The results are
 preliminary due to limited testing and we believe that further testing and a
 usability study should be done to determine the absolute accuracy that is
 possible to achieve using $\Name$.
+
+\begin{table}\caption{Accuracy in Gaze Prediction (Phase 1 and 2 come from
+Holland and Komogortsev)}  \centering \begin{tabular}{l|l|l} \textbf{Metric} &
+\textbf{Value} (in) & \textbf{Uncertainty} (in) \\ \hline Phase 1
+\shortcite{holland2012eye} & 1.4 & 0.2 \\ Phase 2 \shortcite{holland2012eye}&
+1.5 & 0.1 \\ Distance & 2.1 & 0.1 \end{tabular} \end{table}
+
+\begin{table} \caption{Supplementary Accuracy Results} \begin{tabular}{l|l|l}
+\textbf{Metric}                        & \textbf{Value} (in) &
+\textbf{Uncertainty} (in) \\ \hline Horizontal Displacement & 1.4 & 0.3 \\
+Vertical Displacement         & 1.3 & 0.3 \\ \end{tabular} \end{table}
+
+\subsection{Performance}
 
 \section{Discussion}
 
@@ -426,7 +437,7 @@ The lack of well trained Haar classifiers also limits the ability of this work.
 The current classifiers available in JavaScript are not as highly trained and
 thus do not detect the eyes as frequently in different lighting conditions.
 This causes problems with $\Name$ because a gaze metric can not be determined
-and a ponit on the screen is not mapped. 
+and a ponit on the screen is not mapped.
 
 %While the eye tracking is unlike to begin, if the user is not initially
 %properly aligned (e.g. the head is strongly tilted), it does not adjust to the
@@ -455,7 +466,7 @@ start eye tracking opens up possibilities for use of eye tracking for various
 new applications, which were previously “solvable” by eye tracking, but never
 were able to get applied outside the controlled lab environment.
 
-For example, Heitger et al. has shown that impaired eye movements in
+For example, Heitger et al. have shown that impaired eye movements in
 post-concussion syndrome patients indicate trauma on the brain that surpasses
 the influence intellectual ability \cite{Heitger2009}. The use of current
 generation eye tracking hardware / software combinations makes a deployable
