@@ -122,17 +122,17 @@ interface analytics and concussion testing as well as interactive input.
 
 \section{Challenges}
 
-Running eye tracking on a wide range of hardware creates additional challenges.
-The cameras that are built-in (or supplied with) consumer devices vary greatly:
-there is no standard resolution, color profile, brightness level or physical
-position. Currently, WebRTC provides very limited options for changing any of
-the parameters of the camera that is providing a stream. This problem can be
-partially addressed by defining individual profiles for a variety of popular
-devices. The identification of the device is not a trivial task by itself, but
-services like DeviceAtlas \cite{DeviceAtlas2013} solve it by looking at a
-variety of factors, such as browser’s User Agent and screen resolution.
-Unfortunately, this approach would be mostly applicable for handheld devices
-and not commodity PCs.
+The deployment of eye tracking systems on a wide range of hardware creates
+number of challenges challenges.  The cameras that are built-in (or supplied
+with) consumer devices vary greatly: there is no standard resolution, color
+profile, brightness level, or physical position. Currently, WebRTC provides
+very limited options for changing any of the parameters of the camera that is
+providing a stream. This problem can be partially addressed by defining
+individual profiles for a variety of popular devices. The identification of the
+device is not a trivial task by itself, but services like DeviceAtlas
+\cite{DeviceAtlas2013} solve it by looking at a variety of factors, such as
+browser’s User-Agent and screen resolution.  Unfortunately, this approach would
+be mostly applicable for handheld devices and not commodity PCs.
 
 The client-side Javascript environment in which $\Name$ runs in sets some
 constraints. As of September 2013, we believe that there is lack of
@@ -209,27 +209,19 @@ The region of interest (ROI) is then thresholded for an array of different
 shades. Connected components are then detected on these binary images. All of
 the detected connected components are stored as possible pupils.  Out of these
 possible pupils, the one with the minimum overall error is designated as the
-pupil.  Below are the expressions to be minimized.
-
-\begin{eqnarray}
-\Function{err}_{\alpha}(p) &=& \frac{
-    \mathlarger{\sum}_{c \in Corners}{
-        \vert
-            \frac{\pi}{4} - \Function{arctan}(
-                \vert \frac{p_y - c_y}{p_x - c_x} \vert
-            )
-        \vert
-    } }{\pi} \\ \Function{err}_{size}(p) &=& \frac{ \vert \Var{avgPupilSize} -
-    \Function{size}(p) \vert }{2} \end{eqnarray}
-
-$\Function{err}_{\alpha}$ refers to how far the center of the connected
-component is from the center of the Haar bounding rectangle. We use angle
-deviation instead of pixel distance for this metric because we assume that the
-pupil would not always reside immediately in the center of the boundary
-rectangle. A direct pixel distance might yield other connected components more
-suitable.  The angle deviation acts a weak error function in order to be more
-lenient without the use of constants.  Once the connected component with the
-minimum error is extracted, its center is returned.
+pupil.  Below are the expressions to be minimized. \begin{eqnarray}
+\Function{err}_{\alpha}(p) &=& \frac{ \mathlarger{\sum}_{c \in Corners}{ \vert
+\frac{\pi}{4} - \Function{arctan}( \vert \frac{p_y - c_y}{p_x - c_x} \vert)
+\vert } }{\pi} \\ \Function{err}_{size}(p) &=& \frac{ \vert \Var{avgPupilSize}
+- \Function{size}(p) \vert }{2} \end{eqnarray} $\Function{err}_{\alpha}$ refers
+to how far the center of the connected component is from the center of the Haar
+bounding rectangle. We use angle deviation instead of pixel distance for this
+metric because we assume that the pupil would not always reside immediately in
+the center of the boundary rectangle. A direct pixel distance might yield other
+connected components more suitable.  The angle deviation acts a weak error
+function in order to be more lenient without the use of constants.  Once the
+connected component with the minimum error is extracted, its center is
+returned.
 
 $\Function{err}_{size}$ refers to the difference between the scaled area of the
 detected blob and the average scaled area of a general pupil. This means that
@@ -243,8 +235,8 @@ pupils accurately and derive a gaze metric.
 \textbf{Figure 1} depicts the process of pupil detection. The photo on the top
 left shows the connected component segmentation. In the top right image, the
 centers of the connected components are extracted. The image on the bottom left
-shows that out of the two detected connected components, the one with the green
-lines has a smaller overall error and is returned as the pupil.
+shows the deviation of the $\Function{err}_{\alpha}$ for the two connected
+components. Since the has a smaller overall error and is returned as the pupil.
 
 \subsection{Determining the Gaze Metric}
 
@@ -271,7 +263,7 @@ camera.
 
 \end{figure}
 
- Since the gaze metric is represents pupil's displacement from the center, it
+ Since the gaze metric represents the pupil's displacement from the center, it
  can be represented as a 2D vector. In \textbf{Figure 2}, this vector is being
  drawn from the pupil center. This gives us a visual representation of the gaze
  direction. This metric is also used in calibration so that we can interpolate
@@ -292,21 +284,20 @@ The linear approach works by placing sample points in the corners of the
 viewing screen and asking the user to look at these points, one at a time.
 Using the data gathered from the eye tracker and the knowledge of what point
 the data corresponds to on the screen, we can construct a linear mapping from
-the gaze metric onto the screen. We map the distance from the \emph{preceived}
-point on the top left to the preceived point on the top right to the width of
-the screen. We also map the distance from the preceived top left point to the
-preceived bottom right point to the height of the screen. This mapping build
-parametric equations that be used to interpolate the looking point on the
-screen.
+the gaze metric onto the screen. We map the distance between the uncalibrated
+point on the top left and  the uncalibrated point on the top right to the width
+of the screen.  We also map the distance between the uncalibrated top left
+point the uncalibrated bottom right point to the height of the screen. This
+mapping determines parametric equations that be used to interpolate the gaze
+point on the screen.
 
-The user basically creates a box in which the eye tracker thinks its looking in
-and maps the height and width of this preceived box to the dimensions of the
+The user essentially creates a box in which the eye tracker thinks its looking
+in and maps the height and width of this preceived box to the dimensions of the
 screen.
 
 The application we created for calibration presents a point in each corner of
-the screen one at a time. The user is told to look at the given point click on
-the screen when they are done. The click on the screen will show each
-calibration point until all of the corners have been mapped.
+the screen, one at a time. The user then has 7 seconds to look at the point
+before the next point is shown.
 
 \subsection{Obtaining Video Data}
 
