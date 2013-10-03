@@ -30,7 +30,8 @@
             var yDistList = new Array();
             var numGoodFrames = 0;
             var startTime;
-            var endTime
+            var endTime;
+            var endFrameCount;
 
             function getRandomInt (min, max) {
                 return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -44,7 +45,7 @@
                     distList : distList,
                     xDistList : xDistList,
                     yDistList : yDistList,
-                    samplingRate : (1000 * numGoodFrames / (endTime - startTime)).toFixed(4)
+                    samplingRate : (1000 * endFrameCount / (endTime - startTime)).toFixed(4)
                 }
             }
 
@@ -143,6 +144,7 @@
                     if (clickCounter == numberOfTestPoints + 3) {
                         alert("You are done!");
                         endTime = +new Date();
+                        endFrameCount = numGoodFrames;
                     }
 
                     testPoint = new camgaze.structures.Point(
