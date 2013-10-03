@@ -153,33 +153,41 @@ deployment.
 
 \section{Implementation}
 
+\textbf{Algorithm 1} shows a high-level overview of $\Name$. The algorithm goes
+first through a calibration phase. Once the system is calibrated, it is able to
+project the gaze position of the user. 
+
+\begin{algorithm}
+\caption{Pseudocode for $\Name$}
+\label{algo:Main}
+\begin{algorithmic}[1]
+\setcounter{ALC@line}{0}
+
+\vspace*{1mm}
+
+\STATE $\Symbol{F} \leftarrow \Function{InitGazeMapping}()$
+
+\WHILE{$\Function{StillCalibrating()} == \True$}
+\STATE $P_{list} \leftarrow \Function{DetectPupils()}$
+\STATE $\Symbol{G} \leftarrow \Function{DetermineGazeMetric}(P_{list})$
+\STATE $\Symbol{F} \leftarrow \Function{Calibrate}(\Symbol{G}, \Symbol{F})$
+\ENDWHILE
+
+\WHILE{$\Function{SessionFinished()} == \False$}
+\STATE $P_{list} \leftarrow \Function{DetectPupils()}$
+\STATE $\Symbol{G} \leftarrow \Function{DetermineGazeMetric}(P_{list})$
+\STATE $\Function{ProjectGazeOntoScreen}(\Symbol{F}(\Symbol{G}))$
+\ENDWHILE
+
+\end{algorithmic} 
+\end{algorithm}
+
 $\Name$ goes through three steps in order to predict the position on the screen
 that the user is looking at. Firstly, the pupils are detected. Then the
 positions of these pupils with reference to the eye are used to determine a
 \emph{gaze metric}. This gaze metric is then calibrated and mapped to a
-position on the screen. The processes are described below.
+position on the screen.
 
-%\begin{algorithm} \caption{Pseudocode for $\Name$} \label{algo:Main}
-%\begin{algorithmic}[1] \setcounter{ALC@line}{0}
-%
-%\vspace*{1mm}
-%
-%\STATE $\Symbol{F} \leftarrow \Function{InitGazeMapping}()$
-%
-%\WHILE{$\Function{StillCalibrating()} == \True$}
-%\STATE $P_{list} \leftarrow \Function{DetectPupils()}$
-%\STATE $\Symbol{G} \leftarrow \Function{DetermineGazeMetric}(P_{list})$
-%\STATE $\Symbol{F} \leftarrow \Function{Calibrate}(\Symbol{G}, \Symbol{F})$
-%\ENDWHILE
-%
-%\WHILE{$\Function{SessionFinished()} == \False$}
-%\STATE $P_{list} \leftarrow \Function{DetectPupils()}$
-%\STATE $\Symbol{G} \leftarrow \Function{DetermineGazeMetric}(P_{list})$
-%\STATE $\Function{ProjectGazeOntoScreen}(\Symbol{F}(\Symbol{G}))$
-%\ENDWHILE
-%
-%\end{algorithmic}
-%\end{algorithm}
 
 \subsection{Pupil Detection}
 
@@ -336,13 +344,59 @@ experiment. The screen of the laptop was $90^{\circ}$ with the base.
 The room, where the experiments were held was equipped with mildly-bright
 flourescent lamps and had no natural light access. 
 
-\subsection{Participants}
-
 \subsection{Procedure}
 
-The test consisted of a calibration
+A simple test was created to measure the precision of gaze prediction. At
+first, linear calibration is performed in order to ensure that the gaze will be
+projected on the screen correctly. During the calibration phase, users are
+asked to look at the circles that appear on the screen. The calibration points
+are sequentially shown at the corners of the screen, each for 7 seconds (as
+mentioned in the \emph{Calibration} section of the \emph{Implementation}).
+After the calibration phase, the precision test begins. A monochromatic circle
+appears on the screen in a random location, 20 pixels from each border, being
+displayed for 7 seconds.  This is repeated 10 times. For the precision testing,
+the average gaze point is being recorded.  There was no indication of where the
+tracker predicted the gaze to the user in order to limit the bias imposed by
+this information.
+
+We then calculate the error rate -- the is the distance between average gaze
+point and the center of the associated test circle being shown on the screen.
+We also provide supplementary error rates -- the horizontal and vertical
+displacements from the average gaze point to the test circle. The 10 error
+rates are then averaged to determine the accuracy and the standard deviation is
+calculated to determine the uncertainty in measurement.
 
 \section{Results}
+
+\begin{table} \caption{Average Accuracies of Gaze Prediction}
+\begin{tabular}{l|l|l} \textbf{Average Accuracy} & \textbf{Value} (in) &
+\textbf{Uncertainty} (in) \\ \hline Distance & 2.1 & 0.1 \\ Horizontal
+Displacement      & 1.4 & 0.3 \\ Vertical Displacement& 1.3 & 0.3 \\
+\end{tabular} \end{table}
+
+We have conducted 5 tests. The results of these tests are shown \textbf{Table
+1}. The distance accuracy refers to the average radius around the test point
+that tracker predicted the gaze to be. The horizontal and vertical displacments
+refer to the average component displacement from the test point and the
+predicted gaze point. These results are comparable to that of Holland and
+Komogorstev which implemented gaze prediction on a unmodified common tablet
+\cite{holland2012eye}. Since the constraints that exists when programming on a
+tablet and programming in JavaScript (JavaScript can run on a tablet through a
+web browser), the accuracy in the results can be compared. Their work performed
+with better accuracy by 0.7 inches during their first phase and by 0.6 inches
+in the second phase. The key factor in this difference is the existence of a
+computer vision library in Objective-C but not in JavaScript. Increasing the
+performance of the implemented computer vision algorithms will lead to better
+results. 
+
+In general, we believe that the received results provide a positive indication
+of the viability of conducting eye tracking in a web-based environment. This
+work concentrates on creating a proof of concept implementation of an
+in-browser, client side gaze prediction application. The conducted tests were
+meant to show the feasibility of the proposed concept. The results are
+preliminary due to limited testing and we believe that further testing and a
+usability study should be done to determine the absolute accuracy that is
+possible to achieve using $\Name$.
 
 \section{Discussion}
 
@@ -418,6 +472,24 @@ generation eye tracking hardware / software combinations makes a deployable
 solution for testing concussions based eye movements difficult. $\Name$ has the
 ability to be used in these deployable senarios such as Emergency Rooms,
 abulances, and sports centers.
+
+\section{Conclusion}
+
+In this paper, we have described the design and implementation of a in-browser,
+client side eye tracker written in JavaScript. We have also discussed the
+privacy benefits, limitations, and impact such a system would have on current
+eye tracking applications. Through our evaluation, we have found our
+implementation to be accurate to a radius of 2.1 inches ($\pm$ 0.1).
+
+The performance of the proposed system is influenced by many mutable
+limitations and therefore has the potential to impove. This work represents an
+eye tracking system that will have neglible deployment costs and higher
+accessibility. However there exists a price in accuracy that the authors feel
+is worth the benefits.
+
+This material is based upon work supported by the National Science Foundation
+under Grant No. CNS- 1062743. The source code is made public on GitHub site and
+is available from http://github.com/wallarelvo/camgaze.js.
 
 \bibliographystyle{acmsiggraph}
 \bibliography{paper}

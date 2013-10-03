@@ -29,12 +29,12 @@ def getStats():
 
 
     return {
-            "xMean" : xMean,
-            "yMean" : yMean,
-            "distMean" :distMean,
-            "xStd" : math.sqrt(xVar),
-            "yStd" : math.sqrt(yVar),
-            "distStd" : math.sqrt(distVar),
+            "xMean" : xMean / 113,
+            "yMean" : yMean / 113,
+            "distMean" : distMean / 113,
+            "xStd" : math.sqrt(xVar) / 113,
+            "yStd" : math.sqrt(yVar) / 113,
+            "distStd" : math.sqrt(distVar) / 113,
             "totalTrials" : len(jsonObj)
     }
 
