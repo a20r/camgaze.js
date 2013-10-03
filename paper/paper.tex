@@ -190,16 +190,6 @@ position on the screen.
 
 \subsection{Pupil Detection}
 
-\begin{figure}[ht]
-
-    \centering
-
-    \includegraphics[width=2.5in]{figs/pupilDetection.pdf}
-
-    \caption{Pupil Detection Process}
-
-\end{figure}
-
 Detecting the pupils enables $\Name$ to determine the gaze direction.
 Pupil detection in this approach is aimed to be fast in order to be deployable
 onto web frameworks. Firstly, the frame is converted to grayscale and the eye
@@ -230,6 +220,16 @@ closest to that of an average pupil will be returned.
 
 Using a combination of these two error functions, we are able to detect the
 pupils accurately and derive a gaze metric.
+
+\begin{figure}[ht]
+
+    \centering
+
+    \includegraphics[width=1.5in]{figs/pupilDetection.pdf}
+
+    \caption{Pupil Detection Process}
+
+\end{figure}
 
 \textbf{Figure 1} depicts the process of pupil detection. The photo on the top
 left shows the connected component segmentation. In the top right image, the
