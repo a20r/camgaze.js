@@ -28,6 +28,9 @@
             var distList = new Array();
             var xDistList = new Array();
             var yDistList = new Array();
+            var numGoodFrames = 0;
+            var startTime;
+            var endTime
 
             function getRandomInt (min, max) {
                 return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -40,13 +43,13 @@
                     distMean : distList.mean(),
                     distList : distList,
                     xDistList : xDistList,
-                    yDistList : yDistList
+                    yDistList : yDistList,
+                    samplingRate : (1000 * numGoodFrames / (endTime - startTime)).toFixed(4)
                 }
             }
 
 			function startButtonClicked() {
-
-				$("#startButton").remove();
+			    $("#startButton").remove();
 				//alert("balls");
 				// width and height of the canvas
 				var height = document.height;
@@ -133,11 +136,13 @@
                             new camgaze.structures.Point(0, 0),
                             10
                         );
+
+                        startTime = +new Date();
                     }
 
                     if (clickCounter == numberOfTestPoints + 3) {
                         alert("You are done!");
-
+                        endTime = +new Date();
                     }
 
                     testPoint = new camgaze.structures.Point(
@@ -147,7 +152,7 @@
 					clickCounter++;
 				}, 7000);
 
-				var frameOp = function (image_data, video, canvasDrawer) {
+                var frameOp = function (image_data, video, canvasDrawer) {
 					canvasDrawer.clearAll()
 					canvasDrawer.clearCanvas()
 					var trackingData = eyeTracker.track(image_data, video);
@@ -258,7 +263,8 @@
                         );
                     }
 
-					if (trackingData.eyeList.length == 2) {
+                    if (trackingData.eyeList.length == 2) {
+                        numGoodFrames++;
 						gazeList.forEach(
 							function (eye) {
 								canvasDrawer.drawCircle(
