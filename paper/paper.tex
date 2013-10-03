@@ -1,4 +1,3 @@
-
 \documentclass[annual]{acmsiggraph}
 \usepackage{relsize} 
 
@@ -61,7 +60,7 @@ tracking, linear calibration, JavaScript eye tracker, in-browser eye tracking}
 
 Eye tracking is a difficult problem that is usually solved using specialised
 hardware and therefore has limited availability due to cost and deployment
-difficulties. We describe $\Name$ – a client-side Javascript library that is
+difficulties. We describe $\Name$, a client-side Javascript library that is
 able to measure the point of gaze using only commodity optical cameras without
 relying on any external application installed besides a web-browser. We conduct
 experiments using $\Name$ to show the usability of such a system.  We also
@@ -86,26 +85,26 @@ Vision}{Applications}{};
 
 \section{Introduction}
 
-Eye tracking is a challenging problem, that has been attempted to be solved
+Eye tracking is a challenging problem that has been attempted to be solved
 since the 19th century \cite{Ahrens1891}. Currently, it is mostly viewed as a
 problem in Computer Vision. The majority of eye tracking solutions available on
 the market today are a combination of software and specialised hardware. The
 principles behind hardware varies greatly: it ranges from head-mounted cameras
-to lenses with integrated coils. It is believed that the state of the art
-solutions can allow accuracy up to NN\% {link}. Despite that, carrying out eye
-tracking experiments remains an issue – it is expensive, requires complicated
+to lenses with integrated coils. State of the art
+solutions can allow predicting the gaze point with high percision. Despite that, carrying out eye
+tracking experiments remains an issue –- it is expensive, requires complicated
 deployment and calibration and, in most cases, has to be carried out in a
 controlled environment.
 
-In the recent years, it has been shown \cite{SanAgustin2009}\cite{Sewell2010}
+In recent years, it has been shown \cite{SanAgustin2009}\cite{Sewell2010}
 that it is possible to use commodity cameras, often built into modern
 computers to perform eye tracking with promising quality. Deployment of such
 systems is relatively simple, but in the described cases it is tied to specific
 computer platforms \cite{holland2012eye}.
 
 Web applications are “rich” websites that are able to run without external
-plugins inside the browser. Recently, the web-browsers have evolved to adapt to
-the market’s requirements – new technologies have risen, allowing web
+plugins inside the browser. Recently, web browsers have evolved to adapt to
+the market’s requirements -- new technologies have risen, allowing web
 application to be increasingly interactive. For example, WebRTC (Web Real-Time
 Communication) is an API that aims to enable in-browser audio and video
 communication. As of September 2013, WebRTC is supported in the stable versions
