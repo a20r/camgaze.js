@@ -391,12 +391,20 @@ Holland and Komogortsev)}  \centering \begin{tabular}{l|l|l} \textbf{Metric} &
 
 \subsection{Performance}
 
-For our performance testing, we have conducted 5 tests. The are the same as the
-accuracy tests except that the calibration phase is not needed. Our results are
-computed by obtaining the amount of usable frames from a testing session and
-dividing it by how long the session was. The sampling rate was 17.5 FPS ($\pm$
-4.5). This is a strong indication that our system is sufficient to run on a
-vast range of different devices.
+We have conducted 5 tests to measure the performance of $\Name$. The tests are
+the same as the accuracy tests except that the calibration phase is not needed.
+Our results are computed by obtaining the amount of usable frames from a
+testing session and dividing it by how long the session was. The sampling rate
+was 17.5 FPS ($\pm$ 4.5). This is a strong indication that our system is
+sufficient to run on a vast range of different devices.
+
+Our performance suffers due different lighting conditions. Since the
+implementation of the Haar detector in JavaScript currently does not support
+tree-based cascades, different lighting conditions affect the amount of frames
+that eyes were detected. We have found the best results when the user has
+limited light projected directly on the face. The distance to the camera is
+also an impeding factor on the performance. The user needs to be about 1 ft
+from the webcam for the best results.
 
 \section{Discussion}
 
