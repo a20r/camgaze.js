@@ -38,6 +38,19 @@ def getStats():
             "totalTrials" : len(jsonObj)
     }
 
+def getSampleStats():
+
+    jsonStr = open(sys.argv[1]).read()
+    jsonObj = json.loads(jsonStr)
+
+    daMean = sum(jsonObj) / float(len(jsonObj))
+
+    daStd = math.sqrt(
+        sum(map(lambda daVal: pow(daVal - daMean, 2) / float(len(jsonObj)), jsonObj))
+    )
+
+    return {"mean" : daMean, "uncertainty" : daStd}
+
 if __name__ == "__main__":
 
-    pprint.pprint(getStats())
+    pprint.pprint(getSampleStats())
