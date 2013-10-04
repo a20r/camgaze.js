@@ -61,7 +61,7 @@ tracking, linear calibration, JavaScript eye tracker, in-browser eye tracking}
 Eye tracking is a difficult problem that is usually solved using specialised
 hardware and therefore has limited availability due to cost and deployment
 difficulties. We describe $\Name$, a client-side Javascript library that is
-able to measure the point of gaze using only commodity optical cameras without
+able to estimate the point of gaze using only commodity optical cameras without
 relying on any external application installed besides a web-browser. We conduct
 experiments using $\Name$ to show the usability of such a system.  We also
 discuss the challenges and applications of using an in-browser eye tracking
@@ -85,13 +85,13 @@ Vision}{Applications}{};
 
 \section{Introduction}
 
-Eye tracking is a challenging problem that has been attempted to be solved
+Eye tracking is a challenging problem that has been a topic of research
 since the 19th century \cite{Wade2010}. Currently, it is mostly viewed as a
 problem in Computer Vision. The majority of eye tracking solutions available on
-the market today are a combination of software and specialised hardware. The
-principles behind hardware varies greatly: it ranges from head-mounted cameras
-to lenses with integrated coils. State of the art solutions can allow
-predicting the gaze point with high percision. Despite that, carrying out eye
+the market today are a combination of software and specialised hardware.
+Hardware based solutions employ a variety of technologies such as head-mounted
+cameras and magnetically actuated lenses. State of the art solutions can allow
+predicting the gaze point with high precision.  Despite that, carrying out eye
 tracking experiments remains an issue –- it is expensive, requires complicated
 deployment and calibration and, in most cases, has to be carried out in a
 controlled environment.
@@ -116,7 +116,7 @@ devices.
 In this paper, we describe $\Name$ -- a Javascript library that uses WebRTC to
 obtain the video from built-in or USB cameras and measures the point of gaze.
 It has the potential to be deployed in a wide range of applications such as
-entertainment, healthcare and user-interface design. 
+entertainment, healthcare and user-interface design
 
 
 
@@ -134,28 +134,25 @@ device is not a trivial task by itself, but services like DeviceAtlas
 browser’s User-Agent and screen resolution.  Unfortunately, this approach would
 be mostly applicable for handheld devices and not commodity PCs.
 
-The client-side Javascript environment in which $\Name$ runs in sets some
-constraints. As of September 2013, we believe that there is lack of
-comprehensive Computer Vision library implemented in Javascript. There is
-currently no “simple” way to port native C/C++ code, which are languages in
-which popular libraries such as OpenCV are written in. Projects like Emscripten
-are making early attempts to allow translation of LLVM bitcode code to
-Javascript, potentially allowing to port some of the well-established Computer
-Vision libraries to Javascript in the future. For now, we had to create a
-custom implementation of connected component detection and image moment
-calculation to use in $\Name$.
+The client-side Javascript environment in which $\Name$ runs sets some
+constraints. There are no comprehensive computer vision libraries available in
+JavaScript as of this writing.  There is also currently no “simple” way to port
+native C/C++ code, which are languages in which popular libraries such as
+OpenCV are written in.  Projects like Emscripten are making early attempts to
+allow translation of LLVM bitcode code to Javascript, potentially allowing to
+port some of the well-established computer vision libraries to Javascript in
+the future. For now, we had to create a custom implementation of connected
+component detection and image moment calculation to use in $\Name$.
 
-Despite some of the described difficulties, the authors of this paper believe
-that a combination of Javascript and WebRTC is a reasonable technological stack
-in order to implement an eye tracking solution, suitable for large scale
-deployment.
-
+Despite some of the described difficulties, we believe that a combination of
+Javascript and WebRTC is a reasonable technological stack on which a scalable
+eye tracking solution can be built.
 
 \section{Implementation}
 
-\textbf{Algorithm 1} shows a high-level overview of $\Name$. The algorithm goes
-first through a calibration phase. Once the system is calibrated, it is able to
-project the gaze position of the user. 
+\textbf{Algorithm 1} shows a high-level overview of $\Name$. The algorithm
+first executes a calibration phase. Once the system is calibrated, it is able
+to project the gaze position of the user. 
 
 \begin{algorithm}
 \caption{Pseudocode for $\Name$}
@@ -182,7 +179,7 @@ project the gaze position of the user.
 \end{algorithmic} 
 \end{algorithm}
 
-$\Name$ goes through three steps in order to predict the position on the screen
+$\Name$ executes three steps in order to predict the position on the screen
 that the user is looking at. Firstly, the pupils are detected. Then the
 positions of these pupils with reference to the eye are used to determine a
 \emph{gaze metric}. This gaze metric is then calibrated and mapped to a
@@ -190,33 +187,32 @@ position on the screen.
 
 \subsection{Pupil Detection}
 
-Detecting the pupils enables $\Name$ to determine the gaze direction.
-Pupil detection in this approach is aimed to be fast in order to be deployable
-onto web frameworks. Firstly, the frame is converted to grayscale and the eye
-is detected using the Viola-Jones Object Detection Framework \cite{Viola01}.
-The region of interest (ROI) is then thresholded for an array of different
-shades. Connected components are then detected on these binary images. All of
-the detected connected components are stored as possible pupils.  Out of these
-possible pupils, the one with the minimum overall error is designated as the
-pupil.  Below are the expressions to be minimized.  \begin{eqnarray}
-\Function{err}_{\alpha}(p) &=& \frac{ \mathlarger{\sum}_{c \in Corners}{ \vert
-\frac{\pi}{4} - \Function{arctan}( \vert \frac{p_y - c_y}{p_x - c_x} \vert)
-\vert } }{\pi} \\ \Function{err}_{size}(p) &=& \frac{ \vert \Var{avgPupilSize}
-- \Function{size}(p) \vert }{2} \end{eqnarray}
+Detecting the pupils enables $\Name$ to determine the gaze direction. Firstly,
+the frame is converted to grayscale and the eye is detected using the
+Viola-Jones object detection framework \cite{Viola01}.  The region of interest
+(ROI) is then thresholded for an array of different grayscale shades in order
+to produce binary images.  Connected components are then detected on these
+binary images.  All of the detected connected components are stored as possible
+pupils.  Out of these possible pupils, the one with the minimum overall error
+is designated as the pupil.  Below are the expressions to be minimized.
+\begin{eqnarray} \Function{err}_{\alpha}(p) &=& \frac{ \mathlarger{\sum}_{c \in
+Corners}{ \vert \frac{\pi}{4} - \Function{arctan}( \vert \frac{p_y - c_y}{p_x -
+c_x} \vert) \vert } }{\pi} \\ \Function{err}_{size}(p) &=& \frac{ \vert
+\Var{avgPupilSize} - \Function{size}(p) \vert }{2} \end{eqnarray}
 
 In these equations, $p$ represents a possible pupil and thus has an $(x, y)$
 position and a size. The $Corners$ set refers to the corners of the Haar
-bounding rectangle surrounding the eye. $\Function{err}_{\alpha}$ refers to how
-far the center of the connected component is from the center of the Haar
-bounding rectangle.  We use angle deviation instead of pixel distance for this
-metric because we assume that the pupil would not always reside immediately in
-the center of the boundary rectangle. A direct pixel distance might yield other
-connected components more suitable.  The angle deviation acts a weak error
-function in order to be more lenient without the use of constants.  Once the
-connected component with the minimum error is extracted, its center is
-returned.
+bounding rectangle surrounding the eye. $\Function{err}_{\alpha}$ s an angular
+distance between the centroid of the connected component and the center of the
+Haar bounding rectangle.  We use angle deviation instead of pixel distance for
+this metric because we assume that the pupil would not always reside
+immediately in the center of the boundary rectangle. A direct pixel distance
+might yield different, and perhaps more suitable, connected components.  The
+angle deviation acts a weak error function in order to be more lenient without
+the use of constants.  Once the connected component with the minimum error is
+extracted, its center is returned.
 
-$\Function{err}_{size}$ refers to the difference between the scaled area of the
+$\Function{err}_{size}$ is the difference between the scaled area of the
 detected blob and the average scaled area of a general pupil. This means that
 during the thresholding process, out of the  array of connected components
 detected with minimal $\Function{err}_{\alpha}$, the one that has the area
@@ -294,11 +290,12 @@ point the uncalibrated bottom right point to the height of the screen. This
 mapping determines parametric equations that be used to interpolate the gaze
 point on the screen.
 
-The user essentially creates a box in which the eye tracker thinks its looking
-in and maps the height and width of this preceived box to the dimensions of the
-screen. The application we created for calibration presents a point in each
-corner of the screen, one at a time. The user then has 7 seconds to look at the
-point before the next point is shown.
+The system corresponds a box determined by the user's prompted gaze direction
+to the box defined by the prompt locations, and determines a linear mapping
+between the two boxes that is used to define screen coordinates from subsequent
+gaze measurements. The application we created for calibration presents a point
+in each corner of the screen, one at a time. The user then has 7 seconds to
+look at the point before the next point is shown.
 
 \subsection{Obtaining Video Data}
 
@@ -333,7 +330,7 @@ recording video with 720p resolution. The computer was running Apple OS X
 (10.8.2) and Google Chrome web browser (build 30.0.1599.66) at the time of the
 experiment. The screen of the laptop was $90^{\circ}$ with the base.
 
-The room, where the experiments were held was equipped with mildly-bright
+The room where the experiments were held was equipped with mildly-bright
 flourescent lamps and had no natural light access. 
 
 \subsection{Procedure}
@@ -343,17 +340,16 @@ first, linear calibration is performed in order to ensure that the gaze will be
 projected on the screen correctly. During the calibration phase, users are
 asked to look at the circles that appear on the screen. The calibration points
 are sequentially shown at the corners of the screen, each for 7 seconds (as
-mentioned in the \emph{Calibration} section of the \emph{Implementation}).
-After the calibration phase, the precision test begins. A monochromatic circle
-appears on the screen in a random location, 20 pixels from each border, being
-displayed for 7 seconds.  This is repeated 10 times. For the precision testing,
-the average gaze point is being recorded.  There was no indication of where the
-tracker predicted the gaze to the user in order to limit the bias imposed by
-this information.
+mentioned in Section 3.3).  After the calibration phase, the precision test
+begins.  A monochromatic circle appears on the screen in a random location, 20
+pixels from each border, being displayed for 7 seconds.  This is repeated 10
+times.  For the precision testing, the average gaze point is being recorded.
+There was no indication of where the tracker predicted the gaze to the user in
+order to limit the bias imposed by this information.
 
-We then calculate the error rate -- the is the distance between average gaze
-point and the center of the associated test circle being shown on the screen.
-The 10 error rates are then averaged to determine the accuracy and the standard
+We then calculate the distance between the average gaze point and the center of
+the associated test circle, and denote this as the error. The 10 error
+measurements are then averaged to determine the accuracy and the standard
 deviation is calculated to determine the uncertainty in measurement.
 
 \section{Results}
@@ -361,16 +357,16 @@ deviation is calculated to determine the uncertainty in measurement.
 \subsection{Accuracy}
 
 We have conducted 5 tests. The result of these tests are shown \textbf{Table 1}
-as well as the results from Holland and Komogortsev's experiments.
+along with the results from Holland and Komogortsev's experiments.
 \shortcite{holland2012eye}.  The distance accuracy refers to the average radius
 around the test point that tracker predicted the gaze to be. These results are
-comparable to that of Holland and Komogorstev which implemented gaze prediction
-on a unmodified common tablet \shortcite{holland2012eye}. Since the constraints
-that exists when programming on a tablet and programming in JavaScript
-(JavaScript can run on a tablet through a web browser), the accuracy in the
-results can be compared.  Their work performed with better accuracy by 0.7
-inches during their first phase and by 0.6 inches in the second phase. The key
-factor in this difference is the existence of a computer vision library in
+comparable to those of Holland and Komogorstev which implemented gaze
+prediction on a unmodified common tablet \shortcite{holland2012eye}. Since the
+constraints that exists when programming on a tablet and programming in
+JavaScript (JavaScript can run on a tablet through a web browser), the accuracy
+in the results can be compared.  Their work performed with better accuracy by
+0.7 inches during their first phase and by 0.6 inches in the second phase. The
+key factor in this difference is the existence of a computer vision library in
 Objective-C but not in JavaScript.  Increasing the performance of the
 implemented computer vision algorithms will lead to better results.
 
@@ -394,11 +390,11 @@ Holland and Komogortsev)}  \centering \begin{tabular}{l|l|l} \textbf{Metric} &
 We have conducted 5 tests to measure the performance of $\Name$. The tests are
 the same as the accuracy tests except that the calibration phase is not needed.
 Our results are computed by obtaining the amount of usable frames from a
-testing session and dividing it by how long the session was. The sampling rate
-was 17.5 FPS ($\pm$ 4.5). This is a strong indication that our system is
+testing session and dividing it by the session length. The sampling rate was
+17.5 FPS ($\pm$ 4.5).  This is a strong indication that our system is
 sufficient to run on a vast range of different devices.
 
-Our performance suffers due different lighting conditions. Since the
+Our performance degrades under poor lighting conditions. Since the
 implementation of the Haar detector in JavaScript currently does not support
 tree-based cascades, different lighting conditions affect the amount of frames
 that eyes were detected. We have found the best results when the user has
@@ -410,23 +406,23 @@ from the webcam for the best results.
 
 \subsection{Privacy Concerns}
 
-$\Name$ has an ambition of bringing eye tracking to larger-scale deployment.
-This intensifies the need to address the privacy concerns some users might
-have. The library we describe attempts to do this in several ways.
+$\Name$ is intended to bring eye tracking to larger-scale deployment.  This
+intensifies the need to address the privacy concerns some users might have. The
+library we describe attempts to do this in several ways.
 
 When the user accesses a web page that uses $\Name$, they are prompted a
 notice that the website is attempting to use the video from their computer.
 This is the default behaviour of both Chrome and Firefox and this behaviour can
-not be overridden by any website. $\Name$ displays a notice, disclosing for
-what specific purposes this data will be used. Thus, we prevent capturing the
-data from unaware user.
+not be overridden by any website. $\Name$ displays a notice that explains how
+this data will be used.  Thus, we prevent capturing the data from an unaware
+user.
 
 As previously mentioned, $\Name$ is implemented in Javascript. Since the
-absolute majority of modern web browsers have an built-in Javascript
-interpreter, it is possible to do the eye tracking on the client-side. This
-allows the proposed solution to avoid sending and storing the user’s video
-stream to an external server. In general, we believe that sensible measures
-have been taken to mitigate the impact on the user’s the privacy.
+majority of modern web browsers have an built-in Javascript interpreter, it is
+possible to do the eye tracking on the client-side. This allows the proposed
+solution to avoid sending and storing the user’s video stream to an external
+server. In general, we believe that sensible measures have been taken to
+mitigate the potential privacy impacts.
 
 \subsection{Limitations}
 
@@ -442,7 +438,7 @@ The lack of well trained Haar classifiers also limits the ability of this work.
 The current classifiers available in JavaScript are not as highly trained and
 thus do not detect the eyes as frequently in different lighting conditions.
 This causes problems with $\Name$ because a gaze metric can not be determined
-and a ponit on the screen is not mapped.
+and a point on the screen is not mapped.
 
 %While the eye tracking is unlike to begin, if the user is not initially
 %properly aligned (e.g. the head is strongly tilted), it does not adjust to the
@@ -453,31 +449,31 @@ and a ponit on the screen is not mapped.
 Preliminary experiments show that $\Name$ is working on a tablet computer
 (Google Nexus 7 -- 2013 version, Chrome Beta 30.0.1599.81, V8 3.20.17.13
 Javascript engine), which brings a potentiall to bring eye tracking to a
-variety of hanheld devices. Further research could concentrate of feasibility
-of eye tracking on even smaller devices -- smartphones and “phablets” (phones
+variety of hanheld devices. Further research could address the feasibility of
+eye tracking on even smaller devices such as smartphones and “phablets” (phones
 with a screen wider than 5’ inches).
 
 We hope to make progress with porting one of the popular Computer Vision
 libraries to Javascript, thus allowing to apply the latest developments in the
-field for the task that $\Name$ tries to solve.
+field to the task that $\Name$ tries to solve.
 
 Additional research on the normalization of the video stream could be done.
 Porting some of the algorithms to Javascript would be a novel task.
 
-We believe that $\Name$ should be used in cases, where the simplicity and
+We believe that $\Name$ should be used in cases where the simplicity and
 scalability of deployment overweights the need for perfect precision of point
 of gaze prediction. Ability to open a webpage, click “ok” on a pop-up bar, and
 start eye tracking opens up possibilities for use of eye tracking for various
-new applications, which were previously “solvable” by eye tracking, but never
-were able to get applied outside the controlled lab environment.
+new applications, which were previously “solvable” by eye tracking, but not
+applied outside the controlled lab environment.
 
 For example, Heitger et al. have shown that impaired eye movements in
 post-concussion syndrome patients indicate trauma on the brain that surpasses
-the influence intellectual ability \cite{Heitger2009}. The use of current
+the influence of intellectual ability \cite{Heitger2009}. The use of current
 generation eye tracking hardware / software combinations makes a deployable
 solution for testing concussions based eye movements difficult. $\Name$ has the
 ability to be used in these deployable senarios such as Emergency Rooms,
-abulances, and sports centers.
+ambulances, and sports centers.
 
 \section{Conclusion}
 
