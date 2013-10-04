@@ -188,7 +188,6 @@ positions of these pupils with reference to the eye are used to determine a
 \emph{gaze metric}. This gaze metric is then calibrated and mapped to a
 position on the screen.
 
-
 \subsection{Pupil Detection}
 
 Detecting the pupils enables $\Name$ to determine the gaze direction.
@@ -199,13 +198,17 @@ The region of interest (ROI) is then thresholded for an array of different
 shades. Connected components are then detected on these binary images. All of
 the detected connected components are stored as possible pupils.  Out of these
 possible pupils, the one with the minimum overall error is designated as the
-pupil.  Below are the expressions to be minimized. \begin{eqnarray}
+pupil.  Below are the expressions to be minimized.  \begin{eqnarray}
 \Function{err}_{\alpha}(p) &=& \frac{ \mathlarger{\sum}_{c \in Corners}{ \vert
 \frac{\pi}{4} - \Function{arctan}( \vert \frac{p_y - c_y}{p_x - c_x} \vert)
 \vert } }{\pi} \\ \Function{err}_{size}(p) &=& \frac{ \vert \Var{avgPupilSize}
-- \Function{size}(p) \vert }{2} \end{eqnarray} $\Function{err}_{\alpha}$ refers
-to how far the center of the connected component is from the center of the Haar
-bounding rectangle. We use angle deviation instead of pixel distance for this
+- \Function{size}(p) \vert }{2} \end{eqnarray}
+
+In these equations, $p$ represents a possible pupil and thus has an $(x, y)$
+position and a size. The $Corners$ set refers to the corners of the Haar
+bounding rectangle surrounding the eye. $\Function{err}_{\alpha}$ refers to how
+far the center of the connected component is from the center of the Haar
+bounding rectangle.  We use angle deviation instead of pixel distance for this
 metric because we assume that the pupil would not always reside immediately in
 the center of the boundary rectangle. A direct pixel distance might yield other
 connected components more suitable.  The angle deviation acts a weak error
@@ -350,10 +353,8 @@ this information.
 
 We then calculate the error rate -- the is the distance between average gaze
 point and the center of the associated test circle being shown on the screen.
-We also provide supplementary error rates -- the horizontal and vertical
-displacements from the average gaze point to the test circle. The 10 error
-rates are then averaged to determine the accuracy and the standard deviation is
-calculated to determine the uncertainty in measurement.
+The 10 error rates are then averaged to determine the accuracy and the standard
+deviation is calculated to determine the uncertainty in measurement.
 
 \section{Results}
 
@@ -361,20 +362,17 @@ calculated to determine the uncertainty in measurement.
 
 We have conducted 5 tests. The result of these tests are shown \textbf{Table 1}
 as well as the results from Holland and Komogortsev's experiments.
-\shortcite{holland2012eye}.  The results of the supplementary tests are shown
-in \textbf{Table 2}. The distance accuracy refers to the average radius around
-the test point that tracker predicted the gaze to be. The horizontal and
-vertical displacments refer to the average component displacement from the test
-point to the predicted poitn of gaze. These results are comparable to that of
-Holland and Komogorstev which implemented gaze prediction on a unmodified
-common tablet \shortcite{hollandeye2012}. Since the constraints that exists
-when programming on a tablet and programming in JavaScript (JavaScript can run
-on a tablet through a web browser), the accuracy in the results can be
-compared.  Their work performed with better accuracy by 0.7 inches during their
-first phase and by 0.6 inches in the second phase. The key factor in this
-difference is the existence of a computer vision library in Objective-C but not
-in JavaScript.  Increasing the performance of the implemented computer vision
-algorithms will lead to better results.
+\shortcite{holland2012eye}.  The distance accuracy refers to the average radius
+around the test point that tracker predicted the gaze to be. These results are
+comparable to that of Holland and Komogorstev which implemented gaze prediction
+on a unmodified common tablet \shortcite{holland2012eye}. Since the constraints
+that exists when programming on a tablet and programming in JavaScript
+(JavaScript can run on a tablet through a web browser), the accuracy in the
+results can be compared.  Their work performed with better accuracy by 0.7
+inches during their first phase and by 0.6 inches in the second phase. The key
+factor in this difference is the existence of a computer vision library in
+Objective-C but not in JavaScript.  Increasing the performance of the
+implemented computer vision algorithms will lead to better results.
 
 In general, we believe that the received results provide a positive indication
 of the viability of conducting eye tracking in a web-based environment. This
@@ -390,11 +388,6 @@ Holland and Komogortsev)}  \centering \begin{tabular}{l|l|l} \textbf{Metric} &
 \textbf{Value} (in) & \textbf{Uncertainty} (in) \\ \hline Phase 1
 \shortcite{holland2012eye} & 1.4 & 0.2 \\ Phase 2 \shortcite{holland2012eye}&
 1.5 & 0.1 \\ Distance & 2.1 & 0.1 \end{tabular} \end{table}
-
-\begin{table} \caption{Supplementary Accuracy Results} \begin{tabular}{l|l|l}
-\textbf{Metric}                        & \textbf{Value} (in) &
-\textbf{Uncertainty} (in) \\ \hline Horizontal Displacement & 1.4 & 0.3 \\
-Vertical Displacement         & 1.3 & 0.3 \\ \end{tabular} \end{table}
 
 \subsection{Performance}
 
