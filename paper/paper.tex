@@ -60,7 +60,7 @@ tracking, linear calibration, JavaScript eye tracker, in-browser eye tracking}
 
 Eye tracking is a difficult problem that is usually solved using specialised
 hardware and therefore has limited availability due to cost and deployment
-difficulties. We describe $\Name$, a client-side Javascript library that is
+difficulties. We describe $\Name$, a client-side JavaScript library that is
 able to estimate the point of gaze using only commodity optical cameras without
 relying on any external application installed besides a web-browser. We conduct
 experiments using $\Name$ to show the usability of such a system.  We also
@@ -113,7 +113,7 @@ of Google Chrome and Mozilla Firefox. A recent report
 3 billion capable devices and 1 billion individual users of WebRTC-enabled
 devices.
 
-In this paper, we describe $\Name$ -- a Javascript library that uses WebRTC to
+In this paper, we describe $\Name$ -- a JavaScript library that uses WebRTC to
 obtain the video from built-in or USB cameras and measures the point of gaze.
 It has the potential to be deployed in a wide range of applications such as
 entertainment, healthcare and user-interface design
@@ -134,18 +134,18 @@ device is not a trivial task by itself, but services like DeviceAtlas
 browser’s User-Agent and screen resolution.  Unfortunately, this approach would
 be mostly applicable for handheld devices and not commodity PCs.
 
-The client-side Javascript environment in which $\Name$ runs sets some
+The client-side JavaScript environment in which $\Name$ runs sets some
 constraints. There are no comprehensive computer vision libraries available in
 JavaScript as of this writing.  There is also currently no “simple” way to port
 native C/C++ code, which are languages in which popular libraries such as
 OpenCV are written in.  Projects like Emscripten are making early attempts to
-allow translation of LLVM bitcode code to Javascript, potentially allowing to
-port some of the well-established computer vision libraries to Javascript in
+allow translation of LLVM bitcode code to JavaScript, potentially allowing to
+port some of the well-established computer vision libraries to JavaScript in
 the future. For now, we had to create a custom implementation of connected
 component detection and image moment calculation to use in $\Name$.
 
 Despite some of the described difficulties, we believe that a combination of
-Javascript and WebRTC is a reasonable technological stack on which a scalable
+JavaScript and WebRTC is a reasonable technological stack on which a scalable
 eye tracking solution can be built.
 
 \section{Implementation}
@@ -417,8 +417,8 @@ not be overridden by any website. $\Name$ displays a notice that explains how
 this data will be used.  Thus, we prevent capturing the data from an unaware
 user.
 
-As previously mentioned, $\Name$ is implemented in Javascript. Since the
-majority of modern web browsers have an built-in Javascript interpreter, it is
+As previously mentioned, $\Name$ is implemented in JavaScript. Since the
+majority of modern web browsers have an built-in JavaScript interpreter, it is
 possible to do the eye tracking on the client-side. This allows the proposed
 solution to avoid sending and storing the user’s video stream to an external
 server. In general, we believe that sensible measures have been taken to
@@ -426,7 +426,7 @@ mitigate the potential privacy impacts.
 
 \subsection{Limitations}
 
-Currently, Camgaze.js lacks any spatial awareness between the camera and the
+Currently, $\Name$ lacks any spatial awareness between the camera and the
 user. In some cases, due to specific change in alignment of the user the result
 from the eye tracker will be imprecise. Likewise, a change in head pose
 potentially disrupts the precision of $\Name$ (e.g. if the user is looking at
@@ -448,17 +448,18 @@ and a point on the screen is not mapped.
 
 Preliminary experiments show that $\Name$ is working on a tablet computer
 (Google Nexus 7 -- 2013 version, Chrome Beta 30.0.1599.81, V8 3.20.17.13
-Javascript engine), which brings a potential to bring eye tracking to a
+JavaScript engine), which brings a potential to bring eye tracking to a
 variety of handheld devices. Further research could address the feasibility of
 eye tracking on even smaller devices such as smartphones and “phablets” (phones
 with a screen wider than 5’ inches).
 
-We hope to make progress with porting one of the popular Computer Vision
-libraries to Javascript, thus allowing to apply the latest developments in the
-field to the task that $\Name$ tries to solve.
+We hope to make progress with porting some computer vision libraries to
+JavaScript, allowing to apply the latest developments in the field to solve the
+problem of eye tracking. With more sophisticated algorithms, we hope to improve
+the performance and accuracy of $\Name$
 
 Additional research on the normalization of the video stream could be done.
-Porting some of the algorithms to Javascript would be a novel task.
+Porting some of the algorithms to JavaScript would be a novel task.
 
 We believe that $\Name$ should be used in cases where the simplicity and
 scalability of deployment overweights the need for perfect precision of point
