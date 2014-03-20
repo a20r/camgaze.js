@@ -50,7 +50,7 @@ camgaze.cascades = {};
 	and it the return value of the frame operator will not
 	be displayed.
 */
-camgaze.Camgaze = function (xSize, ySize, mCanvasId, onlyCanvas) {
+camgaze.Camgaze = function (xSize, ySize, mCanvasId, onlyCanvas, videoSrc, videoFailCallback) {
 	if (onlyCanvas == undefined) {
 		onlyCanvas = false;
 	}
@@ -66,7 +66,9 @@ camgaze.Camgaze = function (xSize, ySize, mCanvasId, onlyCanvas) {
 	this.cam = new camgaze.Camera( 
 		onlyCanvas ? 640 : xSize, 
 		onlyCanvas ? 480 : ySize,
-		onlyCanvas ? undefined : mCanvasId 
+		onlyCanvas ? undefined : mCanvasId,
+		videoSrc,
+		videoFailCallback
 	);
 	this.video = document.querySelector("video");
 }
@@ -95,6 +97,7 @@ camgaze.Camgaze = function (xSize, ySize, mCanvasId, onlyCanvas) {
 */
 camgaze.Camgaze.prototype.setFrameOperator = function (callback) {
 	var self = this;
+
 	if (this.onlyCanvas == true) {
 		var canvasDrawer = new camgaze.drawing.CanvasDrawer(
 			this.mCanvasId, 
@@ -2103,7 +2106,7 @@ camgaze.drawing.ImageDrawer.prototype = {
 	dimX and dimY are the dimensions of the frames
 	you would like to be returned from the camera.	
 */
-camgaze.Camera = function (dimX, dimY, canvasId) {
+camgaze.Camera = function (dimX, dimY, canvasId, videoSrc, videoFailCallback) {
 	if (canvasId != undefined) {
 		this.canvas = document.getElementById(canvasId);
 		this.canvas.width = dimX;
@@ -2126,11 +2129,15 @@ camgaze.Camera = function (dimX, dimY, canvasId) {
 	if (compatibility.getUserMedia) {
 		compatibility.getUserMedia(
 			{
-	    		video : true
+	    		video : {
+	    			optional: [{sourceId: videoSrc}]
+	    		}
 	    	},
 	    	this.showFrame(self),
-	    	this.videoFail
+	    	videoFailCallback
 	  	)
+	} else {
+		alert('Your browser does not support getUserMedia()');
 	}
 }
 
@@ -2155,6 +2162,8 @@ camgaze.Camera.prototype = {
 	// automatically called once from the getUserMedia
 	showFrame : function (self) {
 		return function (localMediaStream) {
+			self.localMediaStream = localMediaStream;
+			self.video.autoplay = true;
 			self.video.src = window.URL.createObjectURL(
 				localMediaStream
 			);
@@ -2163,6 +2172,16 @@ camgaze.Camera.prototype = {
 
 	videoFail : function (e) {
 		console.log("VIDEO ERROR:\t", e);
+	},
+
+	stopStreaming : function () {
+		if (this.localMediaStream != undefined) {
+			this.localMediaStream.stop();
+			this.video.autoplay = false;
+			this.video.src = false;
+
+			this.localMediaStream = undefined;
+		}
 	},
 
 	pauseStreaming : function () {
