@@ -1,35 +1,75 @@
+
 <html>
-    <head></head>
-
-    <body>
-
-        <canvas id="mainCanvas"></canvas>
-        <video style="display: none;" autoplay></video>
-
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
-        <script src="/camgaze.js/build/clmtrackr.min.js"></script>
-        <script src="/camgaze.js/cascades/model_pca_svm_20.js"></script>
-        <script src="/camgaze.js/build/camgaze.js"></script>
-
-        <script type="text/javascript">
-            var width = 580;
-            var height = 440;
-            var cGaze = new camgaze.Camgaze(width, height, "mainCanvas");
-
-            var frameOp = function (image_data, video) {
-                var positions = ctracker.getCurrentPosition();
-                console.log(positions);
-                return image_data;
+    <head>
+        <title>Face tracker</title>
+        <meta charset="utf-8">
+        <style>
+            #container {
+                position : relative;
             }
 
-            cGaze.setFrameOperator(frameOp);
+            #canvas {
+                position : absolute;
+                left : 0;
+                top : 0;
+            }
+        </style>
+    </head>
+    <body screen_capture_injected="true" style="">
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="/camgaze.js/build/clmtrackr.min.js"></script>
+        <script src="/camgaze.js/cascades/model_pca_svm_20.js"></script>
+        <script src="/camgaze.js/build/compatibility.js"></script>
+        <script src="/camgaze.js/build/camgaze.js"></script>
+        <h2>Example</h2>
+        <div id="container">
+            <video id="video" width="368" height="288" autoplay></video>
+            <canvas id="canvas" width="368" height="288"></canvas>
+        </div>
 
+        <script>
             var videoInput = document.getElementById('video');
+
+            var width = 368;
+            var height = 288;
+            var cGaze = new camgaze.Camgaze(width, height, "canvas");
+            var drawer = new camgaze.drawing.ImageDrawer();
+
+            cGaze.setFrameOperator(function (image_data, video) {
+                var positions = ctracker.getCurrentPosition();
+                if (positions) {
+                    var eye_ids = [23, 25, 30, 28];
+                    var nose_ids = [35, 62, 39];
+
+                    for (var p = 0; p < 4; p++) {
+                        image_data = drawer.drawCircle(image_data, {
+                            x: positions[eye_ids[p]][0].toFixed(0),
+                            y: positions[eye_ids[p]][1].toFixed(0)
+                        }, 3, 1, "red");
+                    }
+
+                    for (var p = 0; p < 3; p++) {
+                        image_data = drawer.drawCircle(image_data, {
+                            x: positions[nose_ids[p]][0].toFixed(0),
+                            y: positions[nose_ids[p]][1].toFixed(0)
+                        }, 3, 1, "red");
+                    }
+
+                    var res_x = 2 * positions[62][0] - positions[35][0] - positions[39][0];
+                    var res_y = 2 * positions[62][1] - positions[35][1] - positions[39][1];
+
+                    image_data = drawer.drawCircle(image_data, {x: width / 2, y: height / 2},
+                        5, 5, "green");
+
+                    image_data = drawer.drawLine(image_data, {x: width / 2, y: height / 2},
+                        {x: width / 2 + res_x, y: height / 2 + res_y}, 4, "blue");
+                }
+                return image_data;
+            });
 
             var ctracker = new clm.tracker();
             ctracker.init(pModel);
             ctracker.start(videoInput);
-
         </script>
     </body>
 </html>
