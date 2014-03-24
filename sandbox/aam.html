@@ -2,8 +2,33 @@
     <head></head>
 
     <body>
-        <script src="build/clmtrackr.js"></script>
-        <script src="build/model_pca_20_svm.js"></script>
 
+        <canvas id="mainCanvas"></canvas>
+        <video style="display: none;" autoplay></video>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+        <script src="build/clmtrackr.js"></script>
+        <script src="cascades/model_pca_20_svm.js"></script>
+
+        <script type="text/javascript">
+            var width = 580;
+            var height = 440;
+            var cGaze = new camgaze.Camgaze(width, height, "mainCanvas");
+
+            var frameOp = function (image_data, video) {
+                var positions = ctracker.getCurrentPosition();
+                console.log(positions);
+                return image_data;
+            }
+
+            cGaze.setFrameOperator(frameOp);
+
+            var videoInput = document.getElementById('video');
+
+            var ctracker = new clm.tracker();
+            ctracker.init(pModel);
+            ctracker.start(videoInput);
+
+        </script>
     </body>
 </html>
