@@ -1,116 +1,106 @@
-% This text is proprietary.
-% It's a part of presentation made by myself.
-% It may not used commercial.
-% The noncommercial use such as private and study is free
-% Sep. 2005
-% Author: Sascha Frank
-% University Freiburg
-% www.informatik.uni-freiburg.de/~frank/
-%
-% additional usepackage{beamerthemeshadow} is used
-%
-%  \beamersetuncovermixins{\opaqueness<1>{25}}{\opaqueness<2->{15}}
-%  with this the elements which were coming soon were only hinted
+
 \documentclass{beamer}
+
 \usepackage{beamerthemeshadow}
+
 \begin{document}
-\title{Beamer Class well nice}
-\author{Sascha Frank}
+
+\title{Camgaze.js: A JavaScript Library for Eye Tracking and Gaze Prediction}
+
+\author[shortname]{Alex Wallar \inst{1} \and Christian Poellabauer \inst{2}
+\and Aleksejs Sazonovs \inst{1} \and Patrick Flynn \inst{2}}
+\institute[shortinst]{\inst{1} University of St Andrews \and \inst{2}
+University of Notre Dame}
+
 \date{\today}
 
 \frame{\titlepage}
 
 \frame{\frametitle{Table of contents}\tableofcontents}
 
+\section{Introduction}
 
-\section{Section no.1}
-\frame{\frametitle{Title}
-Each frame should have a title.
-}
-\subsection{Subsection no.1.1  }
-\frame{
-Without title somethink is missing.
-}
+\subsection{Review}
 
+\frame{\frametitle{What is it?}
 
-\section{Section no. 2}
-\subsection{Lists I}
-\frame{\frametitle{unnumbered lists}
 \begin{itemize}
-\item Introduction to  \LaTeX
-\item Course 2
-\item Termpapers and presentations with \LaTeX
-\item Beamer class
+
+\item Eye tracking is a problem which tries to determine where a user is
+looking on the screen \pause
+
+\item Usually done using IR or 3D cameras \pause
+
+\item Some webcam technologies have emerged \pause
+
+\item However, no in-browser solutions have been presented soley using HTML5
+\pause
+
+\item Until now :)
+
 \end{itemize}
+
 }
 
-\frame{\frametitle{lists with pause}
+\subsection{Motivation}
+
+\frame{\frametitle{Motivation}
+
 \begin{itemize}
-\item Introduction to  \LaTeX \pause
-\item Course 2 \pause
-\item Termpapers and presentations with \LaTeX \pause
-\item Beamer class
+
+\item Eye tracking can provide vital data about what is important on the screen
+\pause
+
+\item We can create more intuitive user interfaces \pause
+
+\item Using the web, we can crowd source where people are looking at on the
+website \pause
+
+\item Also, since all of the eye tracking is done on the client side, we can
+preserve user privacy
+
 \end{itemize}
+
 }
 
-\subsection{Lists II}
-\frame{\frametitle{numbered lists}
+\subsection{Camgaze.js}
+
+\frame{\frametitle{Camgaze.js}
+
+\begin{itemize}
+
+\item A library for eye tracking that is done inside a web browser using
+JavaScript \pause
+
+\item Uses only commodity camera (i.e.\ a webcam) \pause
+
+\item Anybody can use the library without downlading any external program
+besides a web browser \pause
+
+\item It is possible to determine where the user is looking on the screen
+whilst preserving user privacy and limiting server load
+
+\end{itemize}
+
+}
+
+\section{Implementation}
+
+\subsection{Overview}
+
+\frame{\frametitle{Overview}
+
 \begin{enumerate}
-\item Introduction to  \LaTeX
-\item Course 2
-\item Termpapers and presentations with \LaTeX
-\item Beamer class
+
+\item Obtain video from using Web RTC (Real Time Communication) library
+
+\item Determine the positions of the pupil centroids
+
+\item 
+
 \end{enumerate}
-}
-\frame{\frametitle{numbered lists with pause}
-\begin{enumerate}
-\item Introduction to  \LaTeX \pause
-\item Course 2 \pause
-\item Termpapers and presentations with \LaTeX \pause
-\item Beamer class
-\end{enumerate}
+
 }
 
-\section{Section no.3}
-\subsection{Tables}
-\frame{\frametitle{Tables}
-\begin{tabular}{|c|c|c|}
-\hline
-\textbf{Date} & \textbf{Instructor} & \textbf{Title} \\
-\hline
-WS 04/05 & Sascha Frank & First steps with  \LaTeX  \\
-\hline
-SS 05 & Sascha Frank & \LaTeX \ Course serial \\
-\hline
-\end{tabular}}
-
-
-\frame{\frametitle{Tables with pause}
-\begin{tabular}{c c c}
-A & B & C \\
-\pause
-1 & 2 & 3 \\
-\pause
-A & B & C \\
-\end{tabular} }
-
-
-\section{Section no. 4}
-\subsection{blocs}
-\frame{\frametitle{blocs}
-
-\begin{block}{title of the bloc}
-bloc text
-\end{block}
-
-\begin{exampleblock}{title of the bloc}
-bloc text
-\end{exampleblock}
-
-
-\begin{alertblock}{title of the bloc}
-bloc text
-\end{alertblock}
-}
 \end{document}
 
