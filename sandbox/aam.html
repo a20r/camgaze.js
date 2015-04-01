@@ -21,7 +21,7 @@
         <script src="/camgaze.js/cascades/model_pca_svm_20.js"></script>
         <script src="/camgaze.js/build/compatibility.js"></script>
         <script src="/camgaze.js/build/camgaze.js"></script>
-        <h2>Example</h2>
+        <h2 id="result">No result</h2>
         <div id="container">
             <video id="video" width="368" height="288" autoplay></video>
             <canvas id="canvas" width="368" height="288"></canvas>
@@ -34,6 +34,35 @@
             var height = 288;
             var cGaze = new camgaze.Camgaze(width, height, "canvas");
             var drawer = new camgaze.drawing.ImageDrawer();
+            var xs = new Array();
+            var ys = new Array();
+            var queue_size = 10;
+            var min_dist = 1;
+            var results = {
+                YES: "Yes",
+                NO: "No",
+                NONE: "No result"
+            }
+
+            var sum_dist = function(list) {
+                sum = 0;
+                for (var i = 0; i < list.length - 1; i++) {
+                    sum += Math.abs(list[i + 1] - list[i]);
+                }
+
+                return sum;
+            }
+
+            var classifier = function (x_list, y_list) {
+                console.log(sum_dist(x_list) + " " + sum_dist(y_list));
+                if (Math.abs(sum_dist(x_list) - sum_dist(y_list)) < min_dist) {
+                    return results.NONE;
+                } else if (sum_dist(x_list) > sum_dist(y_list)) {
+                    return results.NO;
+                } else if (sum_dist(y_list) > sum_dist(x_list)) {
+                    return results.YES;
+                }
+            }
 
             cGaze.setFrameOperator(function (image_data, video) {
                 var positions = ctracker.getCurrentPosition();
@@ -55,14 +84,32 @@
                         }, 3, 1, "red");
                     }
 
-                    var res_x = 2 * positions[62][0] - positions[35][0] - positions[39][0];
-                    var res_y = 2 * positions[62][1] - positions[35][1] - positions[39][1];
+                    var res_x = 2 * positions[62][0] - positions[35][0]
+                        - positions[39][0];
+                    var res_y = 2 * positions[62][1] - positions[35][1]
+                        - positions[39][1];
 
-                    image_data = drawer.drawCircle(image_data, {x: width / 2, y: height / 2},
-                        5, 5, "green");
+                    xs.push(res_x);
+                    ys.push(res_y);
 
-                    image_data = drawer.drawLine(image_data, {x: width / 2, y: height / 2},
-                        {x: width / 2 + res_x, y: height / 2 + res_y}, 4, "blue");
+                    if (xs.length > queue_size) {
+                        xs.shift();
+                        ys.shift();
+
+                        $("#result").html(classifier(xs, ys));
+                    }
+
+
+
+                    // console.log(res_x + " " + res_y);
+
+                    image_data = drawer.drawCircle(image_data,
+                            {x: width / 2, y: height / 2}, 5, 5, "green");
+
+                    image_data = drawer.drawLine(image_data,
+                            {x: width / 2, y: height / 2},
+                            {x: width / 2 + res_x, y: height / 2 + res_y},
+                            4, "blue");
                 }
                 return image_data;
             });
