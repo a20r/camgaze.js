@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>camgaze v2 demo — gaze tracking</title>
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0; font-family: system-ui, sans-serif; background: #111; color: #eee;
+    display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 1rem;
+  }
+  #stage { position: relative; }
+  video { transform: scaleX(-1); border-radius: 8px; }
+  #overlay { position: absolute; inset: 0; transform: scaleX(-1); }
+  #gazeDot {
+    position: fixed; width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(255, 80, 80, 0.85); border: 2px solid #fff;
+    transform: translate(-50%, -50%); pointer-events: none; display: none; z-index: 10;
+    transition: left 40ms linear, top 40ms linear;
+  }
+  #calDot {
+    position: fixed; width: 20px; height: 20px; border-radius: 50%;
+    background: #4caf50; border: 3px solid #fff; transform: translate(-50%, -50%);
+    cursor: pointer; display: none; z-index: 11;
+  }
+  #hud { font-size: 0.9rem; color: #aaa; min-height: 2em; text-align: center; }
+  button { font-size: 1rem; padding: 0.5em 1.2em; border-radius: 6px; border: 0; cursor: pointer; }
+</style>
+</head>
+<body>
+  <h1>camgaze v2</h1>
+  <div id="stage">
+    <video id="video" autoplay playsinline muted width="640" height="480"></video>
+    <canvas id="overlay" width="640" height="480"></canvas>
+  </div>
+  <div>
+    <button id="startBtn">Start camera</button>
+    <button id="calBtn" disabled>Calibrate (9 points)</button>
+  </div>
+  <div id="hud">Camera off.</div>
+  <div id="gazeDot"></div>
+  <div id="calDot"></div>
+
+  <script src="../dist/camgaze.min.js"></script>
+  <script>
+    const { GazeTracker } = camgaze;
+    const video = document.getElementById("video");
+    const overlay = document.getElementById("overlay");
+    const ctx = overlay.getContext("2d");
+    const hud = document.getElementById("hud");
+    const gazeDot = document.getElementById("gazeDot");
+    const calDot = document.getElementById("calDot");
+
+    const tracker = new GazeTracker({ camera: { video, width: 640, height: 480 } });
+
+    tracker.on("gaze", (frame) => {
+      ctx.clearRect(0, 0, overlay.width, overlay.height);
+      const sx = overlay.width / tracker.camera.width;
+      const sy = overlay.height / tracker.camera.height;
+      for (const eye of frame.eyes) {
+        ctx.strokeStyle = eye.confidence > 0.05 ? "#4caf50" : "#f44336";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(eye.rect.x * sx, eye.rect.y * sy, eye.rect.width * sx, eye.rect.height * sy);
+        ctx.fillStyle = "#ffeb3b";
+        ctx.beginPath();
+        ctx.arc(eye.pupil.x * sx, eye.pupil.y * sy, 4, 0, Math.PI * 2);
+        ctx.fill();
+        // gaze vector
+        ctx.strokeStyle = "#03a9f4";
+        ctx.beginPath();
+        ctx.moveTo(eye.pupil.x * sx, eye.pupil.y * sy);
+        ctx.lineTo((eye.pupil.x + eye.gazeVector.x * 4) * sx, (eye.pupil.y + eye.gazeVector.y * 4) * sy);
+        ctx.stroke();
+      }
+      if (frame.blink) {
+        hud.textContent = "Blink";
+      } else if (frame.gazePoint) {
+        gazeDot.style.display = "block";
+        // Mirror x: the preview is mirrored, calibration targets are in page space already.
+        gazeDot.style.left = frame.gazePoint.x + "px";
+        gazeDot.style.top = frame.gazePoint.y + "px";
+      }
+    });
+
+    document.getElementById("startBtn").onclick = async () => {
+      hud.textContent = "Requesting camera…";
+      try {
+        await tracker.start();
+        hud.textContent = "Tracking. Green boxes = eyes, yellow dots = pupils.";
+        document.getElementById("calBtn").disabled = false;
+      } catch (e) {
+        hud.textContent = "Camera failed: " + e.message;
+      }
+    };
+
+    document.getElementById("calBtn").onclick = async () => {
+      tracker.calibration.clear();
+      const xs = [0.1, 0.5, 0.9];
+      const ys = [0.15, 0.5, 0.85];
+      const targets = [];
+      for (const fy of ys) for (const fx of xs) targets.push({ fx, fy });
+      hud.textContent = "Look at each green dot and click it.";
+      for (const { fx, fy } of targets) {
+        const x = fx * window.innerWidth;
+        const y = fy * window.innerHeight;
+        calDot.style.display = "block";
+        calDot.style.left = x + "px";
+        calDot.style.top = y + "px";
+        await new Promise((resolve) => {
+          calDot.onclick = () => {
+            // Collect a short burst of samples while the user fixates.
+            let n = 0;
+            const iv = setInterval(() => {
+              tracker.addCalibrationPoint({ x, y });
+              if (++n >= 8) { clearInterval(iv); resolve(); }
+            }, 40);
+          };
+        });
+      }
+      calDot.style.display = "none";
+      const { meanError, samples } = tracker.calibration.train();
+      hud.textContent = `Calibrated on ${samples} samples, mean training error ${meanError.toFixed(0)}px. Red dot = your gaze.`;
+    };
+  </script>
+</body>
+</html>

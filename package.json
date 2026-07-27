@@ -1,0 +1,59 @@
+{
+  "name": "camgaze",
+  "version": "2.0.0",
+  "description": "Webcam eye tracking and gaze estimation in the browser — visible light, no special hardware, zero runtime dependencies.",
+  "author": "Alex Wallar <alex@wallar.me>",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./cascades/eye": {
+      "types": "./dist/cascades/eye.d.ts",
+      "import": "./dist/cascades/eye.js"
+    },
+    "./cascades/frontalface": {
+      "types": "./dist/cascades/frontalface.d.ts",
+      "import": "./dist/cascades/frontalface.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "cascades": "node scripts/convert-cascade.mjs",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/a20r/camgaze.js.git"
+  },
+  "keywords": [
+    "eye-tracking",
+    "gaze",
+    "gaze-estimation",
+    "pupil-detection",
+    "webcam",
+    "computer-vision",
+    "browser"
+  ],
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "jpeg-js": "^0.4.4",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^3.0.0"
+  }
+}
