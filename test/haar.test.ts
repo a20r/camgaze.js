@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { HaarDetector, groupRectangles, type Detection } from "../src/detect/haar.js";
+import {
+  HaarDetector,
+  groupRectangles,
+  type Detection,
+  type HaarCascade,
+} from "../src/detect/haar.js";
 import { eyeCascade } from "../src/detect/cascades/eye.js";
 import { frontalFaceCascade } from "../src/detect/cascades/frontalface.js";
 import { createGray } from "../src/core/image.js";
@@ -34,6 +39,27 @@ describe("HaarDetector", () => {
       expect(d.x + d.width).toBeLessThanOrEqual(321);
       expect(d.y + d.height).toBeLessThanOrEqual(241);
     }
+  });
+
+  it("scans a window that exactly fills the input image", () => {
+    const alwaysMatch: HaarCascade = {
+      size: [2, 2],
+      tilted: false,
+      complexClassifiers: [
+        { simpleClassifiers: [], threshold: 0 },
+      ],
+    };
+    const detector = new HaarDetector(alwaysMatch);
+    const detections = detector.detect(createGray(2, 2), { minNeighbors: 1 });
+    expect(detections).toHaveLength(1);
+    expect(detections[0]).toMatchObject({ x: 0, y: 0, width: 2, height: 2 });
+  });
+
+  it("rejects non-progressing scale factors instead of looping forever", () => {
+    const detector = new HaarDetector(eyeCascade);
+    expect(() => detector.detect(createGray(40, 40), { scaleFactor: 1 })).toThrow(
+      RangeError
+    );
   });
 });
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { clampRect } from "../src/core/geometry.js";
 import {
   computeIntegrals,
   createGray,
@@ -60,6 +61,33 @@ describe("cropGray", () => {
     for (let i = 0; i < 16; i++) img.data[i] = i;
     const crop = cropGray(img, { x: 1, y: 2, width: 2, height: 2 });
     expect(Array.from(crop.data)).toEqual([9, 10, 13, 14]);
+  });
+
+  it("intersects a crop with the source instead of pinning it to an edge", () => {
+    const img = createGray(4, 4);
+    for (let i = 0; i < 16; i++) img.data[i] = i;
+
+    const partial = cropGray(img, { x: -1, y: 1, width: 3, height: 2 });
+    expect({ width: partial.width, height: partial.height }).toEqual({
+      width: 2,
+      height: 2,
+    });
+    expect(Array.from(partial.data)).toEqual([4, 5, 8, 9]);
+
+    const outside = cropGray(img, { x: 4, y: 0, width: 2, height: 2 });
+    expect({ width: outside.width, height: outside.height }).toEqual({
+      width: 0,
+      height: 2,
+    });
+    expect(outside.data).toHaveLength(0);
+  });
+});
+
+describe("clampRect", () => {
+  it("clips partially out-of-bounds rectangles instead of shifting them", () => {
+    expect(
+      clampRect({ x: -4, y: -3, width: 10, height: 8 }, 20, 20)
+    ).toEqual({ x: 0, y: 0, width: 6, height: 5 });
   });
 });
 

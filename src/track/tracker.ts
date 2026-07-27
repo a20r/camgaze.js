@@ -90,6 +90,7 @@ export class GazeTracker {
   private readonly smoothingOptions: OneEuroOptions | false;
   private readonly blinkThreshold: number;
   private readonly filters = new Map<string, OneEuroFilter2D>();
+  private unknownRegionCount: number | null = null;
   private listeners = new Set<GazeListener>();
   private rafId: number | null = null;
   private videoFrameCallbackId: number | null = null;
@@ -155,6 +156,7 @@ export class GazeTracker {
     this.videoFrameCallbackId = null;
     this.cameraInstance?.stop();
     this.filters.clear();
+    this.unknownRegionCount = null;
   }
 
   private scheduleNext(loop: () => void): void {
@@ -177,20 +179,30 @@ export class GazeTracker {
     const timestamp =
       typeof performance !== "undefined" ? performance.now() : 0;
     const regions = this.provider.findEyes(gray);
+    const filterKeys = this.filterKeysFor(regions);
     const eyes: TrackedEye[] = [];
 
-    for (const region of regions) {
-      const eye = this.trackEye(gray, region, timestamp);
+    for (let i = 0; i < regions.length; i++) {
+      const eye = this.trackEye(gray, regions[i], timestamp, filterKeys[i]);
       if (eye) eyes.push(eye);
     }
 
     const usable = eyes.filter((e) => e.confidence >= this.blinkThreshold);
+    // Providers may omit sides. In that case, order simultaneously visible
+    // regions by image position so calibration can still use both eyes.
+    const unknown = usable
+      .filter((e) => e.side === "unknown")
+      .sort((a, b) => rectCenter(a.rect).x - rectCenter(b.rect).x);
+    let unknownIndex = 0;
+    const left =
+      usable.find((e) => e.side === "left") ?? unknown[unknownIndex++];
+    const right =
+      usable.find((e) => e.side === "right") ?? unknown[unknownIndex++];
     const features: GazeFeatures | null =
-      usable.length > 0
+      left || right
         ? {
-            left: usable.find((e) => e.side === "left")?.normalizedPupil ??
-              (usable[0].side === "unknown" ? usable[0].normalizedPupil : undefined),
-            right: usable.find((e) => e.side === "right")?.normalizedPupil,
+            left: left?.normalizedPupil,
+            right: right?.normalizedPupil,
           }
         : null;
 
@@ -211,7 +223,8 @@ export class GazeTracker {
   private trackEye(
     gray: GrayImage,
     region: EyeRegion,
-    timestamp: number
+    timestamp: number,
+    filterKey: string
   ): TrackedEye | null {
     const rect = region.rect;
     if (rect.width < 8 || rect.height < 8) return null;
@@ -234,10 +247,10 @@ export class GazeTracker {
     const side = region.side ?? "unknown";
     let pupil = raw;
     if (this.smoothingOptions !== false) {
-      let filter = this.filters.get(side);
+      let filter = this.filters.get(filterKey);
       if (!filter) {
         filter = new OneEuroFilter2D(this.smoothingOptions);
-        this.filters.set(side, filter);
+        this.filters.set(filterKey, filter);
       }
       pupil = filter.filter(raw, timestamp);
     }
@@ -254,6 +267,29 @@ export class GazeTracker {
       confidence: coarse.confidence,
       gazeVector: sub(pupil, rectCenter(rect)),
     };
+  }
+
+  /** Assign stable, independent filter slots to providers without eye sides. */
+  private filterKeysFor(regions: EyeRegion[]): string[] {
+    const keys: string[] = regions.map((region) => region.side ?? "unknown:0");
+    const unknown = regions
+      .map((region, index) => ({ region, index }))
+      .filter(({ region }) => region.side === undefined)
+      .sort((a, b) => rectCenter(a.region.rect).x - rectCenter(b.region.rect).x);
+
+    // A one-eye frame cannot reliably tell which prior unknown-eye filter it
+    // belongs to. Resetting on count changes avoids carrying the other eye's
+    // smoothed state into it.
+    if (this.unknownRegionCount !== unknown.length) {
+      for (const key of this.filters.keys()) {
+        if (key.startsWith("unknown:")) this.filters.delete(key);
+      }
+      this.unknownRegionCount = unknown.length;
+    }
+    unknown.forEach(({ index }, rank) => {
+      keys[index] = `unknown:${rank}`;
+    });
+    return keys;
   }
 
   /**

@@ -40,9 +40,9 @@ export interface Detection extends Rect {
 export interface HaarDetectorOptions {
   /** Working image width the frame is shrunk to before scanning. Default 200. */
   workSize?: number;
-  /** Multiplier between scan scales. Default 1.15. */
+  /** Multiplier between scan scales; must be greater than 1. Default 1.15. */
   scaleFactor?: number;
-  /** Initial scale (in cascade windows). Default 1. */
+  /** Positive initial scale (in cascade windows). Default 1. */
   minScale?: number;
   /** Minimum grouped neighbors for a detection to survive. Default 2. */
   minNeighbors?: number;
@@ -81,6 +81,12 @@ export class HaarDetector {
     const scaleFactor = options.scaleFactor ?? 1.15;
     const minScale = options.minScale ?? 1;
     const minNeighbors = options.minNeighbors ?? 2;
+    if (!Number.isFinite(scaleFactor) || scaleFactor <= 1) {
+      throw new RangeError("scaleFactor must be a finite number greater than 1");
+    }
+    if (!Number.isFinite(minScale) || minScale <= 0) {
+      throw new RangeError("minScale must be a finite positive number");
+    }
 
     const shrink = Math.min(
       1,
@@ -109,9 +115,15 @@ export class HaarDetector {
     computeIntegrals(work, this.sum, this.sqsum);
 
     let rects: Detection[] = [];
-    let scale = minScale;
     const [cw, ch] = this.cascade.size;
-    while (scale * cw < w && scale * ch < h) {
+    // A window must be at least one pixel in both dimensions. Using the
+    // floored window dimensions here also includes scales whose window fits
+    // exactly in the working image.
+    let scale = Math.max(minScale, 1 / cw, 1 / ch);
+    while (true) {
+      const winW = Math.floor(cw * scale);
+      const winH = Math.floor(ch * scale);
+      if (winW > w || winH > h) break;
       rects = rects.concat(this.detectSingleScale(w, h, scale));
       scale *= scaleFactor;
     }

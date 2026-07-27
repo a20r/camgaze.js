@@ -40,10 +40,16 @@ export function toGrayscale(src: RGBAImage, out?: GrayImage): GrayImage {
  * the source bounds (fractional offsets would silently shear the rows).
  */
 export function cropGray(src: GrayImage, rect: Rect): GrayImage {
-  const x = Math.min(src.width - 1, Math.max(0, Math.round(rect.x)));
-  const y0 = Math.min(src.height - 1, Math.max(0, Math.round(rect.y)));
-  const w = Math.min(src.width - x, Math.max(0, Math.round(rect.width)));
-  const h = Math.min(src.height - y0, Math.max(0, Math.round(rect.height)));
+  const left = Math.round(rect.x);
+  const top = Math.round(rect.y);
+  const right = left + Math.max(0, Math.round(rect.width));
+  const bottom = top + Math.max(0, Math.round(rect.height));
+  const x = Math.max(0, Math.min(left, src.width));
+  const y0 = Math.max(0, Math.min(top, src.height));
+  const x1 = Math.max(x, Math.min(right, src.width));
+  const y1 = Math.max(y0, Math.min(bottom, src.height));
+  const w = x1 - x;
+  const h = y1 - y0;
   const out = createGray(w, h);
   for (let y = 0; y < h; y++) {
     const srcOff = (y0 + y) * src.width + x;

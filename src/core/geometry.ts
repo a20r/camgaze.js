@@ -57,14 +57,16 @@ export function iou(a: Rect, b: Rect): number {
   return inter / (a.width * a.height + b.width * b.height - inter);
 }
 
-/** Clamp a rectangle to lie within a width x height frame. */
+/** Intersect a rectangle with a width x height frame. */
 export function clampRect(r: Rect, width: number, height: number): Rect {
   const x = Math.max(0, Math.min(r.x, width));
   const y = Math.max(0, Math.min(r.y, height));
+  const right = Math.max(x, Math.min(r.x + Math.max(0, r.width), width));
+  const bottom = Math.max(y, Math.min(r.y + Math.max(0, r.height), height));
   return {
     x,
     y,
-    width: Math.max(0, Math.min(r.width, width - x)),
-    height: Math.max(0, Math.min(r.height, height - y)),
+    width: right - x,
+    height: bottom - y,
   };
 }

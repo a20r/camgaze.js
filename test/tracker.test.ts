@@ -25,6 +25,16 @@ const fixedProvider: EyeRegionProvider = {
   ],
 };
 
+// EyeRegionProvider intentionally permits providers that cannot label sides.
+// Return these in reverse order to verify that filtering and calibration use
+// spatial association rather than the provider's array order.
+const unlabeledProvider: EyeRegionProvider = {
+  findEyes: () => [
+    { rect: { x: 190, y: 80, width: 60, height: 40 }, confidence: 1 },
+    { rect: { x: 70, y: 80, width: 60, height: 40 }, confidence: 1 },
+  ],
+};
+
 describe("GazeTracker.processFrame (headless)", () => {
   it("tracks pupils inside provided eye regions", () => {
     const tracker = new GazeTracker({
@@ -127,5 +137,20 @@ describe("GazeTracker.processFrame (headless)", () => {
       last = x;
     }
     expect(maxJump).toBeLessThan(2);
+  });
+
+  it("keeps unlabeled eye regions independently smoothed and calibrated", () => {
+    const tracker = new GazeTracker({ eyeRegionProvider: unlabeledProvider });
+    const frame = tracker.processFrame(
+      twoEyeFrame({ x: 95, y: 100 }, { x: 225, y: 100 })
+    );
+    const eyes = [...frame.eyes].sort((a, b) => a.rect.x - b.rect.x);
+
+    expect(eyes).toHaveLength(2);
+    expect(Math.abs(eyes[0].pupil.x - 95)).toBeLessThan(4);
+    expect(Math.abs(eyes[1].pupil.x - 225)).toBeLessThan(4);
+    expect(frame.features?.left).toBeDefined();
+    expect(frame.features?.right).toBeDefined();
+    expect(frame.features!.left!.x).toBeLessThan(frame.features!.right!.x);
   });
 });
