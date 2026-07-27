@@ -1,6 +1,7 @@
 import type { Rect } from "../core/geometry.js";
 import {
   computeIntegrals,
+  createGray,
   equalizeHistogram,
   resizeGray,
   type GrayImage,
@@ -60,6 +61,7 @@ export class HaarDetector {
   private readonly workSize: number;
   private sum = new Int32Array(0);
   private sqsum = new Float64Array(0);
+  private work: GrayImage | null = null;
 
   constructor(cascade: HaarCascade, options: HaarDetectorOptions = {}) {
     if (cascade.tilted) {
@@ -86,8 +88,17 @@ export class HaarDetector {
     );
     const w = Math.max(1, Math.round(img.width * shrink));
     const h = Math.max(1, Math.round(img.height * shrink));
-    const work =
-      shrink < 1 ? resizeGray(img, w, h) : { ...img, data: img.data.slice() };
+    // Copy into a reused buffer (equalization is in-place and must not
+    // mutate the caller's image).
+    if (!this.work || this.work.width !== w || this.work.height !== h) {
+      this.work = createGray(w, h);
+    }
+    const work = this.work;
+    if (shrink < 1) {
+      resizeGray(img, w, h, work);
+    } else {
+      work.data.set(img.data);
+    }
     equalizeHistogram(work);
 
     const need = (w + 1) * (h + 1);
@@ -138,9 +149,9 @@ export class HaarDetector {
     const stages = classifier.complexClassifiers;
     const rects: Detection[] = [];
 
-    for (let y = 0; y < endY; y += step) {
+    for (let y = 0; y <= endY; y += step) {
       let iiA = y * w1;
-      for (let x = 0; x < endX; x += step, iiA += step) {
+      for (let x = 0; x <= endX; x += step, iiA += step) {
         const mean =
           (sum[iiA] - sum[iiA + iiB] - sum[iiA + iiC] + sum[iiA + iiD]) *
           invArea;

@@ -104,7 +104,7 @@ export function refinePupil(
     }
   }
 
-  // Sanity: pupil should be between ~0.5% and ~25% of the eye patch.
+  // Sanity: pupil should be between ~0.2% and ~30% of the eye patch.
   if (area < Math.max(4, n * 0.002) || area > n * 0.3) return null;
 
   return {

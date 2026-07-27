@@ -135,7 +135,6 @@ export class GazeTracker {
     const loop = (): void => {
       if (!this.running) return;
       const frame = this.processFrame();
-      this.lastFrame = frame;
       for (const listener of this.listeners) listener(frame);
       this.scheduleNext(loop);
     };
@@ -205,6 +204,7 @@ export class GazeTracker {
           ? this.calibration.estimate(features)
           : null,
     };
+    this.lastFrame = frame;
     return frame;
   }
 

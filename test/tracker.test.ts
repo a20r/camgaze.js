@@ -97,6 +97,18 @@ describe("GazeTracker.processFrame (headless)", () => {
     expect(frame.gazePoint!.y).toBeLessThan(480);
   });
 
+  it("supports addCalibrationPoint when driven externally via processFrame", () => {
+    const tracker = new GazeTracker({
+      eyeRegionProvider: fixedProvider,
+      smoothing: false,
+    });
+    expect(tracker.addCalibrationPoint({ x: 10, y: 10 })).toBe(false);
+    tracker.processFrame(twoEyeFrame({ x: 100, y: 100 }, { x: 220, y: 100 }));
+    expect(tracker.lastFrame).not.toBeNull();
+    expect(tracker.addCalibrationPoint({ x: 10, y: 10 })).toBe(true);
+    expect(tracker.calibration.sampleCount).toBe(1);
+  });
+
   it("smooths pupil jitter when smoothing is enabled", () => {
     const tracker = new GazeTracker({
       eyeRegionProvider: fixedProvider,

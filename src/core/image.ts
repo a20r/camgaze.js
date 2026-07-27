@@ -59,9 +59,10 @@ export function cropGray(src: GrayImage, rect: Rect): GrayImage {
 export function resizeGray(
   src: GrayImage,
   width: number,
-  height: number
+  height: number,
+  out?: GrayImage
 ): GrayImage {
-  const out = createGray(width, height);
+  out ??= createGray(width, height);
   const xRatio = src.width / width;
   const yRatio = src.height / height;
   for (let y = 0; y < height; y++) {
