@@ -3,6 +3,9 @@
 Webcam eye tracking and gaze estimation in the browser — visible light, no
 special hardware, **zero runtime dependencies**.
 
+**[Live demo](https://a20r.github.io/camgaze.js/)** — start the camera, run the
+9-point calibration, and watch the red dot follow your gaze.
+
 camgaze started life in 2013 as an NSF REU internship project. Version 2 is a
 ground-up modernization: an ES-module TypeScript library with tests and typed
 APIs, and a tracking pipeline rebuilt on algorithms from the eye-tracking
